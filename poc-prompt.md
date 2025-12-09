@@ -1,0 +1,66 @@
+_* **# Prompt dla generatora Proof of Concept - VacationPlanner
+* 
+* ## Cel
+* Stworzenie aplikacji Proof of Concept (PoC) w celu weryfikacji podstawowej pętli funkcjonalnej systemu do zarządzania urlopami. Aplikacja ma umożliwić administratorowi tworzenie użytkowników, pracownikowi składanie wniosków urlopowych, a pracownikowi HR ich akceptację.
+* 
+* **WAŻNE:** Przed przystąpieniem do generowania kodu, przedstaw szczegółowy plan działania krok po kroku i poczekaj na jego akceptację.
+* 
+* ## Stack technologiczny
+* - **Frontend:** Astro 5 z React 19 (dla komponentów interaktywnych)
+* - **Backend i Baza Danych:** Supabase (PostgreSQL, Auth, SDK jako BaaS)
+* - **Stylowanie:** Tailwind CSS 4
+* - **Komponenty UI:** Shadcn/ui
+* 
+* ## Zakres funkcjonalny PoC (Minimum Viable Functionality)
+* 
+* ### 1. Role użytkowników
+* Aplikacja musi rozróżniać trzy role z podstawowymi uprawnieniami:
+* - `ADMINISTRATOR`
+* - `HR`
+* - `EMPLOYEE`
+* 
+* ### 2. Uwierzytelnianie
+* - Zaimplementuj prosty system logowania dla wszystkich ról przy użyciu Supabase Auth (e-mail i hasło).
+* - Stwórz podstawowy routing chroniony, który ogranicza dostęp do stron w zależności od roli użytkownika.
+* 
+* ### 3. Scenariusz Administratora (`ADMINISTRATOR`)
+* - **Cel:** Utworzenie kont dla pracownika i pracownika HR.
+* - **Wymagania:**
+*     - Stwórz jedną, prostą stronę dostępną tylko dla `ADMINISTRATORA`.
+*     - Na stronie umieść formularz do dodawania nowego użytkownika, zawierający pola: `imię`, `nazwisko`, `e-mail`, `hasło` oraz listę wyboru `roli` (`HR`, `EMPLOYEE`).
+*     - Zapewnij, że nowo utworzeni użytkownicy są zapisywani w bazie danych Supabase.
+* 
+* ### 4. Scenariusz Pracownika (`EMPLOYEE`)
+* - **Cel:** Złożenie wniosku o urlop.
+* - **Wymagania:**
+*     - Stwórz jedną, prostą stronę dostępną tylko dla `EMPLOYEE`.
+*     - Na stronie umieść formularz do składania wniosku o urlop z polami wyboru daty: `data początkowa` i `data końcowa`.
+*     - Pod formularzem wyświetl listę wszystkich wniosków złożonych przez zalogowanego pracownika wraz z ich `statusem` (`Zgłoszony`, `Zaakceptowany`, `Odrzucony`).
+*     - Złożenie wniosku powinno zapisać go w bazie danych ze statusem `Zgłoszony`.
+* 
+* ### 5. Scenariusz Pracownika HR (`HR`)
+* - **Cel:** Akceptacja lub odrzucenie wniosku pracownika.
+* - **Wymagania:**
+*     - Stwórz jedną, prostą stronę dostępną tylko dla `HR`.
+*     - Na stronie wyświetl listę wszystkich wniosków ze statusem `Zgłoszony` pochodzących od wszystkich pracowników.
+*     - Każdy element listy powinien zawierać imię i nazwisko pracownika, daty urlopu oraz dwa przyciski: `Akceptuj` i `Odrzuć`.
+*     - Kliknięcie przycisku `Akceptuj` powinno zmienić status wniosku na `Zaakceptowany`.
+*     - Kliknięcie przycisku `Odrzuć` powinno zmienić status wniosku na `Odrzucony`.
+*     - Zmiana statusu musi być odzwierciedlona w bazie danych.
+* 
+* ## Funkcje wykluczone z PoC
+* Aby maksymalnie uprościć wdrożenie, **NIE implementuj** następujących funkcji:
+* - Wymuszonej zmiany hasła przy pierwszym logowaniu.
+* - Edycji i usuwania (soft-delete) użytkowników.
+* - Zarządzania zespołami.
+* - Obliczania i walidacji liczby dostępnych dni urlopowych.
+* - Widoków kalendarza.
+* - Anulowania wniosków przez pracownika.
+* - Walidacji dat (np. zakazu wyboru weekendów, dat przeszłych).
+* - Globalnych ustawień (liczba dni urlopu, próg obłożenia zespołu).
+* - Powiadomień.
+* - Komunikacji z modelami AI.
+* - Konfiguracji CI/CD i hostingu.
+* - Wszystkich innych funkcji opisanych w PRD, które nie są wymienione w powyższym zakresie funkcjonalnym PoC.**
+* 
+*_ 
