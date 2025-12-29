@@ -47,3 +47,7 @@ When modifying the directory structure, always update this section.
 - Use guard clauses to handle preconditions and invalid states early.
 - Implement proper error logging and user-friendly error messages.
 - Consider using custom error types or error factories for consistent error handling.
+- Tworząc komponenty Reacta zawsze stosuj tzw. Rules of Hooks
+- Rozwijaj style w oparciu o Tailwind - nie twórz dedykowanych plików CSS
+- Powtarzalne fragmenty logiki API przenoś do warstwy middleware
+- Po zakończonej implementacji testy nie powinny być uruchamiane automatycznie
