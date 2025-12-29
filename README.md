@@ -1,94 +1,107 @@
-# VacationPlanner
+# Vacation Planner
 
-A modern, opinionated starter template for building fast, accessible, and AI-friendly web applications.
+## Table of Contents
+
+- [Project Description](#project-description)
+- [Tech Stack](#tech-stack)
+- [Getting Started Locally](#getting-started-locally)
+- [Available Scripts](#available-scripts)
+- [Project Scope](#project-scope)
+  - [MVP Features](#mvp-features)
+  - [Out of Scope for MVP](#out-of-scope-for-mvp)
+- [Project Status](#project-status)
+- [License](#license)
+
+## Project Description
+
+Vacation Planner is an application designed to simplify the process of managing employee vacations. It allows employees to request time off, and provides HR personnel with the tools to approve, manage, and oversee all leave requests and schedules. The system aims to solve the complexities of vacation management by offering a clear and intuitive interface for all users.
 
 ## Tech Stack
 
-- [Astro](https://astro.build/) v5.5.5 - Modern web framework for building fast, content-focused websites
-- [React](https://react.dev/) v19.0.0 - UI library for building interactive components
-- [TypeScript](https://www.typescriptlang.org/) v5 - Type-safe JavaScript
-- [Tailwind CSS](https://tailwindcss.com/) v4.0.17 - Utility-first CSS framework
+- **Framework**: [Astro](https://astro.build/)
+- **UI Library**: [React](https://react.dev/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components**: [Shadcn/ui](https://ui.shadcn.com/)
+- **Backend**: [Supabase](https://supabase.com/) (for authentication and database)
 
-## Prerequisites
+## Getting Started Locally
 
-- Node.js v22.14.0 (as specified in `.nvmrc`)
-- npm (comes with Node.js)
+To get a local copy up and running, follow these simple steps.
 
-## Getting Started
+### Prerequisites
 
-1. Clone the repository:
+- Node.js `~22.14.0` (as specified in `.nvmrc`)
+- npm (included with Node.js)
 
-```bash
-git clone https://github.com/KonradPrzetacznik/vacationPlanner
-cd vacationPlanner
-```
+### Installation
 
-2. Install dependencies:
+1.  Clone the repository:
+    ```sh
+    git clone https://github.com/KonradPrzetacznik/vacation-planner.git
+    cd vacation-planner
+    ```
+2.  Install NPM packages:
+    ```sh
+    npm install
+    ```
 
-```bash
-npm install
-```
+### Running the Application
 
-3. Run the development server:
+To run the application in development mode:
 
-```bash
+```sh
 npm run dev
 ```
 
-4. Build for production:
-
-```bash
-npm run build
-```
+Open [http://localhost:4321](http://localhost:4321) to view it in the browser.
 
 ## Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
+In the project directory, you can run:
 
-## Project Structure
+- `npm run dev`: Runs the app in the development mode.
+- `npm run build`: Builds the app for production to the `dist/` folder.
+- `npm run preview`: Serves the production build locally for preview.
+- `npm run lint`: Lints the codebase using ESLint.
+- `npm run lint:fix`: Lints and automatically fixes problems.
+- `npm run format`: Formats code using Prettier.
 
-```md
-.
-├── src/
-│ ├── layouts/ # Astro layouts
-│ ├── pages/ # Astro pages
-│ │ └── api/ # API endpoints
-│ ├── components/ # UI components (Astro & React)
-│ └── assets/ # Static assets
-├── public/ # Public assets
-```
+## Project Scope
 
-## AI Development Support
+The current scope is focused on delivering a Minimum Viable Product (MVP) with essential features for managing vacation leave.
 
-This project is configured with AI development tools to enhance the development experience, providing guidelines for:
+### MVP Features
 
-- Project structure
-- Coding practices
-- Frontend development
-- Styling with Tailwind
-- Accessibility best practices
-- Astro and React guidelines
+-   **User Roles**:
+    -   **ADMINISTRATOR**: Manages users and their roles.
+    -   **HR**: Manages teams, defines leave policies, approves/rejects requests, and views team schedules.
+    -   **EMPLOYEE**: Requests leave, views personal leave balance, and sees their team's vacation schedule.
+-   **Leave Management**:
+    -   Request leave with a date range.
+    -   Weekends are automatically excluded from the leave day calculation.
+    -   Annual leave allowance is configurable by HR.
+-   **Dedicated Pages**:
+    -   User, Team, and Leave Management pages for HR and Admins.
+    -   "My Vacation" page for employees to track their requests.
+-   **UI/UX**:
+    -   A responsive and intuitive user interface.
+    -   A horizontal calendar view to easily compare team members' leave schedules.
 
-### Cursor IDE
+### Out of Scope for MVP
 
-The project includes AI rules in `.cursor/rules/` directory that help Cursor IDE understand the project structure and provide better code suggestions.
+The following features are planned for future releases and are not part of the current MVP:
+-   Defining substitutes for employees on leave.
+-   Email notifications for leave request status changes.
+-   Integration with external calendars (Google Calendar, Outlook).
+-   Advanced reporting and analytics.
+-   Support for different types of leave (e.g., sick leave, unpaid leave).
 
-### GitHub Copilot
+## Project Status
 
-AI instructions for GitHub Copilot are available in `.github/copilot-instructions.md`
-
-### Windsurf
-
-The `.windsurfrules` file contains AI configuration for Windsurf.
-
-## Contributing
-
-Please follow the AI guidelines and coding practices defined in the AI configuration files when contributing to this project.
+**In Development**: The project is currently in the development phase, focusing on implementing the MVP features.
 
 ## License
 
-MIT
+This project is licensed under the MIT License. See the `LICENSE` file for more information.
+
