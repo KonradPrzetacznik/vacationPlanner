@@ -1,13 +1,15 @@
 # Aplikacja - VacationPlanner (MVP)
 
 ### Główny problem
+
 Zarządzanie urlopami w pracy jest trudne. Dzięki wykorzystaniu potencjału, kreatywności i wiedzy AI, w VacationPlanner możesz w prosty sposób zarządzać urlopami pracowników. Pracownicy mogą zgłaszać dni urlop. Następnie pracownik HR ma możliwość zarządzania i podglądu urlopów.
 
 ### Najmniejszy zestaw funkcjonalności
-- Role użytkowników: 
-    - ADMINISTRATOR: umożliwia dodawanie, usuwanie użytkowników i nadawanie im ról. Nie ma możliwości decydowania o żadnych akcjach związanych z urlopami.
-    - HR: umożliwia definiowanie zespołów z dostepnych użytkowników, akceptację/odrzucanie zgłoszonego urlopu, podgląd urlopów dla użytkownika i dla całego zespołu, definiowanie ile dni urlopu jest dostępnych, 
-    - EMPLOYEE: użytkownik może wybrać, w jakich dniach planuje urlop (data od i data do), może podglądać grafik urlopowy swojego zespołu, może podglądać swoje urlopy i ilość dni niewykorzystanych i wykorzystanych.
+
+- Role użytkowników:
+  - ADMINISTRATOR: umożliwia dodawanie, usuwanie użytkowników i nadawanie im ról. Nie ma możliwości decydowania o żadnych akcjach związanych z urlopami.
+  - HR: umożliwia definiowanie zespołów z dostepnych użytkowników, akceptację/odrzucanie zgłoszonego urlopu, podgląd urlopów dla użytkownika i dla całego zespołu, definiowanie ile dni urlopu jest dostępnych,
+  - EMPLOYEE: użytkownik może wybrać, w jakich dniach planuje urlop (data od i data do), może podglądać grafik urlopowy swojego zespołu, może podglądać swoje urlopy i ilość dni niewykorzystanych i wykorzystanych.
 - w formularzu definiowania urlopu można wybrać zakres urlopu (datę od i do kiedy planowany jest urlop)
 - w formularzu definiowania urlopu nie można wybrać dni weekendowych jako data początkowa i końcowa
 - liczba dni zdefiniowanych w zakresie urlopu jest wliczana do dni wykorzystanych
@@ -50,6 +52,7 @@ Zarządzanie urlopami w pracy jest trudne. Dzięki wykorzystaniu potencjału, kr
 - nie powinno być możliwości składania wniosków urlopowych na dni przeszłe
 
 ### Co NIE wchodzi w zakres MVP
+
 - możliwość definiowania zastępstwa na czas urlopu
 - możliwość definiowania różnej ilości dni urlopu dla różnych typów pracowników w zależności np. od stażu
 - wykluczenie dni świątecznych podczas obliczania wykorzystanych dni
@@ -72,6 +75,7 @@ Zarządzanie urlopami w pracy jest trudne. Dzięki wykorzystaniu potencjału, kr
 - panel analityczny podsumowujący kryteria sukcesu
 
 ### Kryteria sukcesu
+
 - 100% użytkowników firmy korzysta z definiowania urlopów przy pomocy VacationPlanner
 - 80% użytkowników wykorzystuje przynajmniej raz w roku dwutygodniowy urlop
 - 75% użytkowników wykorzystuje 80% swoich dni urlopowych w danym roku
