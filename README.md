@@ -56,6 +56,40 @@ npm run dev
 
 Open [http://localhost:4321](http://localhost:4321) to view it in the browser.
 
+### Database Management
+
+The project uses Supabase for database management. To work with the database locally:
+
+1. **Start Supabase**:
+   ```sh
+   supabase start
+   ```
+
+2. **Access Supabase Studio**:
+   Open [http://localhost:54323](http://localhost:54323) to manage the database via web interface.
+
+3. **Reset Database** (delete all data and reapply migrations):
+   
+   **Linux/macOS**:
+   ```sh
+   ./reset-db.sh
+   ```
+   
+   This script will:
+   - Clear all existing data
+   - Apply all migrations from `supabase/migrations/`
+   - Seed the database with sample data
+   
+   **Test accounts** (password: `test123`):
+   - Admin: `admin@vacationplanner.com`
+   - HR: `hr1@vacationplanner.com`, `hr2@vacationplanner.com`
+   - Employees: `employee1@vacationplanner.com` through `employee10@vacationplanner.com`
+
+4. **Stop Supabase**:
+   ```sh
+   supabase stop
+   ```
+
 ## Available Scripts
 
 In the project directory, you can run:
