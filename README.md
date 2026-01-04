@@ -6,6 +6,8 @@
 - [Tech Stack](#tech-stack)
 - [Getting Started Locally](#getting-started-locally)
 - [Available Scripts](#available-scripts)
+- [API Endpoints](#api-endpoints)
+- [Testing](#testing)
 - [Project Scope](#project-scope)
   - [MVP Features](#mvp-features)
   - [Out of Scope for MVP](#out-of-scope-for-mvp)
@@ -54,7 +56,7 @@ To run the application in development mode:
 npm run dev
 ```
 
-Open [http://localhost:4321](http://localhost:4321) to view it in the browser.
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 ### Database Management
 
@@ -100,6 +102,63 @@ In the project directory, you can run:
 - `npm run lint`: Lints the codebase using ESLint.
 - `npm run lint:fix`: Lints and automatically fixes problems.
 - `npm run format`: Formats code using Prettier.
+
+## API Endpoints
+
+### GET /api/users
+
+Retrieves a paginated and filtered list of users.
+
+**Query Parameters:**
+- `limit` (optional): Number of results (1-100, default: 50)
+- `offset` (optional): Pagination offset (default: 0)
+- `role` (optional): Filter by role (ADMINISTRATOR | HR | EMPLOYEE)
+- `includeDeleted` (optional): Include soft-deleted users (default: false)
+- `teamId` (optional): Filter by team UUID
+
+**Example:**
+```bash
+curl "http://localhost:3000/api/users?role=EMPLOYEE&limit=10"
+```
+
+**Documentation:** See [API Documentation](.ai/api-users-documentation.md) for full details.
+
+## Testing
+
+### Quick Test
+
+```bash
+# 1. Start the development server
+npm run dev
+
+# 2. Run quick test
+./quick-test.sh
+```
+
+### Full Test Suite
+
+```bash
+# 1. Start the development server
+npm run dev
+
+# 2. Run all tests
+./test-api.sh
+```
+
+### Manual Testing
+
+```bash
+# Basic request
+curl http://localhost:3000/api/users
+
+# With pagination
+curl "http://localhost:3000/api/users?limit=5"
+
+# Filter by role
+curl "http://localhost:3000/api/users?role=EMPLOYEE"
+```
+
+**Full testing guide:** See [TESTING.md](TESTING.md) and [TEST_STATUS.md](TEST_STATUS.md)
 
 ## Project Scope
 

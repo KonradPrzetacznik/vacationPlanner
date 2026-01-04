@@ -5,25 +5,25 @@
  * Each DTO is connected to one or more database entities from database.types.ts
  */
 
-import type { Database } from './db/database.types';
+import type { Database } from "./db/database.types";
 
 // ============================================================================
 // Database Entity Type Aliases
 // ============================================================================
 
-type Users = Database['public']['Tables']['users']['Row'];
-type Vacations = Database['public']['Tables']['vacations']['Row'];
-type UserVacations = Database['public']['Tables']['user_vacations']['Row'];
-type VacationRequests = Database['public']['Tables']['vacation_requests']['Row'];
-type Notifications = Database['public']['Tables']['notifications']['Row'];
-type AuditLogs = Database['public']['Tables']['audit_logs']['Row'];
+type Users = Database["public"]["Tables"]["users"]["Row"];
+type Vacations = Database["public"]["Tables"]["vacations"]["Row"];
+type UserVacations = Database["public"]["Tables"]["user_vacations"]["Row"];
+type VacationRequests = Database["public"]["Tables"]["vacation_requests"]["Row"];
+type Notifications = Database["public"]["Tables"]["notifications"]["Row"];
+type AuditLogs = Database["public"]["Tables"]["audit_logs"]["Row"];
 
 // Insert types for creating new records
-type UsersInsert = Database['public']['Tables']['users']['Insert'];
-type VacationsInsert = Database['public']['Tables']['vacations']['Insert'];
-type UserVacationsInsert = Database['public']['Tables']['user_vacations']['Insert'];
-type VacationRequestsInsert = Database['public']['Tables']['vacation_requests']['Insert'];
-type NotificationsInsert = Database['public']['Tables']['notifications']['Insert'];
+type UsersInsert = Database["public"]["Tables"]["users"]["Insert"];
+type VacationsInsert = Database["public"]["Tables"]["vacations"]["Insert"];
+type UserVacationsInsert = Database["public"]["Tables"]["user_vacations"]["Insert"];
+type VacationRequestsInsert = Database["public"]["Tables"]["vacation_requests"]["Insert"];
+type NotificationsInsert = Database["public"]["Tables"]["notifications"]["Insert"];
 
 // ============================================================================
 // Common/Shared DTOs
@@ -80,14 +80,14 @@ export interface RegisterRequestDTO {
   email: string;
   password: string;
   full_name: string;
-  role?: 'user' | 'admin';
+  role?: "user" | "admin";
 }
 
 /**
  * User DTO - Public user information
  * Derived from Users entity, excludes sensitive fields
  */
-export type UserDTO = Pick<Users, 'id' | 'email' | 'full_name' | 'role' | 'created_at' | 'updated_at'>;
+export type UserDTO = Pick<Users, "id" | "email" | "full_name" | "role" | "created_at" | "updated_at">;
 
 /**
  * Session information
@@ -137,7 +137,7 @@ export type UpdateVacationDTO = Partial<CreateVacationDTO>;
  */
 export type VacationDTO = Vacations & {
   participants_count: number;
-  user_status?: 'pending' | 'approved' | 'rejected' | 'none';
+  user_status?: "pending" | "approved" | "rejected" | "none";
 };
 
 /**
@@ -146,10 +146,10 @@ export type VacationDTO = Vacations & {
  */
 export type VacationListItemDTO = Pick<
   Vacations,
-  'id' | 'name' | 'start_date' | 'end_date' | 'location' | 'status' | 'created_by'
+  "id" | "name" | "start_date" | "end_date" | "location" | "status" | "created_by"
 > & {
   participants_count: number;
-  user_status?: 'pending' | 'approved' | 'rejected' | 'none';
+  user_status?: "pending" | "approved" | "rejected" | "none";
 };
 
 /**
@@ -158,7 +158,7 @@ export type VacationListItemDTO = Pick<
  */
 export type VacationDetailsDTO = VacationDTO & {
   participants: UserVacationDTO[];
-  created_by_user?: Pick<Users, 'id' | 'full_name' | 'email'>;
+  created_by_user?: Pick<Users, "id" | "full_name" | "email">;
 };
 
 // ============================================================================
@@ -178,7 +178,7 @@ export interface CreateVacationRequestDTO {
  * Used by admin to approve/reject requests
  */
 export interface UpdateVacationRequestDTO {
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
   admin_notes?: string;
 }
 
@@ -196,9 +196,9 @@ export type VacationRequestDTO = VacationRequests & {
  * Extended version with full user and vacation objects
  */
 export type VacationRequestDetailsDTO = VacationRequests & {
-  user: Pick<Users, 'id' | 'full_name' | 'email'>;
-  vacation: Pick<Vacations, 'id' | 'name' | 'start_date' | 'end_date' | 'status'>;
-  reviewed_by_user?: Pick<Users, 'id' | 'full_name' | 'email'>;
+  user: Pick<Users, "id" | "full_name" | "email">;
+  vacation: Pick<Vacations, "id" | "name" | "start_date" | "end_date" | "status">;
+  reviewed_by_user?: Pick<Users, "id" | "full_name" | "email">;
 };
 
 // ============================================================================
@@ -222,7 +222,7 @@ export type UserVacationDTO = UserVacations & {
 export interface CreateUserVacationDTO {
   vacation_id: string;
   user_id: string;
-  role?: 'participant' | 'organizer';
+  role?: "participant" | "organizer";
 }
 
 /**
@@ -230,8 +230,8 @@ export interface CreateUserVacationDTO {
  * Allows changing role or status
  */
 export interface UpdateUserVacationDTO {
-  role?: 'participant' | 'organizer';
-  status?: 'active' | 'cancelled' | 'completed';
+  role?: "participant" | "organizer";
+  status?: "active" | "cancelled" | "completed";
 }
 
 // ============================================================================
@@ -248,7 +248,7 @@ export type NotificationDTO = Notifications;
  * Create notification command
  * Omits auto-generated fields (id, timestamps)
  */
-export type CreateNotificationDTO = Omit<NotificationsInsert, 'id' | 'created_at' | 'read_at'>;
+export type CreateNotificationDTO = Omit<NotificationsInsert, "id" | "created_at" | "read_at">;
 
 /**
  * Mark notification as read command
@@ -344,7 +344,7 @@ export interface SystemStatisticsDTO {
  * Used for filtering vacation lists
  */
 export interface VacationFilterDTO {
-  status?: 'draft' | 'published' | 'ongoing' | 'completed' | 'cancelled';
+  status?: "draft" | "published" | "ongoing" | "completed" | "cancelled";
   start_date_from?: string;
   start_date_to?: string;
   end_date_from?: string;
@@ -354,8 +354,8 @@ export interface VacationFilterDTO {
   has_available_slots?: boolean;
   page?: number;
   limit?: number;
-  sort_by?: 'start_date' | 'end_date' | 'created_at' | 'name';
-  sort_order?: 'asc' | 'desc';
+  sort_by?: "start_date" | "end_date" | "created_at" | "name";
+  sort_order?: "asc" | "desc";
 }
 
 /**
@@ -363,12 +363,12 @@ export interface VacationFilterDTO {
  * Used for filtering user lists (admin)
  */
 export interface UserFilterDTO {
-  role?: 'user' | 'admin';
+  role?: "user" | "admin";
   search?: string; // Search in email or full_name
   page?: number;
   limit?: number;
-  sort_by?: 'created_at' | 'full_name' | 'email';
-  sort_order?: 'asc' | 'desc';
+  sort_by?: "created_at" | "full_name" | "email";
+  sort_order?: "asc" | "desc";
 }
 
 /**
@@ -378,11 +378,11 @@ export interface UserFilterDTO {
 export interface VacationRequestFilterDTO {
   vacation_id?: string;
   user_id?: string;
-  status?: 'pending' | 'approved' | 'rejected';
+  status?: "pending" | "approved" | "rejected";
   page?: number;
   limit?: number;
-  sort_by?: 'created_at' | 'reviewed_at';
-  sort_order?: 'asc' | 'desc';
+  sort_by?: "created_at" | "reviewed_at";
+  sort_order?: "asc" | "desc";
 }
 
 // ============================================================================
@@ -418,11 +418,60 @@ export interface ValidationErrorDTO {
  * Used for system health monitoring
  */
 export interface HealthCheckDTO {
-  status: 'ok' | 'error';
+  status: "ok" | "error";
   timestamp: string;
   services: {
-    database: 'ok' | 'error';
-    auth: 'ok' | 'error';
+    database: "ok" | "error";
+    auth: "ok" | "error";
   };
 }
 
+// ============================================================================
+// Users List DTOs
+// ============================================================================
+
+/**
+ * Get users query parameters DTO
+ * Used for filtering and paginating user lists
+ */
+export interface GetUsersQueryDTO {
+  limit?: number;
+  offset?: number;
+  role?: "ADMINISTRATOR" | "HR" | "EMPLOYEE";
+  includeDeleted?: boolean;
+  teamId?: string;
+}
+
+/**
+ * User list item DTO
+ * Derived from profiles table, represents a single user in the list
+ * Connected to: Database['public']['Tables']['profiles']['Row']
+ */
+export interface UserListItemDTO {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: "ADMINISTRATOR" | "HR" | "EMPLOYEE";
+  deletedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Pagination metadata for users list
+ */
+export interface UsersPaginationDTO {
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+/**
+ * Get users response DTO
+ * Complete response with data and pagination
+ */
+export interface GetUsersResponseDTO {
+  data: UserListItemDTO[];
+  pagination: UsersPaginationDTO;
+}
