@@ -105,9 +105,16 @@ In the project directory, you can run:
 
 ## API Endpoints
 
-### GET /api/users
+### Users API
+
+#### GET /api/users
 
 Retrieves a paginated and filtered list of users.
+
+**Authorization:** 
+- ADMINISTRATOR: Full access to all users (including soft-deleted)
+- HR: Access to active users only
+- EMPLOYEE: Access to own profile and team members
 
 **Query Parameters:**
 - `limit` (optional): Number of results (1-100, default: 50)
@@ -116,47 +123,205 @@ Retrieves a paginated and filtered list of users.
 - `includeDeleted` (optional): Include soft-deleted users (default: false)
 - `teamId` (optional): Filter by team UUID
 
-**Example:**
-```bash
-curl "http://localhost:3000/api/users?role=EMPLOYEE&limit=10"
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john.doe@example.com",
+      "role": "EMPLOYEE",
+      "deletedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "updatedAt": "2026-01-01T00:00:00Z"
+    }
+  ],
+  "pagination": {
+    "total": 100,
+    "limit": 50,
+    "offset": 0
+  }
+}
 ```
 
-**Documentation:** See [API Documentation](.ai/api-users-documentation.md) for full details.
+**Examples:**
+```bash
+# Get all users (first 50)
+curl "http://localhost:3000/api/users"
+
+# Get employees with pagination
+curl "http://localhost:3000/api/users?role=EMPLOYEE&limit=10&offset=0"
+
+# Get users from specific team
+curl "http://localhost:3000/api/users?teamId=uuid-of-team"
+
+# Include deleted users (admin only)
+curl "http://localhost:3000/api/users?includeDeleted=true"
+```
+
+---
+
+#### GET /api/users/:id
+
+Retrieves detailed information about a single user, including their team memberships.
+
+**Authorization:**
+- ADMINISTRATOR: Can view all users (including soft-deleted)
+- HR: Can view active users only
+- EMPLOYEE: Can view only themselves (active only)
+
+**Parameters:**
+- `id` (path, required): User UUID
+
+**Response (200 OK):**
+```json
+{
+  "data": {
+    "id": "uuid",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com",
+    "role": "EMPLOYEE",
+    "deletedAt": null,
+    "createdAt": "2026-01-01T00:00:00Z",
+    "updatedAt": "2026-01-01T00:00:00Z",
+    "teams": [
+      {
+        "id": "team-uuid",
+        "name": "Engineering"
+      },
+      {
+        "id": "team-uuid-2",
+        "name": "Product"
+      }
+    ]
+  }
+}
+```
+
+**Error Responses:**
+- `400 Bad Request`: Invalid UUID format
+- `403 Forbidden`: Insufficient permissions
+- `404 Not Found`: User not found or no access
+- `500 Internal Server Error`: Server error
+
+**Examples:**
+```bash
+# Get user by ID
+curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000001"
+
+# Get current user (replace with actual ID)
+curl "http://localhost:3000/api/users/your-user-id"
+
+# Pretty print with jq
+curl "http://localhost:3000/api/users/uuid" | jq .
+```
+
+**Use Cases:**
+- Display user profile page with team information
+- Show user details in admin panel
+- Fetch current user data for dashboard
+- Validate user permissions based on team membership
+
+---
+
+### API Guidelines
+
+**Base URL (Development):** `http://localhost:3000`
+
+**Content Type:** All endpoints return `application/json`
+
+**Error Format:**
+```json
+{
+  "error": "Error message",
+  "details": {
+    "field": ["Validation error"]
+  }
+}
+```
+
+**Rate Limiting:** Not implemented in development (planned for production)
+
+**Full API Documentation:** See [API Documentation](.ai/api-users-documentation.md) for complete details.
+
+**Usage Examples:** See [API Examples](docs/API_EXAMPLES.md) for practical code examples in multiple languages.
 
 ## Testing
 
-### Quick Test
+### Automated API Tests
+
+The project includes automated test scripts for all API endpoints.
+
+**Test Structure:**
+```
+tests/
+└── api/
+    ├── users-list.test.sh      # Tests for GET /api/users
+    ├── user-by-id.test.sh      # Tests for GET /api/users/:id
+    └── run-all.sh              # Runs all API tests
+```
+
+**Run All Tests:**
+```bash
+# Run complete test suite
+./tests/api/run-all.sh
+```
+
+**Run Individual Tests:**
+```bash
+# Test users list endpoint
+./tests/api/users-list.test.sh
+
+# Test user by ID endpoint
+./tests/api/user-by-id.test.sh
+```
+
+**Test Coverage:**
+- ✅ GET /api/users - List users with various filters
+- ✅ GET /api/users/:id - Get user details with teams
+- ✅ Validation errors (400)
+- ✅ Not found errors (404)
+- ✅ Authorization checks (403)
+- ✅ Pagination
+- ✅ Role-based filtering
+- ✅ Team filtering
+
+### Quick Manual Testing
 
 ```bash
 # 1. Start the development server
 npm run dev
 
-# 2. Run quick test
-./quick-test.sh
+# 2. Test users list
+curl "http://localhost:3000/api/users?limit=5" | jq .
+
+# 3. Test user by ID (replace with actual UUID from database)
+curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000001" | jq .
+
+# 4. Test error handling (invalid UUID)
+curl "http://localhost:3000/api/users/invalid-uuid" | jq .
 ```
 
-### Full Test Suite
+### Test Accounts
 
-```bash
-# 1. Start the development server
-npm run dev
+After running `./reset-db.sh`, the following test accounts are available (password: `test123`):
 
-# 2. Run all tests
-./test-api.sh
-```
+**Administrator:**
+- Email: `admin.user@vacationplanner.pl`
+- ID: `00000000-0000-0000-0000-000000000001`
 
-### Manual Testing
+**HR:**
+- Email: `ferdynand.kiepski@vacationplanner.pl`
+- ID: `00000000-0000-0000-0000-000000000002`
 
-```bash
-# Basic request
-curl http://localhost:3000/api/users
+**Employees:**
+- Email: `kazimierz.pawlak@vacationplanner.pl` (in 2 teams)
+- ID: `00000000-0000-0000-0000-000000000010`
 
-# With pagination
-curl "http://localhost:3000/api/users?limit=5"
-
-# Filter by role
-curl "http://localhost:3000/api/users?role=EMPLOYEE"
-```
+### Advanced Testing
 
 **Full testing guide:** See [TESTING.md](TESTING.md) and [TEST_STATUS.md](TEST_STATUS.md)
 

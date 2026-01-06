@@ -31,6 +31,8 @@ When introducing changes to the project, always follow the directory structure b
 - `./src/lib` - Services and helpers 
 - `./src/assets` - static internal assets
 - `./public` - public assets
+- `./tests/api` - API test scripts
+- `./docs` - Project documentation
 
 When modifying the directory structure, always update this section.
 

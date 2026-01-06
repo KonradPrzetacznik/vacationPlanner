@@ -106,3 +106,16 @@ drop policy if exists "Administrators can delete public holidays" on public_holi
 -- END OF MIGRATION
 -- =====================================================
 
+-- =====================================================
+-- DISABLE RLS FOR ALL TABLES (Development Only)
+-- =====================================================
+-- WARNING: This is for local development only!
+-- In production, RLS should be enabled with proper policies
+
+alter table profiles disable row level security;
+alter table teams disable row level security;
+alter table team_members disable row level security;
+alter table vacation_requests disable row level security;
+alter table vacation_allowances disable row level security;
+alter table settings disable row level security;
+alter table public_holidays disable row level security;

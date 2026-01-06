@@ -475,3 +475,39 @@ export interface GetUsersResponseDTO {
   data: UserListItemDTO[];
   pagination: UsersPaginationDTO;
 }
+
+/**
+ * Team reference DTO
+ * Simplified team information for user details
+ */
+export interface TeamReferenceDTO {
+  id: string;
+  name: string;
+}
+
+/**
+ * User details DTO
+ * Extended user information with team memberships
+ * Connected to: Database['public']['Tables']['profiles']['Row']
+ * Connected to: Database['public']['Tables']['teams']['Row'] (through team_members)
+ */
+export interface UserDetailsDTO {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: "ADMINISTRATOR" | "HR" | "EMPLOYEE";
+  deletedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  teams: TeamReferenceDTO[];
+}
+
+/**
+ * Get user by ID response DTO
+ * Complete response with user details
+ */
+export interface GetUserByIdResponseDTO {
+  data: UserDetailsDTO;
+}
+

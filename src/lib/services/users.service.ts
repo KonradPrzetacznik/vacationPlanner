@@ -4,7 +4,13 @@
  */
 
 import type { SupabaseClient } from "@/db/supabase.client";
-import type { GetUsersQueryDTO, GetUsersResponseDTO, UserListItemDTO } from "@/types";
+import type {
+  GetUsersQueryDTO,
+  GetUsersResponseDTO,
+  UserListItemDTO,
+  UserDetailsDTO,
+  TeamReferenceDTO,
+} from "@/types";
 
 /**
  * Get users list with pagination and filtering
@@ -73,3 +79,53 @@ export async function getUsers(
     },
   };
 }
+
+/**
+ * Get single user by ID with team memberships
+ *
+ * @param supabase - Supabase client from context.locals
+ * @param currentUserId - ID of the current user (for RBAC)
+ * @param currentUserRole - Role of the current user (for RBAC)
+ * @param userId - ID of the user to retrieve
+ * @returns Promise with user details including teams
+ * @throws Error if user not found or insufficient permissions
+ */
+export async function getUserById(
+  supabase: SupabaseClient,
+  currentUserId: string,
+  currentUserRole: "ADMINISTRATOR" | "HR" | "EMPLOYEE",
+  userId: string
+): Promise<UserDetailsDTO> {
+  // Call RPC function to get user with teams
+  const { data, error } = await supabase.rpc("get_user_by_id_with_teams", {
+    p_user_id: userId,
+    p_current_user_id: currentUserId,
+    p_current_user_role: currentUserRole,
+  });
+
+  if (error) {
+    console.error("[UsersService] Failed to fetch user:", error);
+    throw new Error("Failed to fetch user");
+  }
+
+  // Check if user was found (RPC returns empty array if no access or user doesn't exist)
+  if (!data || data.length === 0) {
+    throw new Error("User not found");
+  }
+
+  const user = data[0];
+
+  // Map result to DTO (snake_case to camelCase)
+  return {
+    id: user.id,
+    firstName: user.first_name ?? "",
+    lastName: user.last_name ?? "",
+    email: user.email ?? "",
+    role: (user.role ?? "EMPLOYEE") as "ADMINISTRATOR" | "HR" | "EMPLOYEE",
+    deletedAt: user.deleted_at ?? null,
+    createdAt: user.created_at ?? new Date().toISOString(),
+    updatedAt: user.updated_at ?? new Date().toISOString(),
+    teams: (user.teams as unknown as TeamReferenceDTO[]) ?? [],
+  };
+}
+
