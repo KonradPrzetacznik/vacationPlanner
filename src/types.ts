@@ -511,3 +511,65 @@ export interface GetUserByIdResponseDTO {
   data: UserDetailsDTO;
 }
 
+/**
+ * Create user command DTO
+ * Used by administrators to create new users
+ * Connected to: Database['public']['Tables']['profiles']['Insert']
+ */
+export interface CreateUserDTO {
+  firstName: string;
+  lastName: string;
+  email: string;
+  role?: "ADMINISTRATOR" | "HR" | "EMPLOYEE";
+  temporaryPassword: string;
+}
+
+/**
+ * Create user response DTO
+ * Returned after successful user creation
+ */
+export interface CreateUserResponseDTO {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: "ADMINISTRATOR" | "HR" | "EMPLOYEE";
+  requiresPasswordReset: boolean;
+  createdAt: string;
+}
+
+/**
+ * Update user command DTO
+ * Used to update user profile information
+ * All fields are optional, but at least one must be provided
+ */
+export interface UpdateUserDTO {
+  firstName?: string;
+  lastName?: string;
+  role?: "ADMINISTRATOR" | "HR" | "EMPLOYEE";
+}
+
+/**
+ * Update user response DTO
+ * Returned after successful user update
+ */
+export interface UpdateUserResponseDTO {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: "ADMINISTRATOR" | "HR" | "EMPLOYEE";
+  updatedAt: string;
+}
+
+/**
+ * Delete user response DTO
+ * Returned after successful user deletion (soft-delete)
+ */
+export interface DeleteUserResponseDTO {
+  message: string;
+  id: string;
+  deletedAt: string;
+  cancelledVacations: number;
+}
+

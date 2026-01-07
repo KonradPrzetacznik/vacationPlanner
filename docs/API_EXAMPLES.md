@@ -8,6 +8,9 @@ This document provides practical examples of using the Vacation Planner API.
 - [Users API](#users-api)
   - [List Users](#list-users)
   - [Get User by ID](#get-user-by-id)
+  - [Create User](#create-user)
+  - [Update User](#update-user)
+  - [Delete User](#delete-user)
 - [Common Use Cases](#common-use-cases)
 - [Error Handling](#error-handling)
 
@@ -292,6 +295,377 @@ export default UserProfile;
 
 ---
 
+### Create User
+
+#### Example 10: Create Employee User
+
+**Request:**
+```bash
+curl -X POST "http://localhost:3000/api/users" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com",
+    "temporaryPassword": "TempPass123"
+  }'
+```
+
+**Response (201 Created):**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "role": "EMPLOYEE",
+  "requiresPasswordReset": true,
+  "createdAt": "2026-01-06T10:00:00Z"
+}
+```
+
+**Use Case:** Administrator creating a new employee account during onboarding.
+
+**Requirements:**
+- **Role Required:** ADMINISTRATOR
+- **Permissions:** Only administrators can create users
+
+---
+
+#### Example 11: Create User with Specific Role
+
+**Request:**
+```bash
+curl -X POST "http://localhost:3000/api/users" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "Jane",
+    "lastName": "Manager",
+    "email": "jane.manager@example.com",
+    "role": "HR",
+    "temporaryPassword": "SecureTemp456"
+  }'
+```
+
+**Response (201 Created):**
+```json
+{
+  "id": "660e8400-e29b-41d4-a716-446655440001",
+  "firstName": "Jane",
+  "lastName": "Manager",
+  "email": "jane.manager@example.com",
+  "role": "HR",
+  "requiresPasswordReset": true,
+  "createdAt": "2026-01-06T10:05:00Z"
+}
+```
+
+**Available Roles:**
+- `EMPLOYEE` (default if not specified)
+- `HR`
+- `ADMINISTRATOR`
+
+---
+
+#### Example 12: Create User Error - Duplicate Email
+
+**Request:**
+```bash
+curl -X POST "http://localhost:3000/api/users" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "John",
+    "lastName": "Duplicate",
+    "email": "john.doe@example.com",
+    "temporaryPassword": "TempPass123"
+  }'
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "User with this email already exists"
+}
+```
+
+---
+
+#### Example 13: Create User Error - Validation Failed
+
+**Request:**
+```bash
+curl -X POST "http://localhost:3000/api/users" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "",
+    "lastName": "Test",
+    "email": "invalid-email",
+    "temporaryPassword": "short"
+  }'
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "Validation failed",
+  "details": {
+    "firstName": ["First name is required"],
+    "email": ["Invalid email format"],
+    "temporaryPassword": ["Password must be at least 8 characters"]
+  }
+}
+```
+
+---
+
+### Update User
+
+#### Example 14: Update User Name (Admin)
+
+**Request:**
+```bash
+curl -X PATCH "http://localhost:3000/api/users/550e8400-e29b-41d4-a716-446655440000" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "Jane",
+    "lastName": "Smith"
+  }'
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "email": "john.doe@example.com",
+  "role": "EMPLOYEE",
+  "updatedAt": "2026-01-06T12:00:00Z"
+}
+```
+
+**Use Case:** Administrator or employee updating profile information.
+
+**Permissions:**
+- **ADMINISTRATOR:** Can update all fields (except email) for all users
+- **EMPLOYEE:** Can only update their own firstName and lastName
+
+---
+
+#### Example 15: Update User Role (Admin Only)
+
+**Request:**
+```bash
+curl -X PATCH "http://localhost:3000/api/users/550e8400-e29b-41d4-a716-446655440000" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "role": "HR"
+  }'
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "email": "john.doe@example.com",
+  "role": "HR",
+  "updatedAt": "2026-01-06T12:05:00Z"
+}
+```
+
+**Note:** Only administrators can change user roles.
+
+---
+
+#### Example 16: Update Multiple Fields at Once
+
+**Request:**
+```bash
+curl -X PATCH "http://localhost:3000/api/users/550e8400-e29b-41d4-a716-446655440000" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "John",
+    "lastName": "Updated",
+    "role": "EMPLOYEE"
+  }'
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "firstName": "John",
+  "lastName": "Updated",
+  "email": "john.doe@example.com",
+  "role": "EMPLOYEE",
+  "updatedAt": "2026-01-06T12:10:00Z"
+}
+```
+
+---
+
+#### Example 17: Update Error - Cannot Change Own Role
+
+**Request:**
+```bash
+# Assuming current user is trying to change their own role
+curl -X PATCH "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000001" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "role": "EMPLOYEE"
+  }'
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "Cannot change your own role"
+}
+```
+
+---
+
+#### Example 18: Update Error - User Not Found
+
+**Request:**
+```bash
+curl -X PATCH "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000999" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "Test"
+  }'
+```
+
+**Response (404 Not Found):**
+```json
+{
+  "error": "User not found"
+}
+```
+
+---
+
+#### Example 19: Update Error - Insufficient Permissions
+
+**Request:**
+```bash
+# Employee trying to update another user
+curl -X PATCH "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000010" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "Unauthorized"
+  }'
+```
+
+**Response (403 Forbidden):**
+```json
+{
+  "error": "Insufficient permissions: Cannot edit other users"
+}
+```
+
+---
+
+### Delete User
+
+#### Example 20: Soft-Delete User
+
+**Request:**
+```bash
+curl -X DELETE "http://localhost:3000/api/users/550e8400-e29b-41d4-a716-446655440000"
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "User deleted successfully",
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "deletedAt": "2026-01-06T14:00:00Z",
+  "cancelledVacations": 2
+}
+```
+
+**Use Case:** Administrator deactivating user account and cancelling their pending vacation requests.
+
+**Requirements:**
+- **Role Required:** ADMINISTRATOR
+- **Permissions:** Only administrators can delete users
+
+**Behavior:**
+- Performs soft-delete (sets `deleted_at` timestamp)
+- Automatically cancels all future vacation requests
+- User can be viewed with `includeDeleted=true` parameter
+- User data is preserved for audit purposes
+
+---
+
+#### Example 21: Delete Error - User Not Found
+
+**Request:**
+```bash
+curl -X DELETE "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000999"
+```
+
+**Response (404 Not Found):**
+```json
+{
+  "error": "User not found"
+}
+```
+
+---
+
+#### Example 22: Delete Error - User Already Deleted
+
+**Request:**
+```bash
+# Trying to delete the same user twice
+curl -X DELETE "http://localhost:3000/api/users/550e8400-e29b-41d4-a716-446655440000"
+```
+
+**Response (404 Not Found):**
+```json
+{
+  "error": "User already deleted"
+}
+```
+
+---
+
+#### Example 23: Delete Error - Insufficient Permissions
+
+**Request:**
+```bash
+# Non-administrator trying to delete user
+curl -X DELETE "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000010"
+```
+
+**Response (403 Forbidden):**
+```json
+{
+  "error": "Forbidden: Administrator role required"
+}
+```
+
+---
+
+#### Example 24: Verify Deleted User in List
+
+**Request:**
+```bash
+# Get users without includeDeleted flag
+curl "http://localhost:3000/api/users"
+
+# Get users with includeDeleted flag to see soft-deleted users
+curl "http://localhost:3000/api/users?includeDeleted=true"
+```
+
+**Use Case:** Admin audit view showing both active and deactivated users.
+
+---
+
 ## Common Use Cases
 
 ### Use Case 1: Team Dashboard
@@ -409,6 +783,61 @@ curl "http://localhost:3000/api/users/YOUR_USER_ID"
 ---
 
 ## Error Handling
+
+### HTTP Status Codes Summary
+
+| Status Code | Meaning | Common Causes |
+|-------------|---------|---------------|
+| 200 | OK | Successful GET, PATCH, DELETE request |
+| 201 | Created | Successful POST request (user created) |
+| 400 | Bad Request | Invalid input, validation failed, business rule violation |
+| 403 | Forbidden | Insufficient permissions for the operation |
+| 404 | Not Found | User not found, already deleted, or access denied |
+| 500 | Internal Server Error | Server-side error, database issue |
+
+---
+
+### Error Codes by Endpoint
+
+#### GET /api/users
+- **400:** Invalid query parameters (e.g., invalid UUID for teamId)
+- **403:** Non-administrator trying to use `includeDeleted=true`
+- **404:** Team not found (when filtering by teamId)
+- **500:** Database connection error
+
+#### GET /api/users/:id
+- **400:** Invalid user ID format (not a valid UUID)
+- **403:** Insufficient permissions (Employee viewing other users)
+- **404:** User not found or soft-deleted
+- **500:** Database error
+
+#### POST /api/users
+- **400:** 
+  - Validation failed (missing fields, invalid email, password too short)
+  - Email already exists
+  - Invalid role value
+  - Invalid JSON in request body
+- **403:** Non-administrator trying to create user
+- **500:** Failed to create user account or profile
+
+#### PATCH /api/users/:id
+- **400:**
+  - Invalid user ID format
+  - Validation failed (empty fields, invalid values)
+  - No fields provided for update
+  - Trying to change own role
+  - Invalid JSON in request body
+- **403:** Insufficient permissions (Employee editing other users)
+- **404:** User not found or soft-deleted
+- **500:** Failed to update user
+
+#### DELETE /api/users/:id
+- **400:** Invalid user ID format
+- **403:** Non-administrator trying to delete user
+- **404:** User not found or already deleted
+- **500:** Failed to delete user or cancel vacations
+
+---
 
 ### Error Example 1: Invalid UUID Format (400)
 

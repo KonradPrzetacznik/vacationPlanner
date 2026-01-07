@@ -8,6 +8,9 @@ This directory contains automated test scripts for all API endpoints.
 tests/api/
 ├── users-list.test.sh      # Tests for GET /api/users (list endpoint)
 ├── user-by-id.test.sh      # Tests for GET /api/users/:id (details endpoint)
+├── users-create.test.sh    # Tests for POST /api/users (create user)
+├── users-update.test.sh    # Tests for PATCH /api/users/:id (update user)
+├── users-delete.test.sh    # Tests for DELETE /api/users/:id (delete user)
 ├── run-all.sh              # Master script to run all tests
 └── README.md               # This file
 ```
@@ -65,6 +68,48 @@ Tests for `GET /api/users/:id`:
 - ✅ User with multiple teams
 - ✅ Authorization checks (RBAC)
 
+### users-create.test.sh
+Tests for `POST /api/users`:
+- ✅ Create employee with default role
+- ✅ Create user with ADMINISTRATOR role
+- ✅ Create user with HR role
+- ✅ Duplicate email rejection (400 error)
+- ✅ Missing required fields validation
+- ✅ Invalid email format validation
+- ✅ Password too short validation
+- ✅ Invalid JSON body handling
+- ✅ Invalid role value validation
+- ✅ Authorization check (admin only)
+
+### users-update.test.sh
+Tests for `PATCH /api/users/:id`:
+- ✅ Update firstName only
+- ✅ Update lastName only
+- ✅ Update both names at once
+- ✅ Update role (admin only)
+- ✅ Update all fields together
+- ✅ Invalid UUID format (400 error)
+- ✅ Non-existent user (404 error)
+- ✅ Empty body validation
+- ✅ Invalid role validation
+- ✅ Empty field validation
+- ✅ Field too long validation
+- ✅ Invalid JSON body handling
+- ✅ Cannot change own role (400 error)
+- ✅ Authorization checks (RBAC)
+
+### users-delete.test.sh
+Tests for `DELETE /api/users/:id`:
+- ✅ Soft-delete user successfully
+- ✅ Prevent duplicate deletion (404 error)
+- ✅ Non-existent user (404 error)
+- ✅ Invalid UUID format (400 error)
+- ✅ Verify user not in default list
+- ✅ Verify user visible with includeDeleted
+- ✅ Verify no access to deleted user details
+- ✅ Cancelled vacations count in response
+- ✅ Authorization check (admin only)
+
 ## Writing New Tests
 
 ### Test File Naming Convention
@@ -74,6 +119,9 @@ Use the pattern: `<endpoint-name>.test.sh`
 Examples:
 - `users-list.test.sh` - for GET /api/users
 - `user-by-id.test.sh` - for GET /api/users/:id
+- `users-create.test.sh` - for POST /api/users
+- `users-update.test.sh` - for PATCH /api/users/:id
+- `users-delete.test.sh` - for DELETE /api/users/:id
 - `vacation-requests.test.sh` - for future vacation endpoints
 
 ### Test Template
