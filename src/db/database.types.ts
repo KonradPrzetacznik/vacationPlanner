@@ -289,6 +289,13 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_user_emails: {
+        Args: { user_ids: string[] }
+        Returns: {
+          email: string
+          id: string
+        }[]
+      }
       get_users_with_emails: {
         Args: {
           p_include_deleted?: boolean

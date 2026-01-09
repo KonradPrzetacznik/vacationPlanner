@@ -573,3 +573,130 @@ export interface DeleteUserResponseDTO {
   cancelledVacations: number;
 }
 
+// ============================================================================
+// Teams DTOs
+// ============================================================================
+
+/**
+ * Get teams query parameters DTO
+ * Used for filtering and paginating teams lists
+ */
+export interface GetTeamsQueryDTO {
+  limit?: number;
+  offset?: number;
+  includeMemberCount?: boolean;
+}
+
+/**
+ * Team list item DTO
+ * Derived from teams table, represents a single team in the list
+ * Connected to: Database['public']['Tables']['teams']['Row']
+ */
+export interface TeamListItemDTO {
+  id: string;
+  name: string;
+  memberCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Pagination metadata for teams list
+ */
+export interface TeamsPaginationDTO {
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+/**
+ * Get teams response DTO
+ * Complete response with data and pagination
+ */
+export interface GetTeamsResponseDTO {
+  data: TeamListItemDTO[];
+  pagination: TeamsPaginationDTO;
+}
+
+/**
+ * Team member DTO
+ * Simplified user information for team details
+ * Connected to: Database['public']['Tables']['profiles']['Row']
+ * Connected to: Database['public']['Tables']['team_members']['Row']
+ */
+export interface TeamMemberDTO {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: "ADMINISTRATOR" | "HR" | "EMPLOYEE";
+  joinedAt: string;
+}
+
+/**
+ * Team details DTO
+ * Extended team information with members list
+ * Connected to: Database['public']['Tables']['teams']['Row']
+ */
+export interface TeamDetailsDTO {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  members: TeamMemberDTO[];
+}
+
+/**
+ * Get team by ID response DTO
+ * Complete response with team details
+ */
+export interface GetTeamByIdResponseDTO {
+  data: TeamDetailsDTO;
+}
+
+/**
+ * Create team command DTO
+ * Used by HR to create new teams
+ * Connected to: Database['public']['Tables']['teams']['Insert']
+ */
+export interface CreateTeamDTO {
+  name: string;
+}
+
+/**
+ * Create team response DTO
+ * Returned after successful team creation
+ */
+export interface CreateTeamResponseDTO {
+  id: string;
+  name: string;
+  createdAt: string;
+}
+
+/**
+ * Update team command DTO
+ * Used to update team information
+ */
+export interface UpdateTeamDTO {
+  name: string;
+}
+
+/**
+ * Update team response DTO
+ * Returned after successful team update
+ */
+export interface UpdateTeamResponseDTO {
+  id: string;
+  name: string;
+  updatedAt: string;
+}
+
+/**
+ * Delete team response DTO
+ * Returned after successful team deletion
+ */
+export interface DeleteTeamResponseDTO {
+  message: string;
+  id: string;
+}
+

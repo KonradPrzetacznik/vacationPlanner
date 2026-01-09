@@ -11,6 +11,12 @@ This document provides practical examples of using the Vacation Planner API.
   - [Create User](#create-user)
   - [Update User](#update-user)
   - [Delete User](#delete-user)
+- [Teams API](#teams-api)
+  - [List Teams](#list-teams)
+  - [Get Team by ID](#get-team-by-id)
+  - [Create Team](#create-team)
+  - [Update Team](#update-team)
+  - [Delete Team](#delete-team)
 - [Common Use Cases](#common-use-cases)
 - [Error Handling](#error-handling)
 
@@ -1004,6 +1010,456 @@ async function getUser(id: string): Promise<UserDetailsDTO | null> {
 
 ---
 
+## Teams API
+
+### List Teams
+
+#### Example 1: Get All Teams (Default)
+
+**Request:**
+```bash
+curl "http://localhost:4321/api/teams"
+```
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "name": "Engineering",
+      "createdAt": "2026-01-01T10:00:00.000Z",
+      "updatedAt": "2026-01-01T10:00:00.000Z"
+    },
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174001",
+      "name": "Marketing",
+      "createdAt": "2026-01-02T11:00:00.000Z",
+      "updatedAt": "2026-01-02T11:00:00.000Z"
+    }
+  ],
+  "pagination": {
+    "total": 10,
+    "limit": 50,
+    "offset": 0
+  }
+}
+```
+
+**Response Fields:**
+- `data` - Array of team objects
+- `pagination.total` - Total number of teams
+- `pagination.limit` - Items per page
+- `pagination.offset` - Current offset
+
+---
+
+#### Example 2: Get Teams with Member Count
+
+**Request:**
+```bash
+curl "http://localhost:4321/api/teams?includeMemberCount=true"
+```
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "name": "Engineering",
+      "memberCount": 15,
+      "createdAt": "2026-01-01T10:00:00.000Z",
+      "updatedAt": "2026-01-01T10:00:00.000Z"
+    }
+  ],
+  "pagination": {
+    "total": 10,
+    "limit": 50,
+    "offset": 0
+  }
+}
+```
+
+**Note:** Including member count may impact performance for large datasets.
+
+---
+
+#### Example 3: Paginated Teams List
+
+**Request:**
+```bash
+curl "http://localhost:4321/api/teams?limit=10&offset=20"
+```
+
+**Parameters:**
+- `limit` - Number of items per page (1-100, default: 50)
+- `offset` - Number of items to skip (min: 0, default: 0)
+- `includeMemberCount` - Include member count (boolean, default: false)
+
+---
+
+### Get Team by ID
+
+#### Example 1: Get Team Details with Members
+
+**Request:**
+```bash
+curl "http://localhost:4321/api/teams/123e4567-e89b-12d3-a456-426614174000"
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "name": "Engineering",
+    "createdAt": "2026-01-01T10:00:00.000Z",
+    "updatedAt": "2026-01-01T10:00:00.000Z",
+    "members": [
+      {
+        "id": "user-uuid-1",
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john.doe@example.com",
+        "role": "EMPLOYEE",
+        "joinedAt": "2026-01-01T10:00:00.000Z"
+      },
+      {
+        "id": "user-uuid-2",
+        "firstName": "Jane",
+        "lastName": "Smith",
+        "email": "jane.smith@example.com",
+        "role": "HR",
+        "joinedAt": "2026-01-02T11:00:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+**Response Fields:**
+- `data.id` - Team UUID
+- `data.name` - Team name
+- `data.members` - Array of team members with profile information
+- `data.members[].joinedAt` - When user joined the team
+
+---
+
+#### Example 2: Team Not Found
+
+**Request:**
+```bash
+curl "http://localhost:4321/api/teams/00000000-0000-0000-0000-000000000099"
+```
+
+**Response (404):**
+```json
+{
+  "error": "Team not found"
+}
+```
+
+---
+
+#### Example 3: Invalid Team ID Format
+
+**Request:**
+```bash
+curl "http://localhost:4321/api/teams/invalid-uuid"
+```
+
+**Response (400):**
+```json
+{
+  "error": "Invalid team ID format",
+  "details": {
+    "id": ["Invalid uuid"]
+  }
+}
+```
+
+---
+
+### Create Team
+
+**Authorization:** Only HR and ADMINISTRATOR roles can create teams.
+
+#### Example 1: Create Team Successfully
+
+**Request:**
+```bash
+curl -X POST "http://localhost:4321/api/teams" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Product Design"
+  }'
+```
+
+**Response (201):**
+```json
+{
+  "id": "123e4567-e89b-12d3-a456-426614174002",
+  "name": "Product Design",
+  "createdAt": "2026-01-07T12:00:00.000Z"
+}
+```
+
+---
+
+#### Example 2: Team Name Already Exists
+
+**Request:**
+```bash
+curl -X POST "http://localhost:4321/api/teams" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Engineering"
+  }'
+```
+
+**Response (400):**
+```json
+{
+  "error": "Team name already exists"
+}
+```
+
+---
+
+#### Example 3: Validation Errors
+
+**Request (empty name):**
+```bash
+curl -X POST "http://localhost:4321/api/teams" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": ""
+  }'
+```
+
+**Response (400):**
+```json
+{
+  "error": "Validation failed",
+  "details": {
+    "name": ["Team name is required"]
+  }
+}
+```
+
+**Request (name too long):**
+```bash
+curl -X POST "http://localhost:4321/api/teams" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "A very long team name that exceeds the maximum allowed length of one hundred characters which is not permitted"
+  }'
+```
+
+**Response (400):**
+```json
+{
+  "error": "Validation failed",
+  "details": {
+    "name": ["Team name must not exceed 100 characters"]
+  }
+}
+```
+
+---
+
+#### Example 4: Insufficient Permissions (EMPLOYEE)
+
+**Response (403):**
+```json
+{
+  "error": "Insufficient permissions"
+}
+```
+
+**Note:** EMPLOYEE role cannot create teams. Only HR and ADMINISTRATOR can.
+
+---
+
+### Update Team
+
+**Authorization:** Only HR and ADMINISTRATOR roles can update teams.
+
+#### Example 1: Update Team Name Successfully
+
+**Request:**
+```bash
+curl -X PATCH "http://localhost:4321/api/teams/123e4567-e89b-12d3-a456-426614174000" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Engineering & DevOps"
+  }'
+```
+
+**Response (200):**
+```json
+{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "name": "Engineering & DevOps",
+  "updatedAt": "2026-01-07T13:00:00.000Z"
+}
+```
+
+---
+
+#### Example 2: Team Not Found
+
+**Request:**
+```bash
+curl -X PATCH "http://localhost:4321/api/teams/00000000-0000-0000-0000-000000000099" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "New Name"
+  }'
+```
+
+**Response (404):**
+```json
+{
+  "error": "Team not found"
+}
+```
+
+---
+
+#### Example 3: Duplicate Team Name
+
+**Request:**
+```bash
+curl -X PATCH "http://localhost:4321/api/teams/123e4567-e89b-12d3-a456-426614174000" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Marketing"
+  }'
+```
+
+**Response (400):**
+```json
+{
+  "error": "Team name already exists"
+}
+```
+
+---
+
+### Delete Team
+
+**Authorization:** Only HR and ADMINISTRATOR roles can delete teams.
+
+**Warning:** Deleting a team will automatically remove all team memberships (CASCADE).
+
+#### Example 1: Delete Team Successfully
+
+**Request:**
+```bash
+curl -X DELETE "http://localhost:4321/api/teams/123e4567-e89b-12d3-a456-426614174000"
+```
+
+**Response (200):**
+```json
+{
+  "message": "Team deleted successfully",
+  "id": "123e4567-e89b-12d3-a456-426614174000"
+}
+```
+
+---
+
+#### Example 2: Team Not Found
+
+**Request:**
+```bash
+curl -X DELETE "http://localhost:4321/api/teams/00000000-0000-0000-0000-000000000099"
+```
+
+**Response (404):**
+```json
+{
+  "error": "Team not found"
+}
+```
+
+---
+
+### Teams API - JavaScript Examples
+
+#### Fetch All Teams
+
+```javascript
+async function getAllTeams() {
+  const response = await fetch('http://localhost:4321/api/teams');
+  
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  
+  const data = await response.json();
+  return data;
+}
+
+// Usage
+getAllTeams()
+  .then(result => {
+    console.log(`Total teams: ${result.pagination.total}`);
+    result.data.forEach(team => {
+      console.log(`- ${team.name} (${team.id})`);
+    });
+  })
+  .catch(error => console.error('Error:', error));
+```
+
+---
+
+#### Fetch Teams with Member Count
+
+```javascript
+async function getTeamsWithMembers() {
+  const response = await fetch('http://localhost:4321/api/teams?includeMemberCount=true');
+  const data = await response.json();
+  return data.data;
+}
+```
+
+---
+
+#### Get Team Details by ID
+
+```javascript
+async function getTeamById(teamId) {
+  const response = await fetch(`http://localhost:4321/api/teams/${teamId}`);
+  
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error('Team not found');
+    }
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  
+  const data = await response.json();
+  return data.data;
+}
+
+// Usage
+getTeamById('123e4567-e89b-12d3-a456-426614174000')
+  .then(team => {
+    console.log(`Team: ${team.name}`);
+    console.log(`Members: ${team.members.length}`);
+    team.members.forEach(member => {
+      console.log(`  - ${member.firstName} ${member.lastName} (${member.role})`);
+    });
+  })
+  .catch(error => console.error('Error:', error));
+```
+
+---
+
+#### Create New Team
 ## Additional Resources
 
 - **Full API Documentation:** See [.ai/api-users-documentation.md](.ai/api-users-documentation.md)

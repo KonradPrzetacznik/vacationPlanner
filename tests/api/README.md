@@ -6,37 +6,68 @@ This directory contains automated test scripts for all API endpoints.
 
 ```
 tests/api/
-├── users-list.test.sh      # Tests for GET /api/users (list endpoint)
-├── user-by-id.test.sh      # Tests for GET /api/users/:id (details endpoint)
-├── users-create.test.sh    # Tests for POST /api/users (create user)
-├── users-update.test.sh    # Tests for PATCH /api/users/:id (update user)
-├── users-delete.test.sh    # Tests for DELETE /api/users/:id (delete user)
-├── run-all.sh              # Master script to run all tests
-└── README.md               # This file
+├── users-list.test.sh        # Tests for GET /api/users (list endpoint)
+├── user-by-id.test.sh        # Tests for GET /api/users/:id (details endpoint)
+├── users-create.test.sh      # Tests for POST /api/users (create user)
+├── users-update.test.sh      # Tests for PATCH /api/users/:id (update user)
+├── users-delete.test.sh      # Tests for DELETE /api/users/:id (delete user)
+├── teams-list.test.sh        # Tests for GET /api/teams (list endpoint)
+├── teams-by-id.test.sh       # Tests for GET /api/teams/:id (details endpoint)
+├── teams-create.test.sh      # Tests for POST /api/teams (create team)
+├── teams-update.test.sh      # Tests for PATCH /api/teams/:id (update team)
+├── teams-delete.test.sh      # Tests for DELETE /api/teams/:id (delete team)
+├── run-all.sh                # Master script to run all user tests
+├── teams-run-all.sh          # Master script to run all team tests
+└── README.md                 # This file
 ```
 
 ## Quick Start
 
 ### Run All Tests
 
+**All User Tests:**
 ```bash
 ./tests/api/run-all.sh
 ```
 
-This script will:
-1. Check if dev server is running (start it if needed)
-2. Execute all `*.test.sh` files in order
+**All Team Tests:**
+```bash
+./tests/api/teams-run-all.sh
+```
+
+These scripts will:
+1. Check if dev server is running (http://localhost:4321 for teams)
+2. Execute all relevant `*.test.sh` files in order
 3. Display summary of passed/failed tests
-4. Clean up (stop server if it was started by the script)
+4. Provide detailed error messages for failures
 
 ### Run Individual Tests
 
+**User Tests:**
 ```bash
 # Test users list endpoint
 ./tests/api/users-list.test.sh
 
 # Test user by ID endpoint
 ./tests/api/user-by-id.test.sh
+```
+
+**Team Tests:**
+```bash
+# Test teams list endpoint
+./tests/api/teams-list.test.sh
+
+# Test team by ID endpoint
+./tests/api/teams-by-id.test.sh
+
+# Test team creation
+./tests/api/teams-create.test.sh
+
+# Test team update
+./tests/api/teams-update.test.sh
+
+# Test team deletion
+./tests/api/teams-delete.test.sh
 ```
 
 ## Prerequisites
@@ -110,6 +141,58 @@ Tests for `DELETE /api/users/:id`:
 - ✅ Cancelled vacations count in response
 - ✅ Authorization check (admin only)
 
+### teams-list.test.sh
+Tests for `GET /api/teams`:
+- ✅ Basic GET request with default pagination
+- ✅ Pagination with limit and offset
+- ✅ Include member count parameter
+- ✅ Validation: limit exceeds maximum (400 error)
+- ✅ Validation: negative offset (400 error)
+- ✅ Edge case: limit = 1
+- ✅ Edge case: limit = 100 (max allowed)
+
+### teams-by-id.test.sh
+Tests for `GET /api/teams/:id`:
+- ✅ Get team details with members list
+- ✅ Invalid UUID format (400 error)
+- ✅ Non-existent team (404 error)
+- ✅ Response structure validation
+- ✅ Member details in response
+- ✅ Authorization check (EMPLOYEE can only see own teams)
+
+### teams-create.test.sh
+Tests for `POST /api/teams`:
+- ✅ Create team successfully (201)
+- ✅ Duplicate team name (400 error)
+- ✅ Missing team name (400 error)
+- ✅ Empty team name (400 error)
+- ✅ Team name too long (>100 chars, 400 error)
+- ✅ Invalid JSON body (400 error)
+- ✅ Authorization check (HR/ADMIN only)
+- ✅ Auto-cleanup created test teams
+
+### teams-update.test.sh
+Tests for `PATCH /api/teams/:id`:
+- ✅ Update team name successfully
+- ✅ Empty name validation (400 error)
+- ✅ Name too long validation (400 error)
+- ✅ Non-existent team (404 error)
+- ✅ Invalid UUID format (400 error)
+- ✅ Invalid JSON body (400 error)
+- ✅ Duplicate name check (400 error)
+- ✅ Authorization check (HR/ADMIN only)
+- ✅ Auto-cleanup test teams
+
+### teams-delete.test.sh
+Tests for `DELETE /api/teams/:id`:
+- ✅ Delete team successfully
+- ✅ Verify deletion (404 on GET after DELETE)
+- ✅ Non-existent team (404 error)
+- ✅ Invalid UUID format (400 error)
+- ✅ Idempotency check (double delete)
+- ✅ Authorization check (HR/ADMIN only)
+- ✅ CASCADE deletion of team members
+
 ## Writing New Tests
 
 ### Test File Naming Convention
@@ -122,6 +205,11 @@ Examples:
 - `users-create.test.sh` - for POST /api/users
 - `users-update.test.sh` - for PATCH /api/users/:id
 - `users-delete.test.sh` - for DELETE /api/users/:id
+- `teams-list.test.sh` - for GET /api/teams
+- `teams-by-id.test.sh` - for GET /api/teams/:id
+- `teams-create.test.sh` - for POST /api/teams
+- `teams-update.test.sh` - for PATCH /api/teams/:id
+- `teams-delete.test.sh` - for DELETE /api/teams/:id
 - `vacation-requests.test.sh` - for future vacation endpoints
 
 ### Test Template
