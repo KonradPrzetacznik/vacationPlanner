@@ -7,50 +7,27 @@
 
 set -e
 
-# Colors for output
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-NC='\033[0m' # No Color
-
-# Get script directory and project root
+# Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 TESTS_DIR="$SCRIPT_DIR"
+
+# Załaduj wspólne funkcje pomocnicze
+source "$SCRIPT_DIR/test-helpers.sh"
+
+# Dodatkowe kolory dla run-all
+export CYAN='\033[0;36m'
 
 echo -e "${CYAN}╔════════════════════════════════════════════════════════════╗${NC}"
 echo -e "${CYAN}║          Vacation Planner - API Test Suite                ║${NC}"
 echo -e "${CYAN}╚════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
-# Check if server is running
-if ! curl -s http://localhost:3000 > /dev/null 2>&1; then
-    echo -e "${YELLOW}⚠️  Server not running. Starting dev server...${NC}"
-    echo ""
+# Inicjalizuj serwer (zabije istniejące i uruchomi nowy)
+init_server
 
-    cd "$PROJECT_ROOT"
-    npm run dev > /tmp/astro-test-suite.log 2>&1 &
-    SERVER_PID=$!
-
-    echo -e "${BLUE}⏳ Waiting for server to start (10 seconds)...${NC}"
-    sleep 10
-
-    # Check if server started successfully
-    if ! ps -p $SERVER_PID > /dev/null 2>&1; then
-        echo -e "${RED}❌ Failed to start server. Check /tmp/astro-test-suite.log${NC}"
-        exit 1
-    fi
-
-    echo -e "${GREEN}✅ Server started (PID: $SERVER_PID)${NC}"
-    echo ""
-    CLEANUP_SERVER=true
-else
-    echo -e "${GREEN}✅ Server already running${NC}"
-    echo ""
-    CLEANUP_SERVER=false
-fi
+# Ustaw zmienną informującą testy, że serwer jest zarządzany przez ten skrypt
+export SERVER_MANAGED=true
 
 # Counter for test results
 TOTAL_TESTS=0
@@ -102,13 +79,6 @@ echo -e "Passed:       ${GREEN}${PASSED_TESTS}${NC}"
 echo -e "Failed:       ${RED}${FAILED_TESTS}${NC}"
 echo ""
 
-# Cleanup server if we started it
-if [ "$CLEANUP_SERVER" = true ]; then
-    echo -e "${BLUE}🧹 Cleaning up server (PID: $SERVER_PID)...${NC}"
-    kill $SERVER_PID 2>/dev/null || true
-    wait $SERVER_PID 2>/dev/null || true
-    echo -e "${GREEN}✅ Cleanup complete${NC}"
-fi
 
 # Exit with appropriate code
 if [ $FAILED_TESTS -eq 0 ]; then

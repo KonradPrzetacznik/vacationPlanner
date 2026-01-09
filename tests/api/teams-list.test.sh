@@ -1,31 +1,17 @@
 #!/bin/bash
 
-# Kolory
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# Załaduj wspólne funkcje pomocnicze
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/test-helpers.sh"
 
-API_BASE="http://localhost:4321"
+# Inicjalizuj serwer
+init_server
 
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}Testing GET /api/teams endpoint${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""
 
-# Funkcja do wyświetlania wyników
-print_test() {
-    local test_name="$1"
-    local status_code="$2"
-    local expected="$3"
-
-    if [ "$status_code" -eq "$expected" ]; then
-        echo -e "${GREEN}✓ PASS${NC} - $test_name (HTTP $status_code)"
-    else
-        echo -e "${RED}✗ FAIL${NC} - $test_name (Expected HTTP $expected, got $status_code)"
-    fi
-}
 
 # Test 1: Podstawowe wywołanie
 echo -e "${YELLOW}Test 1: Podstawowe GET /api/teams${NC}"

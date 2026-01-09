@@ -2,10 +2,17 @@
 
 This directory contains automated test scripts for all API endpoints.
 
+## Prerequisites
+
+- **Port 3000**: All tests use `http://localhost:3000` as the API base URL
+- **Automatic Server Management**: Tests automatically start and stop the dev server
+- **Dependencies**: `curl`, `jq`, `lsof` (for process management)
+
 ## Structure
 
 ```
 tests/api/
+├── test-helpers.sh           # Shared helper functions (server management, colors, etc.)
 ├── users-list.test.sh        # Tests for GET /api/users (list endpoint)
 ├── user-by-id.test.sh        # Tests for GET /api/users/:id (details endpoint)
 ├── users-create.test.sh      # Tests for POST /api/users (create user)
@@ -16,8 +23,10 @@ tests/api/
 ├── teams-create.test.sh      # Tests for POST /api/teams (create team)
 ├── teams-update.test.sh      # Tests for PATCH /api/teams/:id (update team)
 ├── teams-delete.test.sh      # Tests for DELETE /api/teams/:id (delete team)
-├── run-all.sh                # Master script to run all user tests
-├── teams-run-all.sh          # Master script to run all team tests
+├── team-calendar.test.sh     # Tests for GET /api/teams/:id/calendar
+├── team-members-add.test.sh  # Tests for POST /api/teams/:id/members
+├── team-members-remove.test.sh # Tests for DELETE /api/teams/:id/members/:userId
+├── run-all.sh                # Master script to run all tests
 └── README.md                 # This file
 ```
 
@@ -25,25 +34,22 @@ tests/api/
 
 ### Run All Tests
 
-**All User Tests:**
 ```bash
 ./tests/api/run-all.sh
 ```
 
-**All Team Tests:**
-```bash
-./tests/api/teams-run-all.sh
-```
-
-These scripts will:
-1. Check if dev server is running (http://localhost:4321 for teams)
-2. Execute all relevant `*.test.sh` files in order
-3. Display summary of passed/failed tests
-4. Provide detailed error messages for failures
+This script will:
+1. **Automatically kill any existing processes on port 3000**
+2. **Start a fresh dev server on port 3000**
+3. Wait for the server to be ready
+4. Execute all `*.test.sh` files in order
+5. Display summary of passed/failed tests
+6. **Automatically clean up the server on exit**
 
 ### Run Individual Tests
 
-**User Tests:**
+Individual tests also handle server management automatically:
+
 ```bash
 # Test users list endpoint
 ./tests/api/users-list.test.sh
@@ -70,13 +76,29 @@ These scripts will:
 ./tests/api/teams-delete.test.sh
 ```
 
+## How Server Management Works
+
+All test scripts use the shared `test-helpers.sh` file which provides:
+
+1. **Automatic Server Detection**: Checks if a server is already running on port 3000
+2. **Process Cleanup**: Kills any existing processes on port 3000 before starting
+3. **Server Startup**: Starts `npm run dev` in the background
+4. **Health Checks**: Waits up to 60 seconds for the server to become responsive
+5. **Automatic Cleanup**: Uses bash `trap` to ensure server is stopped on script exit
+
+**Key Features:**
+- Individual tests can be run independently (each manages its own server)
+- `run-all.sh` prevents repeated server restarts by setting `SERVER_MANAGED=true`
+- Logs are saved to `/tmp/astro-dev-server.log` for debugging
+
 ## Prerequisites
 
 1. **Node.js and npm** - installed and configured
 2. **Supabase** - running locally (`supabase start`)
 3. **Database** - seeded with test data (`./reset-db.sh`)
 4. **curl** - for making HTTP requests
-5. **jq** - (optional) for JSON formatting
+5. **jq** - for JSON formatting and validation
+6. **lsof** - for process management (killing processes on port 3000)
 
 ## Test Coverage
 

@@ -700,3 +700,98 @@ export interface DeleteTeamResponseDTO {
   id: string;
 }
 
+// ============================================================================
+// Team Members DTOs
+// ============================================================================
+
+/**
+ * Add team members command DTO
+ * Used by HR to add multiple users to a team
+ * Connected to: Database['public']['Tables']['team_members']['Insert']
+ */
+export interface AddTeamMembersDTO {
+  userIds: string[];
+}
+
+/**
+ * Team membership DTO
+ * Represents a single team membership record
+ * Connected to: Database['public']['Tables']['team_members']['Row']
+ */
+export interface TeamMembershipDTO {
+  id: string;
+  userId: string;
+  teamId: string;
+  createdAt: string;
+}
+
+/**
+ * Add team members response DTO
+ * Returned after successfully adding members to team
+ */
+export interface AddTeamMembersResponseDTO {
+  message: string;
+  added: TeamMembershipDTO[];
+}
+
+/**
+ * Remove team member response DTO
+ * Returned after successfully removing a member from team
+ */
+export interface RemoveTeamMemberResponseDTO {
+  message: string;
+}
+
+// ============================================================================
+// Team Calendar DTOs
+// ============================================================================
+
+/**
+ * Get team calendar query parameters DTO
+ * Used for filtering team vacation calendar
+ */
+export interface GetTeamCalendarQueryDTO {
+  startDate?: string; // ISO date format YYYY-MM-DD
+  endDate?: string; // ISO date format YYYY-MM-DD
+  month?: string; // Format YYYY-MM
+  includeStatus?: ("SUBMITTED" | "APPROVED" | "REJECTED" | "CANCELLED")[];
+}
+
+/**
+ * Team calendar vacation DTO
+ * Represents a vacation period for a team member
+ * Connected to: Database['public']['Tables']['vacation_requests']['Row']
+ */
+export interface TeamCalendarVacationDTO {
+  id: string;
+  startDate: string; // ISO date
+  endDate: string; // ISO date
+  businessDaysCount: number;
+  status: "SUBMITTED" | "APPROVED" | "REJECTED" | "CANCELLED";
+}
+
+/**
+ * Team calendar member DTO
+ * Represents a team member with their vacations
+ * Connected to: Database['public']['Tables']['profiles']['Row']
+ * Connected to: Database['public']['Tables']['vacation_requests']['Row']
+ */
+export interface TeamCalendarMemberDTO {
+  id: string;
+  firstName: string;
+  lastName: string;
+  vacations: TeamCalendarVacationDTO[];
+}
+
+/**
+ * Get team calendar response DTO
+ * Complete calendar view for a team
+ */
+export interface GetTeamCalendarResponseDTO {
+  teamId: string;
+  teamName: string;
+  startDate: string; // ISO date
+  endDate: string; // ISO date
+  members: TeamCalendarMemberDTO[];
+}
+
