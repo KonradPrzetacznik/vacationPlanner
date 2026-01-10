@@ -795,3 +795,63 @@ export interface GetTeamCalendarResponseDTO {
   members: TeamCalendarMemberDTO[];
 }
 
+// ============================================================================
+// Vacation Requests DTOs
+// ============================================================================
+
+/**
+ * Get vacation requests query parameters DTO
+ * Used for filtering and paginating vacation requests list
+ */
+export interface GetVacationRequestsQueryDTO {
+  limit?: number;
+  offset?: number;
+  status?: ("SUBMITTED" | "APPROVED" | "REJECTED" | "CANCELLED")[];
+  userId?: string;
+  teamId?: string;
+  startDate?: string; // ISO date format YYYY-MM-DD
+  endDate?: string; // ISO date format YYYY-MM-DD
+}
+
+/**
+ * Vacation request list item DTO
+ * Represents a single vacation request in the list
+ * Connected to: Database['public']['Tables']['vacation_requests']['Row']
+ * Connected to: Database['public']['Tables']['profiles']['Row']
+ */
+export interface VacationRequestListItemDTO {
+  id: string;
+  userId: string;
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+  startDate: string; // ISO date
+  endDate: string; // ISO date
+  businessDaysCount: number;
+  status: "SUBMITTED" | "APPROVED" | "REJECTED" | "CANCELLED";
+  processedByUserId: string | null;
+  processedAt: string | null; // ISO datetime
+  createdAt: string; // ISO datetime
+  updatedAt: string; // ISO datetime
+}
+
+/**
+ * Pagination metadata for vacation requests list
+ */
+export interface VacationRequestsPaginationDTO {
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+/**
+ * Get vacation requests response DTO
+ * Complete response with data and pagination
+ */
+export interface GetVacationRequestsResponseDTO {
+  data: VacationRequestListItemDTO[];
+  pagination: VacationRequestsPaginationDTO;
+}
+

@@ -17,6 +17,8 @@ This document provides practical examples of using the Vacation Planner API.
   - [Create Team](#create-team)
   - [Update Team](#update-team)
   - [Delete Team](#delete-team)
+- [Vacation Requests API](#vacation-requests-api)
+  - [List Vacation Requests](#list-vacation-requests)
 - [Common Use Cases](#common-use-cases)
 - [Error Handling](#error-handling)
 
@@ -1459,7 +1461,263 @@ getTeamById('123e4567-e89b-12d3-a456-426614174000')
 
 ---
 
-#### Create New Team
+## Vacation Requests API
+
+### List Vacation Requests
+
+#### Example 1: Get All Vacation Requests (Default)
+
+**Request:**
+```bash
+curl "http://localhost:4321/api/vacation-requests"
+```
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "userId": "223e4567-e89b-12d3-a456-426614174000",
+      "user": {
+        "id": "223e4567-e89b-12d3-a456-426614174000",
+        "firstName": "Jan",
+        "lastName": "Kowalski"
+      },
+      "startDate": "2025-12-15",
+      "endDate": "2025-12-26",
+      "businessDaysCount": 4,
+      "status": "APPROVED",
+      "processedByUserId": "00000000-0000-0000-0000-000000000001",
+      "processedAt": "2025-12-01T10:30:00Z",
+      "createdAt": "2025-11-28T12:00:00Z",
+      "updatedAt": "2025-12-01T10:30:00Z"
+    }
+    // ... more requests
+  ],
+  "pagination": {
+    "total": 4,
+    "limit": 50,
+    "offset": 0
+  }
+}
+```
+
+**Access Control:**
+- **EMPLOYEE:** Can only view their own vacation requests
+- **HR:** Can view requests from team members
+- **ADMINISTRATOR:** Can view all requests
+
+---
+
+#### Example 2: Filter by Status
+
+**Request:**
+```bash
+# Single status
+curl "http://localhost:4321/api/vacation-requests?status=SUBMITTED"
+
+# Multiple statuses
+curl "http://localhost:4321/api/vacation-requests?status=SUBMITTED&status=APPROVED"
+```
+
+**Use Case:** Display pending requests that need review.
+
+**Available Statuses:**
+- `SUBMITTED` - Request awaiting approval
+- `APPROVED` - Request approved by manager
+- `REJECTED` - Request rejected
+- `CANCELLED` - Request cancelled by user
+
+---
+
+#### Example 3: Filter by Date Range
+
+**Request:**
+```bash
+# Requests starting from specific date
+curl "http://localhost:4321/api/vacation-requests?startDate=2026-01-01"
+
+# Requests within date range
+curl "http://localhost:4321/api/vacation-requests?startDate=2026-01-01&endDate=2026-12-31"
+```
+
+**Use Case:** View vacation requests for a specific period (e.g., Q1 2026).
+
+---
+
+#### Example 4: Filter by User ID (Admin/HR)
+
+**Request:**
+```bash
+curl "http://localhost:4321/api/vacation-requests?userId=223e4567-e89b-12d3-a456-426614174000"
+```
+
+**Use Case:** View all vacation requests for a specific employee.
+
+**Note:** EMPLOYEE role can only use their own userId.
+
+---
+
+#### Example 5: Filter by Team ID (HR/Admin)
+
+**Request:**
+```bash
+curl "http://localhost:4321/api/vacation-requests?teamId=323e4567-e89b-12d3-a456-426614174000"
+```
+
+**Use Case:** View all vacation requests from a specific team.
+
+**Note:** HR users can only filter by teams they are members of.
+
+---
+
+#### Example 6: Pagination
+
+**Request:**
+```bash
+# First page (5 items)
+curl "http://localhost:4321/api/vacation-requests?limit=5&offset=0"
+
+# Second page
+curl "http://localhost:4321/api/vacation-requests?limit=5&offset=5"
+```
+
+**Use Case:** Implement paginated list in UI.
+
+---
+
+#### Example 7: Combined Filters
+
+**Request:**
+```bash
+curl "http://localhost:4321/api/vacation-requests?status=SUBMITTED&startDate=2026-01-01&limit=10"
+```
+
+**Use Case:** Find all pending requests for vacations starting in 2026, showing 10 at a time.
+
+---
+
+### Validation Errors
+
+#### Invalid Limit
+
+**Request:**
+```bash
+curl "http://localhost:4321/api/vacation-requests?limit=999"
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "Invalid query parameters",
+  "details": {
+    "limit": ["Number must be less than or equal to 100"]
+  }
+}
+```
+
+---
+
+#### Invalid UUID Format
+
+**Request:**
+```bash
+curl "http://localhost:4321/api/vacation-requests?userId=invalid-uuid"
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "Invalid query parameters",
+  "details": {
+    "userId": ["Invalid UUID format"]
+  }
+}
+```
+
+---
+
+#### Invalid Date Format
+
+**Request:**
+```bash
+curl "http://localhost:4321/api/vacation-requests?startDate=2026-13-45"
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "Invalid query parameters",
+  "details": {
+    "startDate": ["Invalid date"]
+  }
+}
+```
+
+---
+
+#### Invalid Status
+
+**Request:**
+```bash
+curl "http://localhost:4321/api/vacation-requests?status=INVALID_STATUS"
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "Invalid query parameters",
+  "details": {
+    "status": ["Invalid enum value. Expected 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'CANCELLED'"]
+  }
+}
+```
+
+---
+
+### Authorization Errors
+
+#### Employee Accessing Other User's Requests
+
+**Request:**
+```bash
+# Assuming current user is EMPLOYEE with different ID
+curl "http://localhost:4321/api/vacation-requests?userId=other-user-id"
+```
+
+**Response (403 Forbidden):**
+```json
+{
+  "error": "You can only view your own vacation requests"
+}
+```
+
+---
+
+#### HR Accessing Non-Member Team
+
+**Request:**
+```bash
+# HR trying to access team they're not a member of
+curl "http://localhost:4321/api/vacation-requests?teamId=non-member-team-id"
+```
+
+**Response (403 Forbidden):**
+```json
+{
+  "error": "You are not a member of this team"
+}
+```
+
+---
+
+### JavaScript Examples
+
+#### Fetch All Vacation Requests
+
+```javascript
+async function getVacationRequests(filters = {}) {
 ## Additional Resources
 
 - **Full API Documentation:** See [.ai/api-users-documentation.md](.ai/api-users-documentation.md)
