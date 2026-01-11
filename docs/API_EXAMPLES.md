@@ -27,6 +27,8 @@ This document provides practical examples of using the Vacation Planner API.
 - [Vacation Allowances API](#vacation-allowances-api)
   - [Get User Vacation Allowances](#get-user-vacation-allowances)
   - [Get User Vacation Allowance by Year](#get-user-vacation-allowance-by-year)
+  - [Create Vacation Allowance](#create-vacation-allowance)
+  - [Update Vacation Allowance](#update-vacation-allowance)
   - [Business Logic](#business-logic)
   - [Database Optimizations](#database-optimizations)
 - [Common Use Cases](#common-use-cases)
@@ -960,6 +962,212 @@ Result:
 
 ---
 
+### Create Vacation Allowance
+
+Creates a new vacation allowance for a user. Only HR users can create allowances.
+
+**Endpoint:** `POST /api/vacation-allowances`
+
+**Authorization:**
+- `HR`: Can create vacation allowances for any active user
+- `ADMINISTRATOR`: Cannot create vacation allowances
+- `EMPLOYEE`: Cannot create vacation allowances
+
+**Request Body:**
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `userId` | UUID | Yes | ID of the user |
+| `year` | number | Yes | Year (2000-2100) |
+| `totalDays` | number | Yes | Total vacation days (>= 0) |
+| `carryoverDays` | number | Yes | Carry-over days from previous year (>= 0) |
+
+**Constraints:**
+- One allowance per user per year (unique constraint)
+- User must exist and not be soft-deleted
+- All numeric values must be non-negative integers
+
+#### Example 33: Create Vacation Allowance
+
+**Request:**
+```bash
+curl -X POST "http://localhost:3000/api/vacation-allowances" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "00000000-0000-0000-0000-000000000010",
+    "year": 2026,
+    "totalDays": 26,
+    "carryoverDays": 3
+  }'
+```
+
+**Response (201 Created):**
+```json
+{
+  "id": "f1e2d3c4-b5a6-7890-cdef-1234567890ab",
+  "userId": "00000000-0000-0000-0000-000000000010",
+  "year": 2026,
+  "totalDays": 26,
+  "carryoverDays": 3,
+  "createdAt": "2026-01-11T22:00:00.000Z"
+}
+```
+
+**Use Case:** HR setting up annual vacation allowances for employees.
+
+---
+
+#### Example 34: Create Allowance - Duplicate Error
+
+**Request:**
+```bash
+curl -X POST "http://localhost:3000/api/vacation-allowances" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "00000000-0000-0000-0000-000000000010",
+    "year": 2026,
+    "totalDays": 30,
+    "carryoverDays": 5
+  }'
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "Vacation allowance for this user and year already exists"
+}
+```
+
+---
+
+#### Example 35: Create Allowance - Validation Errors
+
+**Request:**
+```bash
+curl -X POST "http://localhost:3000/api/vacation-allowances" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "invalid-uuid",
+    "year": 1999,
+    "totalDays": -5,
+    "carryoverDays": 3
+  }'
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "Invalid request body",
+  "details": {
+    "userId": ["User ID must be a valid UUID"],
+    "year": ["Year must be at least 2000"],
+    "totalDays": ["Total days cannot be negative"]
+  }
+}
+```
+
+---
+
+#### Example 36: Create Allowance - User Not Found
+
+**Request:**
+```bash
+curl -X POST "http://localhost:3000/api/vacation-allowances" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "00000000-0000-0000-0000-000000000099",
+    "year": 2026,
+    "totalDays": 26,
+    "carryoverDays": 0
+  }'
+```
+
+**Response (404 Not Found):**
+```json
+{
+  "error": "User not found"
+}
+```
+
+---
+
+#### Example 37: Create Allowance - Permission Denied
+
+**Request:**
+```bash
+# EMPLOYEE or ADMINISTRATOR trying to create allowance
+curl -X POST "http://localhost:3000/api/vacation-allowances" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "00000000-0000-0000-0000-000000000010",
+    "year": 2026,
+    "totalDays": 26,
+    "carryoverDays": 3
+  }'
+```
+
+**Response (403 Forbidden):**
+```json
+{
+  "error": "Only HR users can create vacation allowances"
+}
+```
+
+---
+
+### Update Vacation Allowance
+
+Updates an existing vacation allowance. Only HR users can update allowances.
+
+**Endpoint:** `PATCH /api/vacation-allowances/:id`
+
+**Authorization:**
+- `HR`: Can update any vacation allowance
+- `ADMINISTRATOR`: Cannot update vacation allowances
+- `EMPLOYEE`: Cannot update vacation allowances
+
+**Path Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `id` | UUID | Yes | ID of the vacation allowance |
+
+**Request Body (at least one field required):**
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `totalDays` | number | No | Updated total vacation days (>= 0) |
+| `carryoverDays` | number | No | Updated carry-over days (>= 0) |
+
+**Constraints:**
+- At least one field must be provided
+- All numeric values must be non-negative integers
+
+#### Example 38: Update Total Days
+
+**Request:**
+```bash
+curl -X PATCH "http://localhost:3000/api/vacation-allowances/f1e2d3c4-b5a6-7890-cdef-1234567890ab" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "totalDays": 28
+  }'
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "f1e2d3c4-b5a6-7890-cdef-1234567890ab",
+  "userId": "00000000-0000-0000-0000-000000000010",
+  "year": 2026,
+  "totalDays": 28,
+  "carryoverDays": 3,
+  "updatedAt": "2026-01-11T22:15:00.000Z"
+}
+```
+
+**Use Case:** Adjusting vacation days after contract changes or corrections.
+
+---
+
+#### Example 39: Update Both Fields
 ### Database Optimizations
 
 #### Indexes

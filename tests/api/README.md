@@ -94,8 +94,14 @@ Individual tests also handle server management automatically:
 
 **Vacation Allowances Tests:**
 ```bash
-# Test vacation allowances endpoints (with computed fields and carry-over logic)
+# Test vacation allowances GET endpoints (with computed fields and carry-over logic)
 ./tests/api/vacation-allowances.test.sh
+
+# Test create vacation allowance (HR only)
+./tests/api/vacation-allowances-create.test.sh
+
+# Test update vacation allowance (HR only)
+./tests/api/vacation-allowances-update.test.sh
 ```
 
 ## How Server Management Works

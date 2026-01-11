@@ -1,1186 +1,1053 @@
-# API Endpoint Implementation Plan: User Vacation Allowances
+# API Endpoint Implementation Plan: Vacation Allowances Management
 
-## 1. Przegląd punktu końcowego
+## 1. Przegląd punktów końcowych
 
-Implementacja dwóch endpointów REST API do zarządzania pulami urlopowymi użytkowników:
+### POST /api/vacation-allowances
+Endpoint służący do tworzenia nowych pul urlopowych dla użytkowników. Dostępny wyłącznie dla użytkowników z rolą HR. Umożliwia zdefiniowanie rocznej puli urlopowej wraz z dniami przeniesionymi z poprzedniego roku (carryover).
 
-1. **GET /api/users/:userId/vacation-allowances** - Pobiera wszystkie pule urlopowe użytkownika (opcjonalnie filtrowane po roku)
-2. **GET /api/users/:userId/vacation-allowances/:year** - Pobiera pulę urlopową dla konkretnego roku
+**Główne cechy:**
+- Tworzenie nowej puli urlopowej dla użytkownika na określony rok
+- Kontrola unikalności: jeden użytkownik może mieć tylko jedną pulę na dany rok
+- Walidacja istnienia użytkownika i jego statusu (nie może być soft-deleted)
+- Automatyczne ustawianie daty wygaśnięcia dni carryover (31 marca danego roku)
 
-Oba endpointy zwracają szczegółowe informacje o pulach urlopowych, w tym:
-- Podstawowe dane (rok, total_days, carryover_days)
-- Obliczone pola: wykorzystane dni (ogółem, z carry-over, z bieżącego roku)
-- Obliczone pola: pozostałe dni (ogółem, z carry-over, z bieżącego roku)
-- Data wygaśnięcia dni carry-over (31 marca danego roku)
+### PATCH /api/vacation-allowances/:id
+Endpoint służący do aktualizacji istniejących pul urlopowych. Dostępny wyłącznie dla użytkowników z rolą HR. Pozwala na modyfikację liczby dni urlopowych oraz dni przeniesionych.
 
-### Business Rules:
-- Dni carry-over wygasają 31 marca danego roku
-- Dni są wykorzystywane w kolejności: najpierw carry-over, potem dni z bieżącego roku
-- Tylko zaakceptowane urlopy (APPROVED) liczą się do wykorzystanych dni
-- Anulowane urlopy (CANCELLED) przywracają dni do puli
-
-## 2. Szczegóły żądania
-
-### Endpoint 1: GET /api/users/:userId/vacation-allowances
-
-**Metoda HTTP:** GET
-
-**Struktura URL:** `/api/users/:userId/vacation-allowances`
-
-**Parametry:**
-- **Wymagane (Path):**
-  - `userId` (string, UUID) - Identyfikator użytkownika
-
-- **Opcjonalne (Query):**
-  - `year` (number, integer) - Filtrowanie po konkretnym roku (2000-2100)
-
-**Przykładowe zapytania:**
-```
-GET /api/users/123e4567-e89b-12d3-a456-426614174000/vacation-allowances
-GET /api/users/123e4567-e89b-12d3-a456-426614174000/vacation-allowances?year=2026
-```
-
-**Request Body:** Brak (GET request)
-
-**Headers:**
-- Brak dodatkowych (auth będzie dodana później)
+**Główne cechy:**
+- Aktualizacja istniejącej puli urlopowej
+- Częściowa aktualizacja (PATCH) - wymagany przynajmniej jeden z pól: totalDays, carryoverDays
+- Walidacja wartości nie ujemnych
+- Automatyczna aktualizacja pola updated_at
 
 ---
 
-### Endpoint 2: GET /api/users/:userId/vacation-allowances/:year
+## 2. Szczegóły żądania
 
-**Metoda HTTP:** GET
+### POST /api/vacation-allowances
 
-**Struktura URL:** `/api/users/:userId/vacation-allowances/:year`
+**Metoda HTTP:** `POST`
 
-**Parametry:**
-- **Wymagane (Path):**
-  - `userId` (string, UUID) - Identyfikator użytkownika
-  - `year` (number, integer) - Rok puli urlopowej (2000-2100)
-
-**Przykładowe zapytanie:**
-```
-GET /api/users/123e4567-e89b-12d3-a456-426614174000/vacation-allowances/2026
-```
-
-**Request Body:** Brak (GET request)
+**Struktura URL:** `/api/vacation-allowances`
 
 **Headers:**
-- Brak dodatkowych (auth będzie dodana później)
+```
+Content-Type: application/json
+Authorization: Bearer {token} (przyszłe - obecnie DEFAULT_USER_ID)
+```
+
+**Parametry:**
+
+**Wymagane (Request Body):**
+- `userId` (string, UUID) - Identyfikator użytkownika, dla którego tworzona jest pula
+- `year` (number, integer) - Rok, którego dotyczy pula urlopowa (2000-2100)
+- `totalDays` (number, integer) - Całkowita liczba dni urlopowych w danym roku (>= 0)
+- `carryoverDays` (number, integer) - Liczba dni przeniesionych z poprzedniego roku (>= 0)
+
+**Opcjonalne:**
+- Brak
+
+**Przykład Request Body:**
+```json
+{
+  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "year": 2026,
+  "totalDays": 26,
+  "carryoverDays": 3
+}
+```
+
+### PATCH /api/vacation-allowances/:id
+
+**Metoda HTTP:** `PATCH`
+
+**Struktura URL:** `/api/vacation-allowances/{id}`
+
+**Path Parameters:**
+- `id` (string, UUID) - Identyfikator puli urlopowej do aktualizacji
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer {token} (przyszłe - obecnie DEFAULT_USER_ID)
+```
+
+**Parametry:**
+
+**Wymagane:**
+- `id` (path parameter, UUID) - Identyfikator puli urlopowej
+
+**Opcjonalne (Request Body - przynajmniej jeden wymagany):**
+- `totalDays` (number, integer) - Nowa całkowita liczba dni urlopowych (>= 0)
+- `carryoverDays` (number, integer) - Nowa liczba dni przeniesionych (>= 0)
+
+**Przykład Request Body:**
+```json
+{
+  "totalDays": 28,
+  "carryoverDays": 5
+}
+```
+
+---
 
 ## 3. Wykorzystywane typy
 
-### Nowe typy do dodania w `src/types.ts`:
+### Istniejące typy (z types.ts):
 
 ```typescript
-// ============================================================================
-// Vacation Allowances DTOs
-// ============================================================================
-
-/**
- * Get vacation allowances query parameters DTO
- * Used for filtering allowances by year
- */
-export interface GetVacationAllowancesQueryDTO {
-  year?: number; // Optional filter by specific year (2000-2100)
-}
-
-/**
- * Vacation allowance DTO with computed fields
- * Connected to: Database['public']['Tables']['vacation_allowances']['Row']
- * Connected to: Database['public']['Tables']['vacation_requests']['Row'] (for calculations)
- */
+// Używane w odpowiedziach
 export interface VacationAllowanceDTO {
   id: string;
   userId: string;
   year: number;
   totalDays: number;
   carryoverDays: number;
-  
-  // Computed fields - calculated from vacation_requests
-  usedDays: number; // Total used days (carryover + current year)
-  usedCarryoverDays: number; // Used days from carryover
-  usedCurrentYearDays: number; // Used days from current year
-  remainingDays: number; // Total remaining days
-  remainingCarryoverDays: number; // Remaining carryover days
-  remainingCurrentYearDays: number; // Remaining current year days
-  
-  carryoverExpiresAt: string; // ISO date (YYYY-MM-DD) - always March 31st of the year
-  createdAt: string; // ISO datetime
-  updatedAt: string; // ISO datetime
-}
-
-/**
- * Get vacation allowances response DTO
- * Returns list of allowances for user
- */
-export interface GetVacationAllowancesResponseDTO {
-  userId: string;
-  allowances: VacationAllowanceDTO[];
-}
-
-/**
- * Get vacation allowance by year response DTO
- * Returns single allowance for specific year
- */
-export interface GetVacationAllowanceByYearResponseDTO {
-  data: VacationAllowanceDTO;
+  usedDays: number;
+  usedCarryoverDays: number;
+  usedCurrentYearDays: number;
+  remainingDays: number;
+  remainingCarryoverDays: number;
+  remainingCurrentYearDays: number;
+  carryoverExpiresAt: string;
+  createdAt: string;
+  updatedAt: string;
 }
 ```
 
-### Istniejące typy z `database.types.ts`:
+### Nowe typy do dodania (w types.ts):
 
 ```typescript
-// Tabela vacation_allowances
-type VacationAllowances = Database["public"]["Tables"]["vacation_allowances"]["Row"];
-// Fields: id, user_id, year, total_days, carryover_days, created_at, updated_at
+/**
+ * Create vacation allowance command DTO
+ * Used by HR to create new vacation allowances for users
+ * Connected to: Database['public']['Tables']['vacation_allowances']['Insert']
+ */
+export interface CreateVacationAllowanceDTO {
+  userId: string;
+  year: number;
+  totalDays: number;
+  carryoverDays: number;
+}
 
-// Tabela vacation_requests (do obliczeń)
-type VacationRequests = Database["public"]["Tables"]["vacation_requests"]["Row"];
-// Fields używane: user_id, start_date, end_date, business_days_count, status
+/**
+ * Create vacation allowance response DTO
+ * Returned after successful vacation allowance creation
+ */
+export interface CreateVacationAllowanceResponseDTO {
+  id: string;
+  userId: string;
+  year: number;
+  totalDays: number;
+  carryoverDays: number;
+  createdAt: string;
+}
 
-// Enum request_status
-type RequestStatus = Database["public"]["Enums"]["request_status"];
-// Values: SUBMITTED, APPROVED, REJECTED, CANCELLED
+/**
+ * Update vacation allowance command DTO
+ * Used by HR to update existing vacation allowances
+ * At least one field must be provided
+ */
+export interface UpdateVacationAllowanceDTO {
+  totalDays?: number;
+  carryoverDays?: number;
+}
 
-// Enum user_role (do RBAC)
-type UserRole = Database["public"]["Enums"]["user_role"];
-// Values: ADMINISTRATOR, HR, EMPLOYEE
+/**
+ * Update vacation allowance response DTO
+ * Returned after successful vacation allowance update
+ */
+export interface UpdateVacationAllowanceResponseDTO {
+  id: string;
+  userId: string;
+  year: number;
+  totalDays: number;
+  carryoverDays: number;
+  updatedAt: string;
+}
 ```
+
+### Nowe schematy walidacji (vacation-allowances.schema.ts):
+
+```typescript
+/**
+ * Vacation allowance ID path parameter validation
+ */
+export const vacationAllowanceIdParamSchema = z.object({
+  id: z.string().uuid("Invalid UUID format"),
+});
+
+/**
+ * Create vacation allowance request body validation
+ */
+export const createVacationAllowanceSchema = z.object({
+  userId: z.string().uuid("User ID must be a valid UUID"),
+  year: z.number()
+    .int("Year must be an integer")
+    .min(2000, "Year must be at least 2000")
+    .max(2100, "Year must be at most 2100"),
+  totalDays: z.number()
+    .int("Total days must be an integer")
+    .min(0, "Total days cannot be negative"),
+  carryoverDays: z.number()
+    .int("Carryover days must be an integer")
+    .min(0, "Carryover days cannot be negative"),
+});
+
+/**
+ * Update vacation allowance request body validation
+ * At least one field must be provided
+ */
+export const updateVacationAllowanceSchema = z.object({
+  totalDays: z.number()
+    .int("Total days must be an integer")
+    .min(0, "Total days cannot be negative")
+    .optional(),
+  carryoverDays: z.number()
+    .int("Carryover days must be an integer")
+    .min(0, "Carryover days cannot be negative")
+    .optional(),
+}).refine(
+  (data) => data.totalDays !== undefined || data.carryoverDays !== undefined,
+  {
+    message: "At least one field (totalDays or carryoverDays) must be provided",
+  }
+);
+```
+
+---
 
 ## 4. Szczegóły odpowiedzi
 
-### Endpoint 1: GET /api/users/:userId/vacation-allowances
+### POST /api/vacation-allowances
 
-**Success Response (200 OK):**
+**Sukces (201 Created):**
 ```json
 {
-  "userId": "123e4567-e89b-12d3-a456-426614174000",
-  "allowances": [
-    {
-      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "userId": "123e4567-e89b-12d3-a456-426614174000",
-      "year": 2025,
-      "totalDays": 26,
-      "carryoverDays": 0,
-      "usedDays": 20,
-      "usedCarryoverDays": 0,
-      "usedCurrentYearDays": 20,
-      "remainingDays": 6,
-      "remainingCarryoverDays": 0,
-      "remainingCurrentYearDays": 6,
-      "carryoverExpiresAt": "2025-03-31",
-      "createdAt": "2025-01-01T00:00:00Z",
-      "updatedAt": "2025-06-15T10:30:00Z"
-    },
-    {
-      "id": "b2c3d4e5-f6g7-8901-bcde-f12345678901",
-      "userId": "123e4567-e89b-12d3-a456-426614174000",
-      "year": 2026,
-      "totalDays": 26,
-      "carryoverDays": 5,
-      "usedDays": 10,
-      "usedCarryoverDays": 3,
-      "usedCurrentYearDays": 7,
-      "remainingDays": 21,
-      "remainingCarryoverDays": 2,
-      "remainingCurrentYearDays": 19,
-      "carryoverExpiresAt": "2026-03-31",
-      "createdAt": "2026-01-01T00:00:00Z",
-      "updatedAt": "2026-01-15T14:20:00Z"
-    }
-  ]
+  "id": "f1e2d3c4-b5a6-7890-cdef-1234567890ab",
+  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "year": 2026,
+  "totalDays": 26,
+  "carryoverDays": 3,
+  "createdAt": "2026-01-11T10:30:00.000Z"
 }
 ```
 
-**Success Response with year filter (200 OK):**
+**Błąd walidacji (400 Bad Request):**
 ```json
 {
-  "userId": "123e4567-e89b-12d3-a456-426614174000",
-  "allowances": [
-    {
-      "id": "b2c3d4e5-f6g7-8901-bcde-f12345678901",
-      "userId": "123e4567-e89b-12d3-a456-426614174000",
-      "year": 2026,
-      "totalDays": 26,
-      "carryoverDays": 5,
-      "usedDays": 10,
-      "usedCarryoverDays": 3,
-      "usedCurrentYearDays": 7,
-      "remainingDays": 21,
-      "remainingCarryoverDays": 2,
-      "remainingCurrentYearDays": 19,
-      "carryoverExpiresAt": "2026-03-31",
-      "createdAt": "2026-01-01T00:00:00Z",
-      "updatedAt": "2026-01-15T14:20:00Z"
-    }
-  ]
-}
-```
-
----
-
-### Endpoint 2: GET /api/users/:userId/vacation-allowances/:year
-
-**Success Response (200 OK):**
-```json
-{
-  "data": {
-    "id": "b2c3d4e5-f6g7-8901-bcde-f12345678901",
-    "userId": "123e4567-e89b-12d3-a456-426614174000",
-    "year": 2026,
-    "totalDays": 26,
-    "carryoverDays": 5,
-    "usedDays": 10,
-    "usedCarryoverDays": 3,
-    "usedCurrentYearDays": 7,
-    "remainingDays": 21,
-    "remainingCarryoverDays": 2,
-    "remainingCurrentYearDays": 19,
-    "carryoverExpiresAt": "2026-03-31",
-    "createdAt": "2026-01-01T00:00:00Z",
-    "updatedAt": "2026-01-15T14:20:00Z"
-  }
-}
-```
-
----
-
-### Error Responses (oba endpointy):
-
-**400 Bad Request - Invalid UUID:**
-```json
-{
-  "error": "Invalid user ID format",
+  "error": "Invalid request body",
   "details": {
-    "userId": ["Invalid UUID format"]
+    "totalDays": ["Total days cannot be negative"],
+    "year": ["Year must be at least 2000"]
   }
 }
 ```
 
-**400 Bad Request - Invalid year:**
+**Duplikat (400 Bad Request):**
 ```json
 {
-  "error": "Invalid year parameter",
-  "details": {
-    "year": ["Year must be between 2000 and 2100"]
-  }
+  "error": "Vacation allowance for this user and year already exists"
 }
 ```
 
-**401 Unauthorized:**
+**Brak uwierzytelnienia (401 Unauthorized):**
 ```json
 {
-  "error": "Unauthorized"
+  "error": "Not authenticated"
 }
 ```
 
-**403 Forbidden - Cannot view other user's allowances:**
+**Brak uprawnień (403 Forbidden):**
 ```json
 {
-  "error": "Forbidden: You can only view your own vacation allowances"
+  "error": "Only HR users can create vacation allowances"
 }
 ```
 
-**403 Forbidden - User soft-deleted:**
-```json
-{
-  "error": "Forbidden: Cannot access vacation allowances for deleted user"
-}
-```
-
-**404 Not Found - User not found:**
+**Użytkownik nie istnieje (404 Not Found):**
 ```json
 {
   "error": "User not found"
 }
 ```
 
-**404 Not Found - Allowance not found:**
+### PATCH /api/vacation-allowances/:id
+
+**Sukces (200 OK):**
 ```json
 {
-  "error": "Vacation allowance for year 2026 not found"
+  "id": "f1e2d3c4-b5a6-7890-cdef-1234567890ab",
+  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "year": 2026,
+  "totalDays": 28,
+  "carryoverDays": 5,
+  "updatedAt": "2026-01-15T14:20:00.000Z"
 }
 ```
 
-**404 Not Found - No allowances:**
+**Błędy walidacji (400 Bad Request):**
 ```json
 {
-  "error": "No vacation allowances found for this user"
+  "error": "Invalid request body",
+  "details": {
+    "totalDays": ["Total days cannot be negative"]
+  }
 }
 ```
 
-**500 Internal Server Error:**
+**Brak pól do aktualizacji (400 Bad Request):**
 ```json
 {
-  "error": "Internal server error"
+  "error": "Invalid request body",
+  "details": {
+    "_errors": ["At least one field (totalDays or carryoverDays) must be provided"]
+  }
 }
 ```
+
+**Pula nie istnieje (404 Not Found):**
+```json
+{
+  "error": "Vacation allowance not found"
+}
+```
+
+---
 
 ## 5. Przepływ danych
 
-### Endpoint 1: GET /api/users/:userId/vacation-allowances
+### POST /api/vacation-allowances
 
 ```
-1. Request → API Handler (/api/users/[userId]/vacation-allowances/index.ts)
-   ↓
-2. Walidacja path parameter (userId) - Zod schema
-   ↓
-3. Walidacja query parameter (year) - Zod schema
-   ↓
-4. Pobranie currentUserId (z DEFAULT_USER_ID - tymczasowo)
-   ↓
-5. Pobranie roli current user z profiles (RBAC)
-   ↓
-6. Sprawdzenie autoryzacji:
-   - EMPLOYEE: tylko własne pule (currentUserId === targetUserId)
-   - HR/ADMINISTRATOR: wszystkie pule
-   ↓
-7. Wywołanie service: getVacationAllowances(supabase, currentUserId, currentUserRole, targetUserId, year?)
-   ↓
-8. Service Layer (vacation-allowances.service.ts):
-   a) Sprawdzenie czy user istnieje i nie jest usunięty
-   b) Pobranie vacation_allowances dla userId (opcjonalnie filtrowane po year)
-   c) Dla każdej allowance:
-      - Obliczenie wykorzystanych dni z vacation_requests (status = APPROVED)
-      - Algorytm: najpierw wykorzystujemy carryover_days, potem total_days
-      - Uwzględnienie daty: carryover expires 31 marca
-   d) Wzbogacenie każdej allowance o computed fields
-   e) Zwrócenie listy allowances
-   ↓
-9. Response 200 OK z GetVacationAllowancesResponseDTO
+┌─────────────┐
+│   Client    │
+└──────┬──────┘
+       │ POST /api/vacation-allowances
+       │ Body: { userId, year, totalDays, carryoverDays }
+       ▼
+┌──────────────────────────────────────────┐
+│  API Endpoint (index.ts)                 │
+│  1. Walidacja body (Zod schema)          │
+│  2. Sprawdzenie uwierzytelnienia         │
+│  3. Wywołanie createVacationAllowance()  │
+└──────┬───────────────────────────────────┘
+       │
+       ▼
+┌───────────────────────────────────────────┐
+│  Service (vacation-allowances.service.ts) │
+│  1. Sprawdzenie roli (tylko HR)           │
+│  2. Weryfikacja istnienia użytkownika     │
+│  3. Sprawdzenie deleted_at użytkownika    │
+│  4. Sprawdzenie duplikatu (user+year)     │
+│  5. INSERT do vacation_allowances         │
+│  6. Zwrócenie utworzonego rekordu         │
+└──────┬────────────────────────────────────┘
+       │
+       ▼
+┌──────────────────┐
+│  Database        │
+│  - profiles      │
+│  - vacation_     │
+│    allowances    │
+└──────┬───────────┘
+       │
+       ▼
+┌──────────────────┐
+│  Response        │
+│  201 Created     │
+│  lub Error       │
+└──────────────────┘
 ```
 
-### Endpoint 2: GET /api/users/:userId/vacation-allowances/:year
+### PATCH /api/vacation-allowances/:id
 
 ```
-1. Request → API Handler (/api/users/[userId]/vacation-allowances/[year].ts)
-   ↓
-2. Walidacja path parameters (userId, year) - Zod schema
-   ↓
-3. Pobranie currentUserId (z DEFAULT_USER_ID - tymczasowo)
-   ↓
-4. Pobranie roli current user z profiles (RBAC)
-   ↓
-5. Sprawdzenie autoryzacji:
-   - EMPLOYEE: tylko własne pule (currentUserId === targetUserId)
-   - HR/ADMINISTRATOR: wszystkie pule
-   ↓
-6. Wywołanie service: getVacationAllowanceByYear(supabase, currentUserId, currentUserRole, targetUserId, year)
-   ↓
-7. Service Layer (vacation-allowances.service.ts):
-   a) Sprawdzenie czy user istnieje i nie jest usunięty
-   b) Pobranie vacation_allowance dla userId i year
-   c) Jeśli nie znaleziono → throw Error 404
-   d) Obliczenie wykorzystanych dni z vacation_requests (status = APPROVED)
-   e) Wzbogacenie allowance o computed fields
-   f) Zwrócenie allowance
-   ↓
-8. Response 200 OK z GetVacationAllowanceByYearResponseDTO
+┌─────────────┐
+│   Client    │
+└──────┬──────┘
+       │ PATCH /api/vacation-allowances/:id
+       │ Body: { totalDays?, carryoverDays? }
+       ▼
+┌──────────────────────────────────────────┐
+│  API Endpoint ([id].ts)                  │
+│  1. Walidacja id z path                  │
+│  2. Walidacja body (Zod schema)          │
+│  3. Sprawdzenie uwierzytelnienia         │
+│  4. Wywołanie updateVacationAllowance()  │
+└──────┬───────────────────────────────────┘
+       │
+       ▼
+┌───────────────────────────────────────────┐
+│  Service (vacation-allowances.service.ts) │
+│  1. Sprawdzenie roli (tylko HR)           │
+│  2. Weryfikacja istnienia puli            │
+│  3. UPDATE vacation_allowances            │
+│  4. Zwrócenie zaktualizowanego rekordu    │
+└──────┬────────────────────────────────────┘
+       │
+       ▼
+┌──────────────────┐
+│  Database        │
+│  - vacation_     │
+│    allowances    │
+└──────┬───────────┘
+       │
+       ▼
+┌──────────────────┐
+│  Response        │
+│  200 OK          │
+│  lub Error       │
+└──────────────────┘
 ```
 
-### Algorytm obliczania wykorzystanych dni:
+### Interakcje z bazą danych:
 
-```typescript
-// Pseudokod
-function calculateUsedDays(allowance, vacationRequests) {
-  const carryoverExpiresAt = `${allowance.year}-03-31`;
-  let usedCarryoverDays = 0;
-  let usedCurrentYearDays = 0;
-  
-  // Sortujemy requesty po dacie rozpoczęcia
-  const sortedRequests = vacationRequests
-    .filter(req => req.status === 'APPROVED')
-    .sort((a, b) => a.start_date.localeCompare(b.start_date));
-  
-  let remainingCarryover = allowance.carryover_days;
-  
-  for (const request of sortedRequests) {
-    const daysNeeded = request.business_days_count;
-    
-    // Jeśli request jest przed 31 marca i mamy carryover
-    if (request.start_date <= carryoverExpiresAt && remainingCarryover > 0) {
-      const usedFromCarryover = Math.min(daysNeeded, remainingCarryover);
-      usedCarryoverDays += usedFromCarryover;
-      remainingCarryover -= usedFromCarryover;
-      
-      const remainingDays = daysNeeded - usedFromCarryover;
-      if (remainingDays > 0) {
-        usedCurrentYearDays += remainingDays;
-      }
-    } else {
-      // Po 31 marca lub brak carryover - używamy dni z bieżącego roku
-      usedCurrentYearDays += daysNeeded;
-    }
-  }
-  
-  return {
-    usedCarryoverDays,
-    usedCurrentYearDays,
-    usedDays: usedCarryoverDays + usedCurrentYearDays
-  };
-}
-```
+**POST:**
+1. SELECT z `profiles` - weryfikacja użytkownika i deleted_at
+2. SELECT z `vacation_allowances` - sprawdzenie duplikatu (user_id + year)
+3. INSERT do `vacation_allowances` - utworzenie nowej puli
+
+**PATCH:**
+1. SELECT z `vacation_allowances` - weryfikacja istnienia puli
+2. UPDATE `vacation_allowances` - aktualizacja pól
+
+---
 
 ## 6. Względy bezpieczeństwa
 
+### Uwierzytelnianie
+- **Obecnie:** Używany DEFAULT_USER_ID z konfiguracji
+- **Przyszłość:** Pełna integracja z Supabase Auth
+- **Implementacja:** Sprawdzenie locals.supabase i currentUserId przed wywołaniem service
+
 ### Autoryzacja (RBAC - Role-Based Access Control)
 
-**Zasady dostępu:**
-1. **EMPLOYEE:**
-   - Może zobaczyć **tylko swoje** vacation allowances
-   - Próba dostępu do allowances innego użytkownika → 403 Forbidden
-   
-2. **HR:**
-   - Może zobaczyć vacation allowances **wszystkich aktywnych użytkowników**
-   - Nie może zobaczyć allowances usuniętych użytkowników (deleted_at IS NOT NULL)
-   
-3. **ADMINISTRATOR:**
-   - Może zobaczyć vacation allowances **wszystkich użytkowników**
-   - Może zobaczyć allowances usuniętych użytkowników
+**Kto może tworzyć pule urlopowe (POST):**
+- ✅ HR - Pełny dostęp
+- ❌ ADMINISTRATOR - Brak (zgodnie ze specyfikacją)
+- ❌ EMPLOYEE - Brak
 
-**Implementacja RBAC w service layer:**
+**Kto może aktualizować pule (PATCH):**
+- ✅ HR - Pełny dostęp
+- ❌ ADMINISTRATOR - Brak (zgodnie ze specyfikacją)
+- ❌ EMPLOYEE - Brak
+
+**Implementacja w service:**
 ```typescript
-// Sprawdzenie uprawnień
-if (currentUserRole === 'EMPLOYEE' && currentUserId !== targetUserId) {
-  throw new Error('Forbidden: You can only view your own vacation allowances');
-}
-
-// Sprawdzenie soft-delete
-if (user.deleted_at && currentUserRole !== 'ADMINISTRATOR') {
-  throw new Error('Forbidden: Cannot access vacation allowances for deleted user');
+if (currentUserRole !== "HR") {
+  throw new Error("Only HR users can create vacation allowances");
 }
 ```
 
 ### Walidacja danych wejściowych
 
-**Zod schemas do utworzenia w `src/lib/schemas/vacation-allowances.schema.ts`:**
+**Poziom 1 - Zod Schema (API endpoint):**
+- Format UUID dla userId i id
+- Zakres lat: 2000-2100
+- Wartości całkowite (integer)
+- Wartości nie ujemne (>= 0)
+- Wymagane pola w POST
+- Przynajmniej jedno pole w PATCH
 
-1. **userIdParamSchema** - walidacja UUID w path
-2. **yearParamSchema** - walidacja roku (integer, 2000-2100)
-3. **yearQuerySchema** - walidacja opcjonalnego query parameter
-4. **getVacationAllowancesQuerySchema** - pełny schemat query params
+**Poziom 2 - Logika biznesowa (Service):**
+- Weryfikacja istnienia użytkownika w bazie
+- Sprawdzenie statusu użytkownika (deleted_at)
+- Unikalność kombinacji user_id + year (UNIQUE constraint)
+- Integralność referencyjna (FOREIGN KEY)
 
-**Zasady walidacji:**
-- userId: musi być prawidłowym UUID
-- year: musi być liczbą całkowitą w zakresie 2000-2100
-- Query parameters: opcjonalne, ale jeśli podane - muszą być prawidłowe
+### Ochrona przed atakami
 
-### SQL Injection Protection
+**SQL Injection:**
+- Używanie Supabase Client z parametryzowanymi zapytaniami
+- Brak bezpośredniej konkatenacji SQL
 
-- Używamy Supabase Client z parametryzowanymi zapytaniami
-- Wszystkie parametry są walidowane przez Zod przed użyciem
-- Brak bezpośrednich SQL queries w kodzie
+**Mass Assignment:**
+- Zod schema kontroluje dokładnie jakie pola są akceptowane
+- Automatyczne odrzucenie nieznanych pól
+
+**Privilege Escalation:**
+- Ścisła kontrola roli przed wykonaniem operacji
+- Brak możliwości tworzenia pul przez użytkowników EMPLOYEE
+
+**Race Conditions:**
+- UNIQUE constraint (user_id, year) na poziomie bazy danych
+- Transakcyjność operacji INSERT/UPDATE w PostgreSQL
 
 ### Soft-delete Protection
+```typescript
+// Nie można tworzyć puli dla usuniętego użytkownika
+if (targetUser.deleted_at) {
+  throw new Error("Cannot create vacation allowance for deleted user");
+}
+```
 
-- Sprawdzenie `deleted_at IS NULL` w service layer
-- EMPLOYEE i HR nie mogą zobaczyć allowances usuniętych użytkowników
-- ADMINISTRATOR może (dla audytu)
-
-### Rate Limiting (przyszłość)
-
-- Rozważyć implementację rate limiting dla publicznych endpointów
-- Obecnie brak (do implementacji z pełną autentykacją)
+---
 
 ## 7. Obsługa błędów
 
-### Kategorie błędów i kody statusu:
+### POST /api/vacation-allowances
 
-| Błąd | Status | Warunek | Odpowiedź |
-|------|--------|---------|-----------|
-| Invalid UUID format | 400 | userId nie jest prawidłowym UUID | `{ error: "Invalid user ID format", details: {...} }` |
-| Invalid year format | 400 | year nie jest liczbą | `{ error: "Invalid year parameter", details: {...} }` |
-| Year out of range | 400 | year < 2000 lub year > 2100 | `{ error: "Invalid year parameter", details: {...} }` |
-| Unauthorized | 401 | Brak currentUserId (auth nie działa) | `{ error: "Unauthorized" }` |
-| Forbidden - not own data | 403 | EMPLOYEE próbuje zobaczyć cudze allowances | `{ error: "Forbidden: You can only view your own vacation allowances" }` |
-| Forbidden - deleted user | 403 | Próba dostępu do allowances usuniętego użytkownika | `{ error: "Forbidden: Cannot access vacation allowances for deleted user" }` |
-| User not found | 404 | User o podanym userId nie istnieje | `{ error: "User not found" }` |
-| Allowance not found | 404 | Brak allowance dla danego roku | `{ error: "Vacation allowance for year {year} not found" }` |
-| No allowances | 404 | Brak żadnych allowances dla użytkownika | `{ error: "No vacation allowances found for this user" }` |
-| Database error | 500 | Błąd połączenia z bazą lub zapytania | `{ error: "Internal server error" }` |
+| Kod | Scenariusz | Komunikat | Kiedy występuje |
+|-----|-----------|-----------|----------------|
+| 400 | Błąd walidacji | "Invalid request body" + szczegóły | Nieprawidłowy format danych (Zod) |
+| 400 | Duplikat | "Vacation allowance for this user and year already exists" | UNIQUE constraint violation |
+| 400 | Wartości ujemne | Szczegóły z Zod | totalDays < 0 lub carryoverDays < 0 |
+| 400 | Nieprawidłowy rok | "Year must be at least 2000" | year < 2000 lub year > 2100 |
+| 400 | Użytkownik usunięty | "Cannot create vacation allowance for deleted user" | targetUser.deleted_at !== null |
+| 401 | Brak auth | "Not authenticated" | Brak currentUserId |
+| 403 | Brak uprawnień | "Only HR users can create vacation allowances" | currentUserRole !== "HR" |
+| 404 | Użytkownik nie istnieje | "User not found" | userId nie istnieje w profiles |
+| 500 | Błąd bazy danych | "Failed to create vacation allowance" | Błąd Supabase |
+| 500 | Nieznany błąd | "Internal server error" | Nieoczekiwany błąd |
 
-### Error Handling Pattern:
+### PATCH /api/vacation-allowances/:id
 
+| Kod | Scenariusz | Komunikat | Kiedy występuje |
+|-----|-----------|-----------|----------------|
+| 400 | Błąd walidacji | "Invalid request body" + szczegóły | Nieprawidłowy format danych (Zod) |
+| 400 | Nieprawidłowy ID | "Invalid UUID format" | id nie jest UUID |
+| 400 | Wartości ujemne | Szczegóły z Zod | totalDays < 0 lub carryoverDays < 0 |
+| 400 | Brak pól | "At least one field must be provided" | Puste body lub tylko null/undefined |
+| 401 | Brak auth | "Not authenticated" | Brak currentUserId |
+| 403 | Brak uprawnień | "Only HR users can update vacation allowances" | currentUserRole !== "HR" |
+| 404 | Pula nie istnieje | "Vacation allowance not found" | id nie istnieje w vacation_allowances |
+| 500 | Błąd bazy danych | "Failed to update vacation allowance" | Błąd Supabase |
+| 500 | Nieznany błąd | "Internal server error" | Nieoczekiwany błąd |
+
+### Strategia logowania błędów
+
+**Development (console.error):**
 ```typescript
-// W API Handler
-try {
-  // 1. Walidacja
-  const validationResult = schema.safeParse(data);
-  if (!validationResult.success) {
-    return new Response(JSON.stringify({
-      error: "Validation error",
-      details: validationResult.error.flatten().fieldErrors
-    }), { status: 400 });
-  }
-  
-  // 2. Wywołanie service
-  const result = await service.method();
-  
-  // 3. Success response
-  return new Response(JSON.stringify(result), { status: 200 });
-  
-} catch (error) {
-  console.error('[GET /api/...] Error:', error);
-  
-  // 4. Error mapping
-  if (error.message.includes('not found')) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 404 });
-  }
-  if (error.message.includes('Forbidden')) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 403 });
-  }
-  
-  // 5. Generic error
-  return new Response(JSON.stringify({ error: 'Internal server error' }), { status: 500 });
-}
+console.error("[POST /api/vacation-allowances] Error:", {
+  timestamp: new Date().toISOString(),
+  error: error instanceof Error ? error.message : "Unknown error",
+  stack: error instanceof Error ? error.stack : undefined,
+  userId: currentUserId,
+  requestBody: validatedData,
+});
 ```
 
-### Logowanie błędów:
+**Service Layer:**
+```typescript
+console.error("[VacationAllowancesService] Failed to create allowance:", {
+  error: dbError,
+  userId: targetUserId,
+  year,
+});
+```
 
-- Wszystkie błędy logowane do console.error z prefiksem `[GET /api/users/:userId/vacation-allowances]`
-- W przyszłości: rozważyć integrację z zewnętrznym systemem logowania (Sentry, Datadog)
-- Nie logujemy wrażliwych danych (hasła, tokeny)
+**Nie logować:**
+- Hasła, tokeny, dane wrażliwe
+- Stack trace w produkcji (tylko w dev)
+
+---
 
 ## 8. Rozważania dotyczące wydajności
 
-### Potencjalne wąskie gardła:
+### Potencjalne wąskie gardła
 
-1. **N+1 Query Problem:**
-   - Problem: Dla każdej allowance osobne zapytanie do vacation_requests
-   - Rozwiązanie: Jedno zapytanie JOIN lub agregacja w bazie
+**1. Walidacja istnienia użytkownika**
+- SELECT z profiles dla każdego POST
+- **Mitygacja:** Indeks na profiles.id (PRIMARY KEY - już istnieje)
 
-2. **Obliczenia w JavaScript:**
-   - Problem: Obliczanie wykorzystanych dni w JavaScript (liczne iteracje)
-   - Rozwiązanie: Rozważyć database function lub materialized view
+**2. Sprawdzenie duplikatu**
+- SELECT z vacation_allowances WHERE user_id = X AND year = Y
+- **Mitygacja:** 
+  - UNIQUE constraint (user_id, year) - pozwala na optymalizację
+  - Dodanie indeksu złożonego (już istnieje: 20260111000001_add_vacation_allowances_indexes.sql)
 
-3. **Brak indeksów:**
-   - Problem: Zapytania po user_id i year mogą być wolne
-   - Rozwiązanie: Dodać composite index na (user_id, year)
+**3. N+1 Problem**
+- Nie występuje - operacje pojedyncze (nie ma pętli)
 
-### Strategie optymalizacji:
+### Strategie optymalizacji
 
-#### 1. Database Indexes (priorytet)
-
-Dodać w nowej migracji:
+**Indeksy (już zaimplementowane):**
 ```sql
--- Composite index dla vacation_allowances
+-- Z migracji 20260111000001_add_vacation_allowances_indexes.sql
+CREATE INDEX IF NOT EXISTS idx_vacation_allowances_user_id 
+  ON vacation_allowances(user_id);
+CREATE INDEX IF NOT EXISTS idx_vacation_allowances_year 
+  ON vacation_allowances(year);
 CREATE INDEX IF NOT EXISTS idx_vacation_allowances_user_year 
-ON vacation_allowances(user_id, year DESC);
-
--- Index dla vacation_requests (do obliczeń)
-CREATE INDEX IF NOT EXISTS idx_vacation_requests_user_status_dates
-ON vacation_requests(user_id, status, start_date, end_date)
-WHERE status = 'APPROVED';
+  ON vacation_allowances(user_id, year);
 ```
 
-#### 2. Optymalizacja zapytań
+**Limity i timeouty:**
+- Request timeout: 30s (domyślnie w Astro)
+- Brak paginacji (operacje pojedyncze)
 
-**Opcja A: Pojedyncze zapytanie z agregacją (preferowana):**
-```sql
--- Pobierz allowances z policzonymi dniami w jednym zapytaniu
-SELECT 
-  va.*,
-  COALESCE(SUM(vr.business_days_count), 0) as used_days_total
-FROM vacation_allowances va
-LEFT JOIN vacation_requests vr 
-  ON vr.user_id = va.user_id 
-  AND EXTRACT(YEAR FROM vr.start_date) = va.year
-  AND vr.status = 'APPROVED'
-WHERE va.user_id = $1
-GROUP BY va.id
-ORDER BY va.year DESC;
-```
+**Caching:**
+- Brak cache dla operacji zapisu (POST, PATCH)
+- Cache może być dodany na poziomie odczytu (GET) w przyszłości
 
-**Opcja B: Database Function (dla złożonej logiki carry-over):**
-```sql
--- Funkcja do obliczania wykorzystanych dni z carry-over logic
-CREATE OR REPLACE FUNCTION calculate_used_allowance_days(
-  p_allowance_id UUID,
-  p_year INTEGER,
-  p_user_id UUID
-) RETURNS TABLE (
-  used_carryover_days INTEGER,
-  used_current_year_days INTEGER,
-  used_days_total INTEGER
-) AS $$
--- Implementacja algorytmu carry-over
-$$ LANGUAGE plpgsql;
-```
-
-#### 3. Caching (przyszłość)
-
-- Cache vacation allowances na 5-15 minut (dane zmieniają się rzadko)
-- Invalidacja cache przy zatwierdzeniu/anulowaniu urlopu
-- Redis lub in-memory cache (Node.js)
-
-#### 4. Pagination (jeśli potrzebna)
-
-- Dla użytkowników z wieloma latami allowances (mało prawdopodobne)
-- Opcjonalnie: limit + offset w query parameters
-- Domyślnie: wszystkie lata (sortowane DESC)
-
-### Szacowany czas odpowiedzi:
-
-- **Bez optymalizacji:** 100-300ms (zależnie od liczby lat i requestów)
-- **Z indeksami:** 20-50ms
-- **Z database function:** 10-30ms
-- **Z cache:** 1-5ms (hit), 10-30ms (miss)
-
-### Monitoring:
-
-- Logować czas wykonania zapytań (console.time/timeEnd)
-- Monitorować wolne zapytania (> 100ms)
-- W przyszłości: APM tools (New Relic, Datadog)
-
-## 9. Kroki implementacji
-
-### Krok 1: Utworzenie typów DTO w `src/types.ts`
-
-**Plik:** `src/types.ts`
-
-**Akcja:** Dodać nowe typy na końcu pliku, w sekcji "Vacation Allowances DTOs"
-
-**Typy do dodania:**
-- `GetVacationAllowancesQueryDTO`
-- `VacationAllowanceDTO`
-- `GetVacationAllowancesResponseDTO`
-- `GetVacationAllowanceByYearResponseDTO`
-
-**Czas:** 15 min
-
----
-
-### Krok 2: Utworzenie schematów walidacji Zod
-
-**Plik:** `src/lib/schemas/vacation-allowances.schema.ts` (nowy)
-
-**Akcja:** Utworzyć nowy plik ze schematami Zod
-
-**Schematy do utworzenia:**
-- `userIdParamSchema` - walidacja UUID userId
-- `yearParamSchema` - walidacja roku (integer, 2000-2100)
-- `yearQuerySchema` - walidacja opcjonalnego query parameter year
-- `getVacationAllowancesQuerySchema` - pełny schemat query params
-
-**Przykład:**
+**Monitoring wydajności:**
 ```typescript
-import { z } from "zod";
+const startTime = Date.now();
+const result = await createVacationAllowance(/* ... */);
+const duration = Date.now() - startTime;
 
-export const userIdParamSchema = z.object({
-  userId: z.string().uuid("Invalid user ID format"),
-});
-
-export const yearParamSchema = z.object({
-  year: z.string()
-    .regex(/^\d{4}$/, "Year must be a 4-digit number")
-    .transform(Number)
-    .refine((val) => val >= 2000 && val <= 2100, {
-      message: "Year must be between 2000 and 2100",
-    }),
-});
-
-export const yearQuerySchema = z.object({
-  year: z.string()
-    .regex(/^\d{4}$/, "Year must be a 4-digit number")
-    .transform(Number)
-    .refine((val) => val >= 2000 && val <= 2100, {
-      message: "Year must be between 2000 and 2100",
-    })
-    .optional(),
-});
-
-export const getVacationAllowancesQuerySchema = z.object({
-  year: z.string()
-    .regex(/^\d{4}$/, "Year must be a 4-digit number")
-    .transform(Number)
-    .refine((val) => val >= 2000 && val <= 2100, {
-      message: "Year must be between 2000 and 2100",
-    })
-    .optional(),
-});
+// Log slow operations
+if (duration > 1000) {
+  console.warn("[POST /api/vacation-allowances] Slow operation:", {
+    duration,
+    userId: validatedData.userId,
+    year: validatedData.year,
+  });
+}
 ```
 
-**Czas:** 20 min
+### Szacunkowy czas wykonania
+- **POST:** ~100-300ms (2-3 SELECT + 1 INSERT)
+- **PATCH:** ~50-150ms (1 SELECT + 1 UPDATE)
 
 ---
 
-### Krok 3: Utworzenie service layer
+## 9. Etapy wdrożenia
 
-**Plik:** `src/lib/services/vacation-allowances.service.ts` (nowy)
+### Krok 1: Rozszerzenie pliku types.ts
+**Czas:** 5-10 minut
 
-**Akcja:** Utworzyć nowy serwis z logiką biznesową
+**Zadanie:**
+- Dodać DTOs: `CreateVacationAllowanceDTO`, `CreateVacationAllowanceResponseDTO`
+- Dodać DTOs: `UpdateVacationAllowanceDTO`, `UpdateVacationAllowanceResponseDTO`
+- Umieścić w sekcji "Vacation Allowances DTOs" (linia ~980)
 
-**Funkcje do implementacji:**
+**Lokalizacja:** `/src/types.ts`
 
-1. **getVacationAllowances** - główna funkcja do pobierania pul
-   - Parametry: supabase, currentUserId, currentUserRole, targetUserId, year?
-   - Sprawdzenie uprawnień (RBAC)
-   - Sprawdzenie czy user istnieje i nie jest usunięty
-   - Pobranie vacation_allowances (z filtrowaniem po year jeśli podany)
-   - Dla każdej allowance: obliczenie wykorzystanych dni
-   - Zwrócenie GetVacationAllowancesResponseDTO
+**Walidacja:** Brak błędów TypeScript
 
-2. **getVacationAllowanceByYear** - funkcja do pobierania konkretnej puli
-   - Parametry: supabase, currentUserId, currentUserRole, targetUserId, year
-   - Podobna logika jak getVacationAllowances, ale dla konkretnego roku
-   - Zwrócenie GetVacationAllowanceByYearResponseDTO lub throw Error 404
+---
 
-3. **Helper: calculateUsedDaysForAllowance** - obliczanie wykorzystanych dni
-   - Parametry: supabase, allowanceId, userId, year, carryoverDays
-   - Pobranie APPROVED vacation_requests dla danego roku
-   - Implementacja algorytmu carry-over (najpierw carry-over do 31 marca, potem current year)
-   - Zwrócenie: { usedCarryoverDays, usedCurrentYearDays, usedDays }
+### Krok 2: Rozszerzenie schematu walidacji
+**Czas:** 10-15 minut
 
-4. **Helper: enrichAllowanceWithComputedFields** - dodanie computed fields
-   - Parametry: allowance, usedDaysData
-   - Obliczenie remainingDays, remainingCarryoverDays, remainingCurrentYearDays
-   - Dodanie carryoverExpiresAt (31 marca danego roku)
-   - Konwersja snake_case → camelCase
-   - Zwrócenie VacationAllowanceDTO
+**Zadanie:**
+- Dodać `vacationAllowanceIdParamSchema`
+- Dodać `createVacationAllowanceSchema` z walidacją:
+  - userId: UUID
+  - year: 2000-2100
+  - totalDays: >= 0
+  - carryoverDays: >= 0
+- Dodać `updateVacationAllowanceSchema` z:
+  - Opcjonalne pola: totalDays, carryoverDays
+  - Walidacja: przynajmniej jedno pole wymagane (refine)
+
+**Lokalizacja:** `/src/lib/schemas/vacation-allowances.schema.ts`
+
+**Walidacja:** 
+- Testy jednostkowe schematów (opcjonalnie)
+- Brak błędów TypeScript
+
+---
+
+### Krok 3: Implementacja funkcji service - createVacationAllowance()
+**Czas:** 30-40 minut
+
+**Zadanie:**
+Utworzyć funkcję `createVacationAllowance()` w service z następującą logiką:
+
+```typescript
+export async function createVacationAllowance(
+  supabase: SupabaseClient,
+  currentUserId: string,
+  currentUserRole: "ADMINISTRATOR" | "HR" | "EMPLOYEE",
+  data: CreateVacationAllowanceDTO
+): Promise<CreateVacationAllowanceResponseDTO>
+```
+
+**Algorytm:**
+1. Sprawdzić rolę (tylko HR)
+2. Zweryfikować istnienie użytkownika (SELECT profiles)
+3. Sprawdzić deleted_at użytkownika
+4. Sprawdzić duplikat (SELECT vacation_allowances WHERE user_id + year)
+5. INSERT do vacation_allowances
+6. Zwrócić CreateVacationAllowanceResponseDTO
+
+**Error handling:**
+- Authorization: "Only HR users can create vacation allowances"
+- User not found: "User not found"
+- Deleted user: "Cannot create vacation allowance for deleted user"
+- Duplicate: "Vacation allowance for this user and year already exists"
+- Database error: "Failed to create vacation allowance"
+
+**Lokalizacja:** `/src/lib/services/vacation-allowances.service.ts`
+
+**Walidacja:**
+- Brak błędów TypeScript
+- Linter (ESLint) pass
+
+---
+
+### Krok 4: Implementacja funkcji service - updateVacationAllowance()
+**Czas:** 20-30 minut
+
+**Zadanie:**
+Utworzyć funkcję `updateVacationAllowance()` w service:
+
+```typescript
+export async function updateVacationAllowance(
+  supabase: SupabaseClient,
+  currentUserId: string,
+  currentUserRole: "ADMINISTRATOR" | "HR" | "EMPLOYEE",
+  allowanceId: string,
+  data: UpdateVacationAllowanceDTO
+): Promise<UpdateVacationAllowanceResponseDTO>
+```
+
+**Algorytm:**
+1. Sprawdzić rolę (tylko HR)
+2. Zweryfikować istnienie puli (SELECT vacation_allowances WHERE id)
+3. UPDATE vacation_allowances (tylko przekazane pola)
+4. Zwrócić UpdateVacationAllowanceResponseDTO
+
+**Error handling:**
+- Authorization: "Only HR users can update vacation allowances"
+- Not found: "Vacation allowance not found"
+- Database error: "Failed to update vacation allowance"
+
+**Lokalizacja:** `/src/lib/services/vacation-allowances.service.ts`
+
+**Walidacja:**
+- Brak błędów TypeScript
+- Linter (ESLint) pass
+
+---
+
+### Krok 5: Utworzenie katalogu i pliku endpoint - index.ts
+**Czas:** 30-40 minut
+
+**Zadanie:**
+Utworzyć katalog `/src/pages/api/vacation-allowances/` i plik `index.ts` z handlerem POST
 
 **Struktura:**
 ```typescript
-import type { SupabaseClient } from "@/db/supabase.client";
-import type {
-  GetVacationAllowancesResponseDTO,
-  GetVacationAllowanceByYearResponseDTO,
-  VacationAllowanceDTO,
-} from "@/types";
+import type { APIRoute } from "astro";
+import { z } from "zod";
+import { createVacationAllowance } from "@/lib/services/vacation-allowances.service";
+import { DEFAULT_USER_ID } from "@/db/supabase.client";
+import { createVacationAllowanceSchema } from "@/lib/schemas/vacation-allowances.schema";
 
-export async function getVacationAllowances(
-  supabase: SupabaseClient,
-  currentUserId: string,
-  currentUserRole: "ADMINISTRATOR" | "HR" | "EMPLOYEE",
-  targetUserId: string,
-  year?: number
-): Promise<GetVacationAllowancesResponseDTO> {
-  // Implementacja
-}
+export const prerender = false;
 
-export async function getVacationAllowanceByYear(
-  supabase: SupabaseClient,
-  currentUserId: string,
-  currentUserRole: "ADMINISTRATOR" | "HR" | "EMPLOYEE",
-  targetUserId: string,
-  year: number
-): Promise<VacationAllowanceDTO> {
-  // Implementacja
-}
-
-async function calculateUsedDaysForAllowance(
-  supabase: SupabaseClient,
-  userId: string,
-  year: number,
-  carryoverDays: number
-): Promise<{
-  usedCarryoverDays: number;
-  usedCurrentYearDays: number;
-  usedDays: number;
-}> {
-  // Implementacja algorytmu carry-over
-}
-
-function enrichAllowanceWithComputedFields(
-  allowance: any,
-  usedDaysData: {
-    usedCarryoverDays: number;
-    usedCurrentYearDays: number;
-    usedDays: number;
-  }
-): VacationAllowanceDTO {
-  // Konwersja i dodanie computed fields
-}
+export const POST: APIRoute = async ({ request, locals }) => {
+  // 1. Parse request body
+  // 2. Validate with Zod schema
+  // 3. Check authentication (DEFAULT_USER_ID)
+  // 4. Get current user role from profiles
+  // 5. Call createVacationAllowance()
+  // 6. Return 201 Created or error
+};
 ```
 
-**Czas:** 90-120 min (najważniejsza część)
+**Error handling:**
+- 400: Walidacja Zod
+- 401: Brak currentUserId
+- 403: Brak uprawnień (z service)
+- 404: User not found (z service)
+- 500: Database errors
+
+**Lokalizacja:** `/src/pages/api/vacation-allowances/index.ts`
+
+**Walidacja:**
+- Brak błędów TypeScript
+- get_errors sprawdzenie
 
 ---
 
-### Krok 4: Utworzenie API endpoint - GET /api/users/:userId/vacation-allowances
+### Krok 6: Utworzenie pliku endpoint - [id].ts
+**Czas:** 30-40 minut
 
-**Plik:** `src/pages/api/users/[userId]/vacation-allowances/index.ts` (nowy)
+**Zadanie:**
+Utworzyć plik `/src/pages/api/vacation-allowances/[id].ts` z handlerem PATCH
 
-**Akcja:** Utworzyć folder i plik endpoint
-
-**Struktura folderu:**
-```
-src/pages/api/users/
-  [userId]/
-    vacation-allowances/
-      index.ts        <- nowy plik
-      [year].ts       <- utworzony w kroku 5
-```
-
-**Implementacja:**
-1. Import zależności (service, schemas, types)
-2. `export const prerender = false`
-3. Implementacja GET handler:
-   - Walidacja path parameter (userId)
-   - Walidacja query parameter (year)
-   - Pobranie currentUserId i roli
-   - Wywołanie service.getVacationAllowances()
-   - Obsługa błędów (try-catch z mapping do statusów)
-   - Zwrócenie Response
-
-**Przykład struktury:**
+**Struktura:**
 ```typescript
 import type { APIRoute } from "astro";
-import { getVacationAllowances } from "@/lib/services/vacation-allowances.service";
+import { updateVacationAllowance } from "@/lib/services/vacation-allowances.service";
 import { DEFAULT_USER_ID } from "@/db/supabase.client";
-import {
-  userIdParamSchema,
-  getVacationAllowancesQuerySchema,
+import { 
+  vacationAllowanceIdParamSchema,
+  updateVacationAllowanceSchema 
 } from "@/lib/schemas/vacation-allowances.schema";
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ params, url, locals }) => {
-  try {
-    // 1. Walidacja path param
-    const paramsValidation = userIdParamSchema.safeParse(params);
-    if (!paramsValidation.success) {
-      return new Response(JSON.stringify({
-        error: "Invalid user ID format",
-        details: paramsValidation.error.flatten().fieldErrors,
-      }), { status: 400 });
-    }
-    
-    // 2. Walidacja query params
-    const queryParams = Object.fromEntries(url.searchParams);
-    const queryValidation = getVacationAllowancesQuerySchema.safeParse(queryParams);
-    if (!queryValidation.success) {
-      return new Response(JSON.stringify({
-        error: "Invalid query parameters",
-        details: queryValidation.error.flatten().fieldErrors,
-      }), { status: 400 });
-    }
-    
-    // 3. Auth + RBAC
-    const currentUserId = DEFAULT_USER_ID;
-    const { data: currentUserProfile } = await locals.supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", currentUserId)
-      .single();
-    
-    // 4. Wywołanie service
-    const result = await getVacationAllowances(
-      locals.supabase,
-      currentUserId,
-      currentUserProfile.role,
-      paramsValidation.data.userId,
-      queryValidation.data.year
-    );
-    
-    // 5. Success response
-    return new Response(JSON.stringify(result), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-    
-  } catch (error) {
-    // Error handling
-  }
+export const PATCH: APIRoute = async ({ params, request, locals }) => {
+  // 1. Validate id from params
+  // 2. Parse request body
+  // 3. Validate body with Zod schema
+  // 4. Check authentication (DEFAULT_USER_ID)
+  // 5. Get current user role from profiles
+  // 6. Call updateVacationAllowance()
+  // 7. Return 200 OK or error
 };
 ```
 
-**Czas:** 30-45 min
+**Error handling:**
+- 400: Walidacja Zod (id, body)
+- 401: Brak currentUserId
+- 403: Brak uprawnień (z service)
+- 404: Allowance not found (z service)
+- 500: Database errors
+
+**Lokalizacja:** `/src/pages/api/vacation-allowances/[id].ts`
+
+**Walidacja:**
+- Brak błędów TypeScript
+- get_errors sprawdzenie
 
 ---
 
-### Krok 5: Utworzenie API endpoint - GET /api/users/:userId/vacation-allowances/:year
+### Krok 7: Pobieranie roli użytkownika
+**Czas:** 15-20 minut
 
-**Plik:** `src/pages/api/users/[userId]/vacation-allowances/[year].ts` (nowy)
+**Zadanie:**
+W obu endpointach (index.ts i [id].ts) dodać logikę pobierania roli current user:
 
-**Akcja:** Utworzyć plik endpoint dla konkretnego roku
+```typescript
+// Get current user role from profiles
+const { data: currentUserProfile, error: profileError } = await locals.supabase
+  .from("profiles")
+  .select("role")
+  .eq("id", currentUserId)
+  .single();
 
-**Implementacja:**
-1. Import zależności
-2. `export const prerender = false`
-3. Implementacja GET handler:
-   - Walidacja path parameters (userId, year)
-   - Pobranie currentUserId i roli
-   - Wywołanie service.getVacationAllowanceByYear()
-   - Obsługa błędów
-   - Zwrócenie Response
+if (profileError || !currentUserProfile) {
+  return new Response(
+    JSON.stringify({ error: "User profile not found" }),
+    { status: 404, headers: { "Content-Type": "application/json" } }
+  );
+}
 
-**Struktura podobna do kroku 4, ale:**
-- Walidacja dwóch path params (userId + year)
-- Wywołanie getVacationAllowanceByYear() zamiast getVacationAllowances()
-- Response format: `{ data: VacationAllowanceDTO }` zamiast `{ userId, allowances: [] }`
-
-**Czas:** 20-30 min
-
----
-
-### Krok 6: Dodanie indeksów bazy danych (opcjonalne, ale zalecane)
-
-**Plik:** `supabase/migrations/20260111000001_add_vacation_allowances_indexes.sql` (nowy)
-
-**Akcja:** Utworzyć nową migrację z indeksami
-
-**SQL do wykonania:**
-```sql
--- Composite index dla vacation_allowances
-CREATE INDEX IF NOT EXISTS idx_vacation_allowances_user_year 
-ON vacation_allowances(user_id, year DESC);
-
--- Index dla vacation_requests (do obliczeń wykorzystanych dni)
-CREATE INDEX IF NOT EXISTS idx_vacation_requests_user_status_dates
-ON vacation_requests(user_id, status, start_date, end_date)
-WHERE status = 'APPROVED';
-
--- Komentarze
-COMMENT ON INDEX idx_vacation_allowances_user_year IS 
-  'Composite index for efficient lookup of vacation allowances by user and year';
-
-COMMENT ON INDEX idx_vacation_requests_user_status_dates IS 
-  'Index for calculating used vacation days - only APPROVED requests';
+const currentUserRole = currentUserProfile.role;
 ```
 
-**Czas:** 10 min
+**Lokalizacja:** 
+- `/src/pages/api/vacation-allowances/index.ts`
+- `/src/pages/api/vacation-allowances/[id].ts`
+
+**Walidacja:**
+- Działa dla DEFAULT_USER_ID
+- Poprawna rola jest przekazywana do service
 
 ---
 
-### Krok 7: Utworzenie testów API (shell scripts)
+### Krok 8: Dodanie performance monitoring
+**Czas:** 10-15 minut
 
-**Pliki do utworzenia w `tests/api/`:**
-1. `vacation-allowances-list.test.sh`
-2. `vacation-allowances-by-year.test.sh`
+**Zadanie:**
+W obu endpointach dodać logowanie czasu wykonania:
 
-**Akcja:** Utworzyć skrypty testowe podobne do istniejących
+```typescript
+const startTime = Date.now();
+const result = await createVacationAllowance(/* ... */);
+const duration = Date.now() - startTime;
 
-**Test cases do pokrycia:**
+if (duration > 1000) {
+  console.warn("[POST /api/vacation-allowances] Slow operation:", {
+    duration,
+    userId: validatedData.userId,
+  });
+}
+```
 
-**vacation-allowances-list.test.sh:**
-- ✓ GET all allowances for user (200)
-- ✓ GET allowances filtered by year (200)
-- ✓ GET allowances - invalid userId format (400)
-- ✓ GET allowances - invalid year format (400)
-- ✓ GET allowances - year out of range (400)
-- ✓ GET allowances - user not found (404)
-- ✓ GET allowances - forbidden for other EMPLOYEE (403)
-- ✓ GET allowances - allowed for HR (200)
+**Lokalizacja:** 
+- `/src/pages/api/vacation-allowances/index.ts`
+- `/src/pages/api/vacation-allowances/[id].ts`
 
-**vacation-allowances-by-year.test.sh:**
-- ✓ GET allowance for specific year (200)
-- ✓ GET allowance - invalid userId format (400)
-- ✓ GET allowance - invalid year format (400)
-- ✓ GET allowance - year out of range (400)
-- ✓ GET allowance - user not found (404)
-- ✓ GET allowance - allowance not found (404)
-- ✓ GET allowance - forbidden for other EMPLOYEE (403)
-- ✓ GET allowance - allowed for HR (200)
+---
 
-**Struktura testu:**
+### Krok 9: Testy manualne z curl/API client
+**Czas:** 30-45 minut
+
+**Zadanie:**
+Przetestować wszystkie scenariusze:
+
+**POST /api/vacation-allowances:**
+```bash
+# Sukces - utworzenie puli
+curl -X POST http://localhost:3000/api/vacation-allowances \
+  -H "Content-Type: application/json" \
+  -d '{"userId":"UUID","year":2026,"totalDays":26,"carryoverDays":3}'
+
+# Błąd - duplikat
+curl -X POST http://localhost:3000/api/vacation-allowances \
+  -H "Content-Type: application/json" \
+  -d '{"userId":"UUID","year":2026,"totalDays":26,"carryoverDays":3}'
+
+# Błąd - nieprawidłowa walidacja
+curl -X POST http://localhost:3000/api/vacation-allowances \
+  -H "Content-Type: application/json" \
+  -d '{"userId":"invalid","year":1999,"totalDays":-5,"carryoverDays":-2}'
+
+# Błąd - użytkownik nie istnieje
+curl -X POST http://localhost:3000/api/vacation-allowances \
+  -H "Content-Type: application/json" \
+  -d '{"userId":"00000000-0000-0000-0000-000000000000","year":2026,"totalDays":26,"carryoverDays":0}'
+```
+
+**PATCH /api/vacation-allowances/:id:**
+```bash
+# Sukces - aktualizacja
+curl -X PATCH http://localhost:3000/api/vacation-allowances/UUID \
+  -H "Content-Type: application/json" \
+  -d '{"totalDays":28,"carryoverDays":5}'
+
+# Sukces - częściowa aktualizacja
+curl -X PATCH http://localhost:3000/api/vacation-allowances/UUID \
+  -H "Content-Type: application/json" \
+  -d '{"totalDays":30}'
+
+# Błąd - brak pól
+curl -X PATCH http://localhost:3000/api/vacation-allowances/UUID \
+  -H "Content-Type: application/json" \
+  -d '{}'
+
+# Błąd - pula nie istnieje
+curl -X PATCH http://localhost:3000/api/vacation-allowances/00000000-0000-0000-0000-000000000000 \
+  -H "Content-Type: application/json" \
+  -d '{"totalDays":28}'
+```
+
+**Sprawdzić:**
+- Kody statusu HTTP (201, 200, 400, 403, 404)
+- Struktura odpowiedzi
+- Komunikaty błędów
+- Dane w bazie (SELECT)
+
+---
+
+### Krok 10: Utworzenie testów automatycznych (opcjonalne)
+**Czas:** 60-90 minut
+
+**Zadanie:**
+Utworzyć skrypty testowe bash w `/tests/api/`:
+
+1. `vacation-allowances-create.test.sh`
+2. `vacation-allowances-update.test.sh`
+
+**Struktura (wzorowane na istniejących testach):**
 ```bash
 #!/bin/bash
 source "$(dirname "$0")/test-helpers.sh"
 
-TEST_NAME="GET /api/users/:userId/vacation-allowances"
-
-# Test 1: Success - get all allowances
-run_test "GET $API_URL/users/$USER_ID/vacation-allowances" \
-  200 \
-  '.allowances | length > 0' \
-  "Should return list of allowances"
-
-# Test 2: Success - get allowances for specific year
-run_test "GET $API_URL/users/$USER_ID/vacation-allowances?year=2026" \
-  200 \
-  '.allowances[0].year == 2026' \
-  "Should return allowance for year 2026"
-
-# ... więcej testów
+# Test: Create vacation allowance - success
+# Test: Create vacation allowance - duplicate
+# Test: Create vacation allowance - invalid data
+# Test: Create vacation allowance - user not found
+# Test: Update vacation allowance - success
+# Test: Update vacation allowance - not found
+# Test: Update vacation allowance - no fields
 ```
 
-**Czas:** 45-60 min
+**Lokalizacja:** `/tests/api/`
+
+**Integracja:**
+- Dodać do `/tests/api/run-all.sh`
+- Dodać do dokumentacji `/tests/api/README.md`
 
 ---
 
-### Krok 8: Aktualizacja dokumentacji
+### Krok 11: Aktualizacja dokumentacji
+**Czas:** 15-20 minut
 
-**Pliki do aktualizacji:**
-1. `docs/API_EXAMPLES.md` - dodać przykłady wywołań
-2. `README.md` - zaktualizować listę endpointów (jeśli istnieje)
-3. `.ai/view-implementation-plan.md` - ten plik (zostanie utworzony)
+**Zadanie:**
+1. Dodać przykłady użycia do `/docs/API_EXAMPLES.md`:
+   - POST /api/vacation-allowances
+   - PATCH /api/vacation-allowances/:id
+2. Zaktualizować README.md (jeśli zawiera listę endpointów)
 
-**Akcja:** Dodać dokumentację z przykładami curl
-
-**Przykład dla API_EXAMPLES.md:**
+**Format przykładów:**
 ```markdown
-### Get User Vacation Allowances
+### Create Vacation Allowance
 
-Get all vacation allowances for a user (optionally filtered by year).
-
-**Request:**
-```bash
-# Get all allowances
-curl -X GET "http://localhost:4321/api/users/USER_ID/vacation-allowances"
-
-# Get allowances for specific year
-curl -X GET "http://localhost:4321/api/users/USER_ID/vacation-allowances?year=2026"
-```
-
-**Response (200 OK):**
-```json
-{
-  "userId": "uuid",
-  "allowances": [...]
-}
-```
-
-### Get Vacation Allowance by Year
-
-Get vacation allowance for specific year.
+**Endpoint:** `POST /api/vacation-allowances`
 
 **Request:**
 ```bash
-curl -X GET "http://localhost:4321/api/users/USER_ID/vacation-allowances/2026"
+curl -X POST http://localhost:3000/api/vacation-allowances \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "uuid-here",
+    "year": 2026,
+    "totalDays": 26,
+    "carryoverDays": 3
+  }'
 ```
 
-**Response (200 OK):**
+**Response (201):**
 ```json
 {
-  "data": {...}
+  "id": "uuid",
+  "userId": "uuid-here",
+  "year": 2026,
+  "totalDays": 26,
+  "carryoverDays": 3,
+  "createdAt": "2026-01-11T10:00:00Z"
 }
 ```
 ```
 
-**Czas:** 20 min
-
 ---
 
-### Krok 9: Uruchomienie migracji i testów
+### Krok 12: Code review i finalizacja
+**Czas:** 20-30 minut
 
-**Akcje:**
-1. Uruchomić nową migrację (jeśli została utworzona w kroku 6):
-   ```bash
-   supabase db reset
-   ```
-
-2. Uruchomić serwer developerski:
-   ```bash
-   npm run dev
-   ```
-
-3. Uruchomić testy API:
-   ```bash
-   cd tests/api
-   ./vacation-allowances-list.test.sh
-   ./vacation-allowances-by-year.test.sh
-   ```
-
-4. Sprawdzić w przeglądarce/Postman:
-   - GET http://localhost:4321/api/users/USER_ID/vacation-allowances
-   - GET http://localhost:4321/api/users/USER_ID/vacation-allowances?year=2026
-   - GET http://localhost:4321/api/users/USER_ID/vacation-allowances/2026
-
-5. Sprawdzić edge cases:
-   - Invalid UUID
-   - Invalid year
-   - Non-existent user
-   - Non-existent allowance
-   - RBAC (różne role użytkowników)
-
-**Czas:** 30-45 min
-
----
-
-### Krok 10: Code review i refactoring (opcjonalny)
-
-**Akcje:**
-1. Przejrzeć kod pod kątem:
-   - Spójności z istniejącymi endpointami
-   - Przestrzegania coding guidelines
-   - Poprawności typów TypeScript
-   - Obsługi błędów
-   - Logowania
-
-2. Uruchomić lintery:
-   ```bash
-   npm run lint
-   ```
-
-3. Sprawdzić błędy TypeScript:
-   ```bash
-   npx tsc --noEmit
-   ```
-
-4. Zrefaktorować jeśli potrzeba:
-   - Wydzielić powtarzalną logikę
-   - Uprościć złożone funkcje
-   - Dodać komentarze JSDoc
-
-**Czas:** 30-45 min
-
----
-
-## Podsumowanie kroków:
-
-| Krok | Akcja | Plik | Czas |
-|------|-------|------|------|
-| 1 | Dodać typy DTO | `src/types.ts` | 15 min |
-| 2 | Utworzyć schematy Zod | `src/lib/schemas/vacation-allowances.schema.ts` | 20 min |
-| 3 | Utworzyć service layer | `src/lib/services/vacation-allowances.service.ts` | 90-120 min |
-| 4 | Endpoint: GET list | `src/pages/api/users/[userId]/vacation-allowances/index.ts` | 30-45 min |
-| 5 | Endpoint: GET by year | `src/pages/api/users/[userId]/vacation-allowances/[year].ts` | 20-30 min |
-| 6 | Dodać indeksy DB | `supabase/migrations/...sql` | 10 min |
-| 7 | Utworzyć testy API | `tests/api/vacation-allowances-*.test.sh` | 45-60 min |
-| 8 | Aktualizować docs | `docs/API_EXAMPLES.md` | 20 min |
-| 9 | Uruchomić i przetestować | - | 30-45 min |
-| 10 | Code review | - | 30-45 min |
-
-**Całkowity szacowany czas:** 4.5 - 6.5 godzin
-
----
-
-## Dodatkowe uwagi:
-
-### Dependencies:
-- Brak nowych zależności npm
-- Używamy istniejących: Astro, Zod, Supabase Client
-
-### Kompatybilność wsteczna:
-- Nowe endpointy, brak zmian w istniejących
-- Brak breaking changes
-
-### Bezpieczeństwo:
-- RBAC zgodny z istniejącymi endpointami
-- Walidacja zgodna z best practices projektu
-- Soft-delete handling
-
-### Przyszłe rozszerzenia:
-- Endpoint do tworzenia/aktualizacji vacation_allowances (dla admina)
-- Endpoint do automatycznego generowania allowances na nowy rok
-- Webhook do aktualizacji allowances przy approve/cancel urlopu
-- Real-time updates (Supabase Realtime)
-- Caching layer
-
-### Znane ograniczenia:
-- Obecnie używamy DEFAULT_USER_ID (pełna auth będzie później)
-- Brak rate limiting
-- Algorytm carry-over zakłada polski system (31 marca expiry)
-- Brak obsługi świąt (public_holidays) w obliczeniach
-
----
-
-## Checklist przed ukończeniem:
-
-- [ ] Wszystkie typy dodane do `src/types.ts`
-- [ ] Schematy Zod utworzone i przetestowane
-- [ ] Service layer działa poprawnie
-- [ ] Oba endpointy działają (200 OK)
-- [ ] Obsługa błędów działa (400, 403, 404, 500)
-- [ ] RBAC działa poprawnie (EMPLOYEE, HR, ADMIN)
-- [ ] Indeksy dodane do bazy danych
-- [ ] Testy API przechodzą (wszystkie green)
+**Checklist:**
+- [ ] Wszystkie typy dodane do types.ts
+- [ ] Schematy walidacji kompletne i przetestowane
+- [ ] Service functions zaimplementowane z error handling
+- [ ] Endpoint handlers utworzone (POST i PATCH)
+- [ ] Performance monitoring dodany
+- [ ] Testy manualne przeprowadzone
+- [ ] Testy automatyczne utworzone (opcjonalnie)
 - [ ] Dokumentacja zaktualizowana
-- [ ] Linter i TypeScript bez błędów
-- [ ] Code review przeprowadzony
+- [ ] Brak błędów TypeScript (`npm run build`)
+- [ ] Brak błędów ESLint
+- [ ] Kod sformatowany (prettier)
+- [ ] Commit messages opisowe
+
+**Ostateczna walidacja:**
+```bash
+# TypeScript
+npm run build
+
+# Linter
+npm run lint
+
+# Tests (jeśli utworzone)
+cd tests/api && ./run-all.sh
+```
 
 ---
 
-**Koniec planu implementacji**
+## Podsumowanie
+
+**Całkowity czas wdrożenia:** ~4-6 godzin
+
+**Kluczowe pliki do utworzenia/modyfikacji:**
+1. `/src/types.ts` - 4 nowe DTOs
+2. `/src/lib/schemas/vacation-allowances.schema.ts` - 3 nowe schematy
+3. `/src/lib/services/vacation-allowances.service.ts` - 2 nowe funkcje
+4. `/src/pages/api/vacation-allowances/index.ts` - nowy endpoint (POST)
+5. `/src/pages/api/vacation-allowances/[id].ts` - nowy endpoint (PATCH)
+6. `/tests/api/*.test.sh` - skrypty testowe (opcjonalnie)
+7. `/docs/API_EXAMPLES.md` - dokumentacja
+
+**Zależności:**
+- Istniejące: Supabase client, middleware, database schema
+- Nowe: Brak (wszystkie wymagane biblioteki już zainstalowane)
+
+**Potencjalne ryzyka:**
+- UNIQUE constraint violation - obsłużone w service
+- Soft-deleted users - walidacja w service
+- Race conditions - minimalne ryzyko dzięki UNIQUE constraint
+- Performance - mitigowane przez indeksy
+
+**Kolejne kroki po wdrożeniu:**
+1. Monitoring produkcyjny (logi, metryki)
+2. Integracja z frontendem
+3. Rozszerzenie o bulk operations (opcjonalnie)
+4. Cache dla często używanych danych (opcjonalnie)
 

@@ -8,6 +8,10 @@ import type {
   VacationAllowanceDTO,
   GetVacationAllowancesResponseDTO,
   GetVacationAllowanceByYearResponseDTO,
+  CreateVacationAllowanceDTO,
+  CreateVacationAllowanceResponseDTO,
+  UpdateVacationAllowanceDTO,
+  UpdateVacationAllowanceResponseDTO,
 } from "@/types";
 
 /**
@@ -297,3 +301,182 @@ export async function getVacationAllowanceByYear(
   };
 }
 
+/**
+ * Create a new vacation allowance for a user
+ * Only HR users can create vacation allowances
+ * Implements business logic:
+ * - Verifies user exists and is not soft-deleted
+ * - Ensures uniqueness of user_id + year combination
+ * - Automatically sets carryover_expires_at to March 31st of the year
+ *
+ * @param supabase - Supabase client from context.locals
+ * @param currentUserId - ID of the current user (for authorization)
+ * @param currentUserRole - Role of the current user
+ * @param data - Vacation allowance data to create
+ * @returns Promise with created vacation allowance
+ * @throws Error if unauthorized, user not found, user deleted, or duplicate exists
+ */
+export async function createVacationAllowance(
+  supabase: SupabaseClient,
+  currentUserId: string,
+  currentUserRole: "ADMINISTRATOR" | "HR" | "EMPLOYEE",
+  data: CreateVacationAllowanceDTO
+): Promise<CreateVacationAllowanceResponseDTO> {
+  // 1. Check authorization - only HR can create vacation allowances
+  if (currentUserRole !== "HR") {
+    throw new Error("Only HR users can create vacation allowances");
+  }
+
+  // 2. Verify target user exists and is not soft-deleted
+  const { data: targetUser, error: userError } = await supabase
+    .from("profiles")
+    .select("id, deleted_at")
+    .eq("id", data.userId)
+    .single();
+
+  if (userError || !targetUser) {
+    console.error("[VacationAllowancesService] User not found:", {
+      error: userError,
+      userId: data.userId,
+    });
+    throw new Error("User not found");
+  }
+
+  if (targetUser.deleted_at) {
+    throw new Error("Cannot create vacation allowance for deleted user");
+  }
+
+  // 3. Check for duplicate (user_id + year combination must be unique)
+  const { data: existingAllowance, error: duplicateError } = await supabase
+    .from("vacation_allowances")
+    .select("id")
+    .eq("user_id", data.userId)
+    .eq("year", data.year)
+    .maybeSingle();
+
+  if (duplicateError) {
+    console.error("[VacationAllowancesService] Failed to check for duplicate:", {
+      error: duplicateError,
+      userId: data.userId,
+      year: data.year,
+    });
+    throw new Error("Failed to create vacation allowance");
+  }
+
+  if (existingAllowance) {
+    throw new Error("Vacation allowance for this user and year already exists");
+  }
+
+  // 4. Insert new vacation allowance
+  // Note: carryover_expires_at is not stored in DB - it's calculated dynamically as March 31st
+  const { data: createdAllowance, error: insertError } = await supabase
+    .from("vacation_allowances")
+    .insert({
+      user_id: data.userId,
+      year: data.year,
+      total_days: data.totalDays,
+      carryover_days: data.carryoverDays,
+    })
+    .select("id, user_id, year, total_days, carryover_days, created_at")
+    .single();
+
+  if (insertError || !createdAllowance) {
+    console.error("[VacationAllowancesService] Failed to create allowance:", {
+      error: insertError,
+      userId: data.userId,
+      year: data.year,
+    });
+    throw new Error("Failed to create vacation allowance");
+  }
+
+  // 5. Return response DTO
+  return {
+    id: createdAllowance.id,
+    userId: createdAllowance.user_id,
+    year: createdAllowance.year,
+    totalDays: createdAllowance.total_days,
+    carryoverDays: createdAllowance.carryover_days,
+    createdAt: createdAllowance.created_at,
+  };
+}
+
+/**
+ * Update an existing vacation allowance
+ * Only HR users can update vacation allowances
+ * At least one field (totalDays or carryoverDays) must be provided
+ *
+ * @param supabase - Supabase client from context.locals
+ * @param currentUserId - ID of the current user (for authorization)
+ * @param currentUserRole - Role of the current user
+ * @param allowanceId - ID of the vacation allowance to update
+ * @param data - Fields to update
+ * @returns Promise with updated vacation allowance
+ * @throws Error if unauthorized or allowance not found
+ */
+export async function updateVacationAllowance(
+  supabase: SupabaseClient,
+  currentUserId: string,
+  currentUserRole: "ADMINISTRATOR" | "HR" | "EMPLOYEE",
+  allowanceId: string,
+  data: UpdateVacationAllowanceDTO
+): Promise<UpdateVacationAllowanceResponseDTO> {
+  // 1. Check authorization - only HR can update vacation allowances
+  if (currentUserRole !== "HR") {
+    throw new Error("Only HR users can update vacation allowances");
+  }
+
+  // 2. Verify allowance exists
+  const { data: existingAllowance, error: checkError } = await supabase
+    .from("vacation_allowances")
+    .select("id, user_id, year")
+    .eq("id", allowanceId)
+    .single();
+
+  if (checkError || !existingAllowance) {
+    console.error("[VacationAllowancesService] Allowance not found:", {
+      error: checkError,
+      allowanceId,
+    });
+    throw new Error("Vacation allowance not found");
+  }
+
+  // 3. Build update object (only include provided fields)
+  const updateData: {
+    total_days?: number;
+    carryover_days?: number;
+  } = {};
+
+  if (data.totalDays !== undefined) {
+    updateData.total_days = data.totalDays;
+  }
+
+  if (data.carryoverDays !== undefined) {
+    updateData.carryover_days = data.carryoverDays;
+  }
+
+  // 4. Update vacation allowance
+  const { data: updatedAllowance, error: updateError } = await supabase
+    .from("vacation_allowances")
+    .update(updateData)
+    .eq("id", allowanceId)
+    .select("id, user_id, year, total_days, carryover_days, updated_at")
+    .single();
+
+  if (updateError || !updatedAllowance) {
+    console.error("[VacationAllowancesService] Failed to update allowance:", {
+      error: updateError,
+      allowanceId,
+    });
+    throw new Error("Failed to update vacation allowance");
+  }
+
+  // 5. Return response DTO
+  return {
+    id: updatedAllowance.id,
+    userId: updatedAllowance.user_id,
+    year: updatedAllowance.year,
+    totalDays: updatedAllowance.total_days,
+    carryoverDays: updatedAllowance.carryover_days,
+    updatedAt: updatedAllowance.updated_at,
+  };
+}

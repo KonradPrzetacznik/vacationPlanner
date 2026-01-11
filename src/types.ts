@@ -1041,3 +1041,51 @@ export interface GetVacationAllowanceByYearResponseDTO {
   data: VacationAllowanceDTO;
 }
 
+/**
+ * Create vacation allowance command DTO
+ * Used by HR to create new vacation allowances for users
+ * Connected to: Database['public']['Tables']['vacation_allowances']['Insert']
+ */
+export interface CreateVacationAllowanceDTO {
+  userId: string;
+  year: number;
+  totalDays: number;
+  carryoverDays: number;
+}
+
+/**
+ * Create vacation allowance response DTO
+ * Returned after successful vacation allowance creation
+ */
+export interface CreateVacationAllowanceResponseDTO {
+  id: string;
+  userId: string;
+  year: number;
+  totalDays: number;
+  carryoverDays: number;
+  createdAt: string;
+}
+
+/**
+ * Update vacation allowance command DTO
+ * Used by HR to update existing vacation allowances
+ * At least one field must be provided
+ */
+export interface UpdateVacationAllowanceDTO {
+  totalDays?: number;
+  carryoverDays?: number;
+}
+
+/**
+ * Update vacation allowance response DTO
+ * Returned after successful vacation allowance update
+ */
+export interface UpdateVacationAllowanceResponseDTO {
+  id: string;
+  userId: string;
+  year: number;
+  totalDays: number;
+  carryoverDays: number;
+  updatedAt: string;
+}
+
