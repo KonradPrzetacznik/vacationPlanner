@@ -31,6 +31,10 @@ This document provides practical examples of using the Vacation Planner API.
   - [Update Vacation Allowance](#update-vacation-allowance)
   - [Business Logic](#business-logic)
   - [Database Optimizations](#database-optimizations)
+- [Settings API](#settings-api)
+  - [List All Settings](#list-all-settings)
+  - [Get Setting by Key](#get-setting-by-key)
+  - [Update Setting](#update-setting-hr-only)
 - [Common Use Cases](#common-use-cases)
 - [Error Handling](#error-handling)
 
@@ -1168,6 +1172,51 @@ curl -X PATCH "http://localhost:3000/api/vacation-allowances/f1e2d3c4-b5a6-7890-
 ---
 
 #### Example 39: Update Both Fields
+
+**Request:**
+```bash
+curl -X PATCH "http://localhost:3000/api/vacation-allowances/f1e2d3c4-b5a6-7890-cdef-1234567890ab" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "totalDays": 30,
+    "carryoverDays": 5
+  }'
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "f1e2d3c4-b5a6-7890-cdef-1234567890ab",
+  "userId": "00000000-0000-0000-0000-000000000010",
+  "year": 2026,
+  "totalDays": 30,
+  "carryoverDays": 5,
+  "updatedAt": "2026-01-11T22:20:00.000Z"
+}
+```
+
+---
+
+#### Example 40: Update Error - Allowance Not Found
+
+**Request:**
+```bash
+curl -X PATCH "http://localhost:3000/api/vacation-allowances/00000000-0000-0000-0000-000000000999" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "totalDays": 28
+  }'
+```
+
+**Response (404 Not Found):**
+```json
+{
+  "error": "Vacation allowance not found"
+}
+```
+
+---
+
 ### Database Optimizations
 
 #### Indexes
@@ -1286,6 +1335,236 @@ export default VacationBalance;
 ```
 
 **Use Case:** Display user's vacation balance in a dashboard or profile page.
+
+---
+
+## Settings API
+
+The Settings API manages global application configuration values. Settings control application-wide behavior like default vacation days and team occupancy thresholds.
+
+**Available Settings:**
+- `default_vacation_days` - Default number of vacation days per year for new users
+- `team_occupancy_threshold` - Percentage threshold (0-100) for maximum team members on vacation simultaneously
+
+**Authorization:**
+- **GET endpoints**: All authenticated users (EMPLOYEE, HR, ADMINISTRATOR)
+- **PUT endpoints**: Only HR users can update settings
+
+---
+
+### List All Settings
+
+**Endpoint:** `GET /api/settings`
+
+**Description:** Retrieve all global settings with their current values.
+
+**Authorization:** All authenticated users
+
+**Request:**
+
+```bash
+curl "http://localhost:3000/api/settings"
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "data": [
+    {
+      "key": "default_vacation_days",
+      "value": 26,
+      "description": "Default number of vacation days per year",
+      "updatedAt": "2026-01-11T21:25:34.236524+00:00"
+    },
+    {
+      "key": "team_occupancy_threshold",
+      "value": 50,
+      "description": "Percentage threshold (0-100) for maximum team members on vacation simultaneously",
+      "updatedAt": "2026-01-11T21:25:34.236524+00:00"
+    }
+  ]
+}
+```
+
+**Response Fields:**
+- `data` - Array of setting objects
+  - `key` (string) - Unique setting identifier
+  - `value` (number) - Current setting value (integer)
+  - `description` (string|null) - Human-readable description
+  - `updatedAt` (string) - ISO datetime of last update
+
+**Possible Errors:**
+- **500:** Internal server error
+
+**Use Case:** Display current system configuration in admin dashboard.
+
+---
+
+### Get Setting by Key
+
+**Endpoint:** `GET /api/settings/:key`
+
+**Description:** Retrieve a specific setting by its key.
+
+**Authorization:** All authenticated users
+
+**URL Parameters:**
+- `key` (required) - Setting key (e.g., "default_vacation_days")
+
+**Request:**
+
+```bash
+curl "http://localhost:3000/api/settings/default_vacation_days"
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "key": "default_vacation_days",
+  "value": 26,
+  "description": "Default number of vacation days per year",
+  "updatedAt": "2026-01-11T21:25:34.236524+00:00"
+}
+```
+
+**Response (404 Not Found):**
+
+```json
+{
+  "error": "Setting not found"
+}
+```
+
+**Possible Errors:**
+- **400:** Invalid setting key format
+- **404:** Setting not found
+- **500:** Internal server error
+
+**Use Case:** Check specific setting value before processing business logic (e.g., creating vacation allowance).
+
+---
+
+### Update Setting (HR only)
+
+**Endpoint:** `PUT /api/settings/:key`
+
+**Description:** Update a setting value. Only HR users can modify settings.
+
+**Authorization:** HR only
+
+**URL Parameters:**
+- `key` (required) - Setting key to update
+
+**Request Body:**
+
+```json
+{
+  "value": 28
+}
+```
+
+**Body Fields:**
+- `value` (required, integer) - New setting value (must be non-negative integer)
+
+**Request:**
+
+```bash
+curl -X PUT "http://localhost:3000/api/settings/default_vacation_days" \
+  -H "Content-Type: application/json" \
+  -d '{"value": 28}'
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "key": "default_vacation_days",
+  "value": 28,
+  "description": "Default number of vacation days per year",
+  "updatedAt": "2026-01-11T22:35:42.689903+00:00"
+}
+```
+
+**Validation Rules:**
+- `value` must be a non-negative integer (≥ 0)
+- For `team_occupancy_threshold`: value must be between 0 and 100
+
+**Response (400 Bad Request - Validation):**
+
+```json
+{
+  "error": "Invalid request body",
+  "details": {
+    "value": ["Value must be an integer"]
+  }
+}
+```
+
+**Response (400 Bad Request - Threshold validation):**
+
+```json
+{
+  "error": "Invalid value for team_occupancy_threshold: must be between 0 and 100"
+}
+```
+
+**Response (403 Forbidden):**
+
+```json
+{
+  "error": "Only HR users can update settings"
+}
+```
+
+**Response (404 Not Found):**
+
+```json
+{
+  "error": "Setting not found"
+}
+```
+
+**Possible Errors:**
+- **400:** 
+  - Invalid JSON in request body
+  - Validation failed (negative value, not an integer, float instead of integer)
+  - Invalid value for team_occupancy_threshold (must be 0-100)
+- **403:** Non-HR user trying to update settings
+- **404:** Setting key not found
+- **500:** Internal server error
+
+**Examples:**
+
+```bash
+# Update default vacation days to 28
+curl -X PUT "http://localhost:3000/api/settings/default_vacation_days" \
+  -H "Content-Type: application/json" \
+  -d '{"value": 28}'
+
+# Update team occupancy threshold to 75%
+curl -X PUT "http://localhost:3000/api/settings/team_occupancy_threshold" \
+  -H "Content-Type: application/json" \
+  -d '{"value": 75}'
+
+# Invalid: negative value (400 error)
+curl -X PUT "http://localhost:3000/api/settings/default_vacation_days" \
+  -H "Content-Type: application/json" \
+  -d '{"value": -5}'
+
+# Invalid: threshold > 100 (400 error)
+curl -X PUT "http://localhost:3000/api/settings/team_occupancy_threshold" \
+  -H "Content-Type: application/json" \
+  -d '{"value": 150}'
+
+# Invalid: float value (400 error)
+curl -X PUT "http://localhost:3000/api/settings/default_vacation_days" \
+  -H "Content-Type: application/json" \
+  -d '{"value": 25.5}'
+```
+
+**Use Case:** HR adjusting system-wide settings like default vacation days when company policy changes.
 
 ---
 
@@ -1524,7 +1803,7 @@ curl "http://localhost:3000/api/users/00000000-0000-0000-0000-999999999999"
 
 ### Error Example 3: Insufficient Permissions (403)
 
-**Scenario:** Employee trying to view another user's profile.
+**Scenario:** Employee trying to view another employee's profile.
 
 **Response:**
 ```json
@@ -2321,7 +2600,7 @@ curl "http://localhost:4321/api/vacation-requests?teamId=non-member-team-id"
 **Response (403 Forbidden):**
 ```json
 {
-  "error": "You are not a member of this team"
+  "error": "You are not authorized to view this vacation request"
 }
 ```
 
@@ -2762,7 +3041,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 
 ---
 
-#### Example 2: Reject Without Reason
+#### Example 2: Reject Vacation Request Without Reason
 
 **Request:**
 ```bash
@@ -2780,7 +3059,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 
 ---
 
-#### Example 3: Reject With Reason Too Long
+#### Example 3: Reject Vacation Request Reason Too Long
 
 **Request:**
 ```bash
@@ -2959,6 +3238,4 @@ For issues or questions:
 2. Review test scripts in `tests/api/` for working examples
 3. Check server logs in `/tmp/astro-test.log`
 4. Ensure Supabase is running: `supabase status`
-
-
 

@@ -1089,3 +1089,46 @@ export interface UpdateVacationAllowanceResponseDTO {
   updatedAt: string;
 }
 
+// ============================================================================
+// Settings DTOs
+// ============================================================================
+
+/**
+ * Setting DTO
+ * Represents a single global setting
+ * Connected to: Database['public']['Tables']['settings']['Row']
+ */
+export interface SettingDTO {
+  key: string;
+  value: number;
+  description: string | null;
+  updatedAt: string; // ISO datetime
+}
+
+/**
+ * Get all settings response DTO
+ * Complete response with all settings
+ */
+export interface GetAllSettingsResponseDTO {
+  data: SettingDTO[];
+}
+
+/**
+ * Get setting by key response DTO
+ * Response for single setting
+ */
+export interface GetSettingResponseDTO extends SettingDTO {}
+
+/**
+ * Update setting command DTO
+ * Used by HR to update setting values
+ */
+export interface UpdateSettingDTO {
+  value: number;
+}
+
+/**
+ * Update setting response DTO
+ * Returned after successful setting update
+ */
+export interface UpdateSettingResponseDTO extends SettingDTO {}
