@@ -267,6 +267,10 @@ export type Database = {
         Args: { p_end_date: string; p_start_date: string }
         Returns: number
       }
+      check_common_team: {
+        Args: { user1_id: string; user2_id: string }
+        Returns: boolean
+      }
       get_team_occupancy: {
         Args: { p_end_date: string; p_start_date: string; p_team_id: string }
         Returns: number

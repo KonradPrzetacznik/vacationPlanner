@@ -26,6 +26,9 @@ tests/api/
 ├── team-calendar.test.sh     # Tests for GET /api/teams/:id/calendar
 ├── team-members-add.test.sh  # Tests for POST /api/teams/:id/members
 ├── team-members-remove.test.sh # Tests for DELETE /api/teams/:id/members/:userId
+├── vacation-requests-list.test.sh # Tests for GET /api/vacation-requests (list endpoint)
+├── vacation-request-by-id.test.sh # Tests for GET /api/vacation-requests/:id (details endpoint)
+├── vacation-request-create.test.sh # Tests for POST /api/vacation-requests (create request)
 ├── run-all.sh                # Master script to run all tests
 └── README.md                 # This file
 ```
@@ -74,6 +77,18 @@ Individual tests also handle server management automatically:
 
 # Test team deletion
 ./tests/api/teams-delete.test.sh
+```
+
+**Vacation Requests Tests:**
+```bash
+# Test vacation requests list endpoint (with filtering and RBAC)
+./tests/api/vacation-requests-list.test.sh
+
+# Test get vacation request by ID (with RBAC validation)
+./tests/api/vacation-request-by-id.test.sh
+
+# Test create vacation request (with comprehensive validation)
+./tests/api/vacation-request-create.test.sh
 ```
 
 ## How Server Management Works

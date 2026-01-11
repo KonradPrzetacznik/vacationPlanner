@@ -11,19 +11,20 @@ import type { Database } from "./db/database.types";
 // Database Entity Type Aliases
 // ============================================================================
 
-type Users = Database["public"]["Tables"]["users"]["Row"];
-type Vacations = Database["public"]["Tables"]["vacations"]["Row"];
-type UserVacations = Database["public"]["Tables"]["user_vacations"]["Row"];
+// Note: Some legacy table types are commented out as they don't exist in current schema
+// type Users = Database["public"]["Tables"]["users"]["Row"];
+// type Vacations = Database["public"]["Tables"]["vacations"]["Row"];
+// type UserVacations = Database["public"]["Tables"]["user_vacations"]["Row"];
 type VacationRequests = Database["public"]["Tables"]["vacation_requests"]["Row"];
-type Notifications = Database["public"]["Tables"]["notifications"]["Row"];
-type AuditLogs = Database["public"]["Tables"]["audit_logs"]["Row"];
+// type Notifications = Database["public"]["Tables"]["notifications"]["Row"];
+// type AuditLogs = Database["public"]["Tables"]["audit_logs"]["Row"];
 
 // Insert types for creating new records
-type UsersInsert = Database["public"]["Tables"]["users"]["Insert"];
-type VacationsInsert = Database["public"]["Tables"]["vacations"]["Insert"];
-type UserVacationsInsert = Database["public"]["Tables"]["user_vacations"]["Insert"];
+// type UsersInsert = Database["public"]["Tables"]["users"]["Insert"];
+// type VacationsInsert = Database["public"]["Tables"]["vacations"]["Insert"];
+// type UserVacationsInsert = Database["public"]["Tables"]["user_vacations"]["Insert"];
 type VacationRequestsInsert = Database["public"]["Tables"]["vacation_requests"]["Insert"];
-type NotificationsInsert = Database["public"]["Tables"]["notifications"]["Insert"];
+// type NotificationsInsert = Database["public"]["Tables"]["notifications"]["Insert"];
 
 // ============================================================================
 // Common/Shared DTOs
@@ -191,15 +192,6 @@ export type VacationRequestDTO = VacationRequests & {
   vacation_name: string;
 };
 
-/**
- * Vacation request details DTO
- * Extended version with full user and vacation objects
- */
-export type VacationRequestDetailsDTO = VacationRequests & {
-  user: Pick<Users, "id" | "full_name" | "email">;
-  vacation: Pick<Vacations, "id" | "name" | "start_date" | "end_date" | "status">;
-  reviewed_by_user?: Pick<Users, "id" | "full_name" | "email">;
-};
 
 // ============================================================================
 // User Vacation DTOs
@@ -853,5 +845,65 @@ export interface VacationRequestsPaginationDTO {
 export interface GetVacationRequestsResponseDTO {
   data: VacationRequestListItemDTO[];
   pagination: VacationRequestsPaginationDTO;
+}
+
+/**
+ * Vacation request details DTO
+ * Extended version with full user and processedBy information
+ * Connected to: Database['public']['Tables']['vacation_requests']['Row']
+ * Connected to: Database['public']['Tables']['profiles']['Row']
+ */
+export interface VacationRequestDetailsDTO {
+  id: string;
+  userId: string;
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  startDate: string; // ISO date
+  endDate: string; // ISO date
+  businessDaysCount: number;
+  status: "SUBMITTED" | "APPROVED" | "REJECTED" | "CANCELLED";
+  processedByUserId: string | null;
+  processedBy: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  } | null;
+  processedAt: string | null; // ISO datetime
+  createdAt: string; // ISO datetime
+  updatedAt: string; // ISO datetime
+}
+
+/**
+ * Get vacation request by ID response DTO
+ */
+export interface GetVacationRequestByIdResponseDTO {
+  data: VacationRequestDetailsDTO;
+}
+
+/**
+ * Create vacation request command DTO
+ * Used by employees to submit new vacation requests
+ */
+export interface CreateVacationRequestDTO {
+  startDate: string; // ISO date format YYYY-MM-DD
+  endDate: string; // ISO date format YYYY-MM-DD
+}
+
+/**
+ * Create vacation request response DTO
+ * Returned after successful vacation request creation
+ */
+export interface CreateVacationRequestResponseDTO {
+  id: string;
+  userId: string;
+  startDate: string; // ISO date
+  endDate: string; // ISO date
+  businessDaysCount: number;
+  status: "SUBMITTED";
+  createdAt: string; // ISO datetime
 }
 

@@ -19,6 +19,8 @@ This document provides practical examples of using the Vacation Planner API.
   - [Delete Team](#delete-team)
 - [Vacation Requests API](#vacation-requests-api)
   - [List Vacation Requests](#list-vacation-requests)
+  - [Get Vacation Request by ID](#get-vacation-request-by-id)
+  - [Create Vacation Request](#create-vacation-request)
 - [Common Use Cases](#common-use-cases)
 - [Error Handling](#error-handling)
 
@@ -1712,6 +1714,236 @@ curl "http://localhost:4321/api/vacation-requests?teamId=non-member-team-id"
 
 ---
 
+---
+
+### Get Vacation Request by ID
+
+#### Example 1: Get Detailed Information About a Vacation Request
+
+**Request:**
+```bash
+curl "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000"
+```
+
+**Response (200 OK):**
+```json
+{
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "userId": "223e4567-e89b-12d3-a456-426614174000",
+    "user": {
+      "id": "223e4567-e89b-12d3-a456-426614174000",
+      "firstName": "Jan",
+      "lastName": "Kowalski",
+      "email": "jan.kowalski@vacationplanner.pl"
+    },
+    "startDate": "2025-12-15",
+    "endDate": "2025-12-26",
+    "businessDaysCount": 4,
+    "status": "APPROVED",
+    "processedByUserId": "00000000-0000-0000-0000-000000000001",
+    "processedBy": {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "firstName": "Admin",
+      "lastName": "User"
+    },
+    "processedAt": "2025-12-01T10:30:00Z",
+    "createdAt": "2025-11-28T12:00:00Z",
+    "updatedAt": "2025-12-01T10:30:00Z"
+  }
+}
+```
+
+**Access Control:**
+- **EMPLOYEE:** Can only view their own vacation requests
+- **HR:** Can view requests from team members (users in same team)
+- **ADMINISTRATOR:** Can view all requests
+
+**Use Case:** Display detailed information about a specific vacation request in a detail view.
+
+---
+
+#### Example 2: Invalid UUID Format
+
+**Request:**
+```bash
+curl "http://localhost:4321/api/vacation-requests/invalid-uuid"
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "Invalid vacation request ID format"
+}
+```
+
+---
+
+#### Example 3: Vacation Request Not Found
+
+**Request:**
+```bash
+curl "http://localhost:4321/api/vacation-requests/00000000-0000-0000-0000-000000000000"
+```
+
+**Response (404 Not Found):**
+```json
+{
+  "error": "Vacation request not found"
+}
+```
+
+---
+
+#### Example 4: Unauthorized Access (EMPLOYEE)
+
+**Request:**
+```bash
+# Employee trying to view another employee's vacation request
+curl "http://localhost:4321/api/vacation-requests/other-user-request-id"
+```
+
+**Response (403 Forbidden):**
+```json
+{
+  "error": "You can only view your own vacation requests"
+}
+```
+
+---
+
+#### Example 5: Unauthorized Access (HR)
+
+**Request:**
+```bash
+# HR trying to view request from user not in their team
+curl "http://localhost:4321/api/vacation-requests/non-team-member-request-id"
+```
+
+**Response (403 Forbidden):**
+```json
+{
+  "error": "You are not authorized to view this vacation request"
+}
+```
+
+---
+
+### Create Vacation Request
+
+#### Example 1: Create New Vacation Request
+
+**Request:**
+```bash
+curl -X POST "http://localhost:4321/api/vacation-requests" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "startDate": "2026-02-02",
+    "endDate": "2026-02-06"
+  }'
+```
+
+**Response (201 Created):**
+```json
+{
+  "id": "423e4567-e89b-12d3-a456-426614174000",
+  "userId": "223e4567-e89b-12d3-a456-426614174000",
+  "startDate": "2026-02-02",
+  "endDate": "2026-02-06",
+  "businessDaysCount": 5,
+  "status": "SUBMITTED",
+  "createdAt": "2026-01-11T10:00:00Z"
+}
+```
+
+**Business Rules:**
+- Start date must be in the future (not in the past)
+- Start and end dates cannot fall on weekends (Saturday/Sunday)
+- End date must be >= start date
+- System automatically calculates business days (weekdays only)
+- Request is created with status "SUBMITTED"
+- Validates available vacation days in user's allowance
+- Checks for overlapping vacation requests
+
+**Use Case:** Employee submits a new vacation request through the application.
+
+---
+
+#### Example 2: Missing Required Field
+
+**Request:**
+```bash
+curl -X POST "http://localhost:4321/api/vacation-requests" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "endDate": "2026-03-15"
+  }'
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "Invalid request data",
+  "details": {
+    "startDate": ["Start date is required"]
+  }
+}
+```
+
+---
+
+#### Example 3: Invalid Date Format
+
+**Request:**
+```bash
+curl -X POST "http://localhost:4321/api/vacation-requests" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "startDate": "15-03-2026",
+    "endDate": "2026-03-20"
+  }'
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "Invalid request data",
+  "details": {
+    "startDate": ["Start date must be in YYYY-MM-DD format"]
+  }
+}
+```
+
+---
+
+#### Example 4: Date in the Past
+
+**Request:**
+```bash
+curl -X POST "http://localhost:4321/api/vacation-requests" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "startDate": "2023-01-10",
+    "endDate": "2023-01-15"
+  }'
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "Invalid request data",
+  "details": {
+    "startDate": ["Start date cannot be in the past"]
+  }
+}
+```
+
+---
+
+#### Example 5: Weekend Date
+
+**Request:**
+```bash
 ### JavaScript Examples
 
 #### Fetch All Vacation Requests

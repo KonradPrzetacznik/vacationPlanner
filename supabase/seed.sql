@@ -117,8 +117,16 @@ select
   2025,
   26, -- default vacation days
   0   -- no carryover for this example
-from profiles
-where role = 'EMPLOYEE';
+from profiles;
+
+-- Create vacation allowances for all employees for 2026
+insert into vacation_allowances (user_id, year, total_days, carryover_days)
+select
+  id,
+  2026,
+  26, -- default vacation days
+  0   -- no carryover for this example
+from profiles;
 
 -- =====================================================
 -- 6. CREATE VACATION REQUESTS
