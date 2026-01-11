@@ -2,7 +2,9 @@ import { createClient } from "@supabase/supabase-js";
 
 import type { Database } from "../db/database.types.ts";
 
-export const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000001";
+// DEFAULT_USER_ID points to HR user (Ferdynand Kiepski) for MVP development
+// This allows testing of HR-specific endpoints like approve/reject without full auth
+export const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000002";
 
 const supabaseUrl = import.meta.env.SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.SUPABASE_KEY;

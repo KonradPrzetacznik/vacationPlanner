@@ -21,6 +21,9 @@ This document provides practical examples of using the Vacation Planner API.
   - [List Vacation Requests](#list-vacation-requests)
   - [Get Vacation Request by ID](#get-vacation-request-by-id)
   - [Create Vacation Request](#create-vacation-request)
+  - [Approve Vacation Request](#approve-vacation-request-hr-only)
+  - [Reject Vacation Request](#reject-vacation-request-hr-only)
+  - [Cancel Vacation Request](#cancel-vacation-request-employee---owner-only)
 - [Common Use Cases](#common-use-cases)
 - [Error Handling](#error-handling)
 
@@ -1942,6 +1945,388 @@ curl -X POST "http://localhost:4321/api/vacation-requests" \
 
 #### Example 5: Weekend Date
 
+**Request:**
+```bash
+curl -X POST "http://localhost:4321/api/vacation-requests" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "startDate": "2026-03-07",
+    "endDate": "2026-03-08"
+  }'
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "Vacation request must include at least one business day"
+}
+```
+
+---
+
+### Approve Vacation Request (HR Only)
+
+#### Example 1: Approve Vacation Request Without Threshold Warning
+
+**Request:**
+```bash
+curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000/approve" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "acknowledgeThresholdWarning": false
+  }'
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "status": "APPROVED",
+  "processedByUserId": "00000000-0000-0000-0000-000000000002",
+  "processedAt": "2026-01-11T14:30:00Z",
+  "thresholdWarning": null
+}
+```
+
+**Access Control:**
+- Only **HR** users can approve vacation requests
+- HR cannot approve their own requests
+- HR must be a member of at least one team with the request owner
+
+**Use Case:** HR manager reviews and approves a vacation request.
+
+---
+
+#### Example 2: Approve With Threshold Warning (Requires Acknowledgment)
+
+**Request:**
+```bash
+# First attempt without acknowledgment
+curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000/approve" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "acknowledgeThresholdWarning": false
+  }'
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "You must acknowledge the threshold warning to approve this request"
+}
+```
+
+**Request (with acknowledgment):**
+```bash
+curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000/approve" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "acknowledgeThresholdWarning": true
+  }'
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "status": "APPROVED",
+  "processedByUserId": "00000000-0000-0000-0000-000000000002",
+  "processedAt": "2026-01-11T14:30:00Z",
+  "thresholdWarning": {
+    "hasWarning": true,
+    "teamOccupancy": 60.5,
+    "threshold": 50,
+    "message": "Approving this request will exceed the team occupancy threshold (60.5% > 50%)"
+  }
+}
+```
+
+**Use Case:** HR manager acknowledges that approving this request will exceed team capacity threshold.
+
+---
+
+#### Example 3: Approve Already Approved Request
+
+**Request:**
+```bash
+curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000/approve" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "Request must be in SUBMITTED status"
+}
+```
+
+---
+
+#### Example 4: Non-HR User Trying to Approve
+
+**Request:**
+```bash
+# Current user is EMPLOYEE or ADMINISTRATOR
+curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000/approve" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+**Response (403 Forbidden):**
+```json
+{
+  "error": "Only HR can approve vacation requests"
+}
+```
+
+---
+
+#### Example 5: HR Trying to Approve Own Request
+
+**Request:**
+```bash
+curl -X POST "http://localhost:4321/api/vacation-requests/own-request-id/approve" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+**Response (403 Forbidden):**
+```json
+{
+  "error": "You cannot approve your own vacation request"
+}
+```
+
+---
+
+#### Example 6: HR Without Common Team
+
+**Request:**
+```bash
+# HR trying to approve request from user not in their teams
+curl -X POST "http://localhost:4321/api/vacation-requests/other-team-request-id/approve" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+**Response (403 Forbidden):**
+```json
+{
+  "error": "You are not authorized to approve this request"
+}
+```
+
+---
+
+### Reject Vacation Request (HR Only)
+
+#### Example 1: Reject Vacation Request With Reason
+
+**Request:**
+```bash
+curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000/reject" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "reason": "Team capacity exceeded during this period"
+  }'
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "status": "REJECTED",
+  "processedByUserId": "00000000-0000-0000-0000-000000000002",
+  "processedAt": "2026-01-11T14:30:00Z"
+}
+```
+
+**Access Control:**
+- Only **HR** users can reject vacation requests
+- HR cannot reject their own requests
+- HR must be a member of at least one team with the request owner
+- Reason is required (1-500 characters)
+
+**Use Case:** HR manager rejects a vacation request with explanation.
+
+---
+
+#### Example 2: Reject Without Reason
+
+**Request:**
+```bash
+curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000/reject" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "Reason is required"
+}
+```
+
+---
+
+#### Example 3: Reject With Reason Too Long
+
+**Request:**
+```bash
+curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000/reject" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "reason": "Very long reason... [501+ characters]"
+  }'
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "Reason must be at most 500 characters"
+}
+```
+
+---
+
+#### Example 4: Reject Already Rejected Request
+
+**Request:**
+```bash
+curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000/reject" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "reason": "Another reason"
+  }'
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "Request must be in SUBMITTED status"
+}
+```
+
+---
+
+### Cancel Vacation Request (Employee - Owner Only)
+
+#### Example 1: Cancel SUBMITTED Request
+
+**Request:**
+```bash
+curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000/cancel" \
+  -H "Content-Type: application/json"
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "status": "CANCELLED",
+  "daysReturned": 5,
+  "updatedAt": "2026-01-11T14:30:00Z"
+}
+```
+
+**Access Control:**
+- Any authenticated user can cancel their **own** vacation requests
+- Cannot cancel requests belonging to other users
+- Can only cancel requests with status SUBMITTED or APPROVED
+- For APPROVED requests: cannot cancel if vacation started more than 1 day ago
+
+**Use Case:** Employee cancels their vacation request before it's processed or shortly after approval.
+
+---
+
+#### Example 2: Cancel APPROVED Request (Future Date)
+
+**Request:**
+```bash
+curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000/cancel" \
+  -H "Content-Type: application/json"
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "status": "CANCELLED",
+  "daysReturned": 5,
+  "updatedAt": "2026-01-11T14:30:00Z"
+}
+```
+
+---
+
+#### Example 3: Cancel APPROVED Request (Started More Than 1 Day Ago)
+
+**Request:**
+```bash
+# Trying to cancel vacation that started 2 days ago
+curl -X POST "http://localhost:4321/api/vacation-requests/old-approved-request-id/cancel" \
+  -H "Content-Type: application/json"
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "Cannot cancel vacation that started more than 1 day ago"
+}
+```
+
+---
+
+#### Example 4: Cancel REJECTED Request
+
+**Request:**
+```bash
+curl -X POST "http://localhost:4321/api/vacation-requests/rejected-request-id/cancel" \
+  -H "Content-Type: application/json"
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "Only SUBMITTED or APPROVED requests can be cancelled"
+}
+```
+
+---
+
+#### Example 5: Cancel Someone Else's Request
+
+**Request:**
+```bash
+# Employee trying to cancel another employee's request
+curl -X POST "http://localhost:4321/api/vacation-requests/other-user-request-id/cancel" \
+  -H "Content-Type: application/json"
+```
+
+**Response (403 Forbidden):**
+```json
+{
+  "error": "You can only cancel your own vacation requests"
+}
+```
+
+---
+
+### Vacation Request Actions Summary
+
+| Action | Endpoint | Method | Roles | Can Process Own Request |
+|--------|----------|--------|-------|------------------------|
+| Approve | `/api/vacation-requests/:id/approve` | POST | HR | No |
+| Reject | `/api/vacation-requests/:id/reject` | POST | HR | No |
+| Cancel | `/api/vacation-requests/:id/cancel` | POST | All (owner only) | Yes |
+
+**Business Rules:**
+- **Approve/Reject**: Only for requests with status SUBMITTED
+- **Cancel**: For requests with status SUBMITTED or APPROVED
+- **Threshold Warning**: System calculates team occupancy and warns if threshold exceeded
+- **Common Team**: HR must share at least one team with request owner
+- **Time Constraint**: Cannot cancel APPROVED vacation that started more than 1 day ago
 **Request:**
 ```bash
 ### JavaScript Examples

@@ -907,3 +907,68 @@ export interface CreateVacationRequestResponseDTO {
   createdAt: string; // ISO datetime
 }
 
+// ============================================================================
+// Vacation Request Actions DTOs
+// ============================================================================
+
+/**
+ * Approve vacation request command DTO
+ * Used by HR to approve vacation requests with threshold warning acknowledgment
+ */
+export interface ApproveVacationRequestDTO {
+  acknowledgeThresholdWarning?: boolean;
+}
+
+/**
+ * Threshold warning DTO
+ * Information about team occupancy threshold status
+ */
+export interface ThresholdWarningDTO {
+  hasWarning: boolean;
+  teamOccupancy: number;
+  threshold: number;
+  message: string;
+}
+
+/**
+ * Approve vacation request response DTO
+ * Returned after approval attempt (with or without warning)
+ */
+export interface ApproveVacationRequestResponseDTO {
+  id: string;
+  status: "APPROVED";
+  processedByUserId: string;
+  processedAt: string; // ISO datetime
+  thresholdWarning: ThresholdWarningDTO | null;
+}
+
+/**
+ * Reject vacation request command DTO
+ * Used by HR to reject vacation requests with reason
+ */
+export interface RejectVacationRequestDTO {
+  reason: string;
+}
+
+/**
+ * Reject vacation request response DTO
+ * Returned after successful rejection
+ */
+export interface RejectVacationRequestResponseDTO {
+  id: string;
+  status: "REJECTED";
+  processedByUserId: string;
+  processedAt: string; // ISO datetime
+}
+
+/**
+ * Cancel vacation request response DTO
+ * Returned after successful cancellation by employee
+ */
+export interface CancelVacationRequestResponseDTO {
+  id: string;
+  status: "CANCELLED";
+  daysReturned: number;
+  updatedAt: string; // ISO datetime
+}
+

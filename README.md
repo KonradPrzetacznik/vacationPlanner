@@ -259,9 +259,18 @@ The project includes automated test scripts for all API endpoints.
 ```
 tests/
 └── api/
-    ├── users-list.test.sh      # Tests for GET /api/users
-    ├── user-by-id.test.sh      # Tests for GET /api/users/:id
-    └── run-all.sh              # Runs all API tests
+    ├── users-list.test.sh                    # Tests for GET /api/users
+    ├── user-by-id.test.sh                    # Tests for GET /api/users/:id
+    ├── vacation-request-approve.test.sh      # Tests for POST /api/vacation-requests/:id/approve
+    ├── vacation-request-reject.test.sh       # Tests for POST /api/vacation-requests/:id/reject
+    ├── vacation-request-cancel.test.sh       # Tests for POST /api/vacation-requests/:id/cancel
+    └── run-all.sh                            # Runs all API tests
+```
+
+**Quick Start:**
+```bash
+# Interactive test guide
+./QUICK-TEST-GUIDE.sh
 ```
 
 **Run All Tests:**
@@ -277,17 +286,26 @@ tests/
 
 # Test user by ID endpoint
 ./tests/api/user-by-id.test.sh
+
+# Test vacation request actions
+./tests/api/vacation-request-approve.test.sh
+./tests/api/vacation-request-reject.test.sh
+./tests/api/vacation-request-cancel.test.sh
 ```
 
 **Test Coverage:**
 - ✅ GET /api/users - List users with various filters
 - ✅ GET /api/users/:id - Get user details with teams
+- ✅ POST /api/vacation-requests/:id/approve - Approve requests (HR only)
+- ✅ POST /api/vacation-requests/:id/reject - Reject requests with reason (HR only)
+- ✅ POST /api/vacation-requests/:id/cancel - Cancel requests (Employee - owner only)
 - ✅ Validation errors (400)
 - ✅ Not found errors (404)
 - ✅ Authorization checks (403)
 - ✅ Pagination
 - ✅ Role-based filtering
 - ✅ Team filtering
+- ✅ Threshold warning mechanism
 
 ### Quick Manual Testing
 

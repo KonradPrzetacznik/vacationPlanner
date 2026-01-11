@@ -63,3 +63,39 @@ export type GetVacationRequestsQuerySchemaType = z.infer<
   typeof GetVacationRequestsQuerySchema
 >;
 
+/**
+ * Schema for vacation request ID parameter
+ */
+export const VacationRequestIdParamSchema = z.object({
+  id: UuidSchema,
+});
+
+export type VacationRequestIdParamSchemaType = z.infer<
+  typeof VacationRequestIdParamSchema
+>;
+
+/**
+ * Schema for POST /api/vacation-requests/:id/approve body
+ */
+export const ApproveVacationRequestSchema = z.object({
+  acknowledgeThresholdWarning: z.boolean().optional().default(false),
+});
+
+export type ApproveVacationRequestSchemaType = z.infer<
+  typeof ApproveVacationRequestSchema
+>;
+
+/**
+ * Schema for POST /api/vacation-requests/:id/reject body
+ */
+export const RejectVacationRequestSchema = z.object({
+  reason: z
+    .string()
+    .min(1, "Reason is required")
+    .max(500, "Reason must be at most 500 characters"),
+});
+
+export type RejectVacationRequestSchemaType = z.infer<
+  typeof RejectVacationRequestSchema
+>;
+

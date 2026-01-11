@@ -11,6 +11,10 @@ import type {
   VacationRequestDetailsDTO,
   CreateVacationRequestDTO,
   CreateVacationRequestResponseDTO,
+  ApproveVacationRequestResponseDTO,
+  RejectVacationRequestResponseDTO,
+  CancelVacationRequestResponseDTO,
+  ThresholdWarningDTO,
 } from "@/types";
 
 /**
@@ -526,6 +530,400 @@ export async function createVacationRequest(
     businessDaysCount: newRequest.business_days_count,
     status: "SUBMITTED",
     createdAt: newRequest.created_at,
+  };
+
+  return response;
+}
+
+/**
+ * Approve a vacation request (HR only)
+ * Implements business logic for approving vacation requests with team occupancy threshold checking
+ * - Verifies user is HR
+ * - Checks request status is SUBMITTED
+ * - Validates HR shares a team with request owner
+ * - Calculates team occupancy and checks against threshold
+ * - Returns warning if threshold exceeded (requires acknowledgment)
+ * - Updates request status to APPROVED
+ *
+ * @param supabase - Supabase client from context.locals
+ * @param currentUserId - ID of the current user (must be HR)
+ * @param requestId - ID of the vacation request to approve
+ * @param acknowledgeThresholdWarning - Whether user acknowledges threshold warning
+ * @returns Promise with approval response including threshold warning if applicable
+ * @throws Error if validation fails, user lacks permissions, or business rules violated
+ */
+export async function approveVacationRequest(
+  supabase: SupabaseClient,
+  currentUserId: string,
+  requestId: string,
+  acknowledgeThresholdWarning: boolean = false
+): Promise<ApproveVacationRequestResponseDTO> {
+  // 1. Fetch current user's role
+  const { data: currentUser, error: userError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", currentUserId)
+    .is("deleted_at", null)
+    .single();
+
+  if (userError || !currentUser) {
+    console.error("[VacationRequestsService] Failed to fetch current user:", userError);
+    throw new Error("Failed to verify user permissions");
+  }
+
+  // 2. Verify user is HR
+  if (currentUser.role !== "HR") {
+    throw new Error("Only HR can approve vacation requests");
+  }
+
+  // 3. Fetch vacation request by ID
+  const { data: vacationRequest, error: requestError } = await supabase
+    .from("vacation_requests")
+    .select("id, user_id, start_date, end_date, business_days_count, status")
+    .eq("id", requestId)
+    .single();
+
+  if (requestError || !vacationRequest) {
+    if (requestError?.code === "PGRST116") {
+      throw new Error("Vacation request not found");
+    }
+    console.error("[VacationRequestsService] Failed to fetch vacation request:", requestError);
+    throw new Error("Failed to fetch vacation request");
+  }
+
+  // 4. Check if user is owner of request (HR cannot approve own request)
+  if (vacationRequest.user_id === currentUserId) {
+    throw new Error("You cannot approve your own vacation request");
+  }
+
+  // 5. Verify HR is member of at least one team with request owner
+  const { data: hasCommonTeam, error: teamCheckError } = await supabase.rpc(
+    "check_common_team",
+    {
+      user1_id: currentUserId,
+      user2_id: vacationRequest.user_id,
+    }
+  );
+
+  if (teamCheckError) {
+    console.error("[VacationRequestsService] Failed to check team membership:", teamCheckError);
+    throw new Error("Failed to verify team membership");
+  }
+
+  if (!hasCommonTeam) {
+    throw new Error("You are not authorized to approve this request");
+  }
+
+  // 6. Check if request status is SUBMITTED
+  if (vacationRequest.status !== "SUBMITTED") {
+    throw new Error("Request must be in SUBMITTED status");
+  }
+
+  // 7. Get user's teams
+  const { data: userTeams, error: teamsError } = await supabase
+    .from("team_members")
+    .select("team_id")
+    .eq("user_id", vacationRequest.user_id);
+
+  if (teamsError) {
+    console.error("[VacationRequestsService] Failed to fetch user teams:", teamsError);
+    throw new Error("Failed to fetch user teams");
+  }
+
+  const teamIds = (userTeams || []).map((tm) => tm.team_id);
+
+  // 8. Get team_occupancy_threshold from settings
+  const { data: settings, error: settingsError } = await supabase
+    .from("settings")
+    .select("value")
+    .eq("key", "team_occupancy_threshold")
+    .single();
+
+  if (settingsError || !settings) {
+    console.error("[VacationRequestsService] Failed to fetch system settings:", settingsError);
+    throw new Error("Failed to fetch system settings");
+  }
+
+  // Extract threshold value from JSONB (stored as string, convert to number)
+  const threshold = typeof settings.value === 'string'
+    ? parseInt(settings.value, 10)
+    : typeof settings.value === 'number'
+    ? settings.value
+    : parseInt(String(settings.value), 10);
+
+  // 9. Calculate occupancy for each team
+  let maxOccupancy = 0;
+  let thresholdExceeded = false;
+
+  for (const teamId of teamIds) {
+    const { data: occupancy, error: occupancyError } = await supabase.rpc(
+      "get_team_occupancy",
+      {
+        p_team_id: teamId,
+        p_start_date: vacationRequest.start_date,
+        p_end_date: vacationRequest.end_date,
+      }
+    );
+
+    if (occupancyError) {
+      console.error("[VacationRequestsService] Failed to calculate team occupancy:", occupancyError);
+      throw new Error("Failed to calculate team occupancy");
+    }
+
+    const teamOccupancy = (occupancy as number) || 0;
+    if (teamOccupancy > maxOccupancy) {
+      maxOccupancy = teamOccupancy;
+    }
+
+    if (teamOccupancy > threshold) {
+      thresholdExceeded = true;
+    }
+  }
+
+  // 10. Check threshold and acknowledgment
+  let thresholdWarning: ThresholdWarningDTO | null = null;
+
+  if (thresholdExceeded) {
+    thresholdWarning = {
+      hasWarning: true,
+      teamOccupancy: maxOccupancy,
+      threshold: threshold,
+      message: `Approving this request will exceed the team occupancy threshold (${maxOccupancy.toFixed(1)}% > ${threshold}%)`,
+    };
+
+    if (!acknowledgeThresholdWarning) {
+      throw new Error("You must acknowledge the threshold warning to approve this request");
+    }
+  }
+
+  // 11. Update vacation_requests table
+  const now = new Date().toISOString();
+  const { data: updatedRequest, error: updateError } = await supabase
+    .from("vacation_requests")
+    .update({
+      status: "APPROVED",
+      processed_by_user_id: currentUserId,
+      processed_at: now,
+    })
+    .eq("id", requestId)
+    .eq("status", "SUBMITTED") // Ensure status hasn't changed
+    .select()
+    .single();
+
+  if (updateError || !updatedRequest) {
+    console.error("[VacationRequestsService] Failed to approve vacation request:", updateError);
+    throw new Error("Failed to approve vacation request");
+  }
+
+  // 12. Build response
+  const response: ApproveVacationRequestResponseDTO = {
+    id: updatedRequest.id,
+    status: "APPROVED",
+    processedByUserId: updatedRequest.processed_by_user_id!,
+    processedAt: updatedRequest.processed_at!,
+    thresholdWarning: thresholdWarning,
+  };
+
+  return response;
+}
+
+/**
+ * Reject a vacation request (HR only)
+ * Implements business logic for rejecting vacation requests with reason
+ * - Verifies user is HR
+ * - Checks request status is SUBMITTED
+ * - Validates HR shares a team with request owner
+ * - Updates request status to REJECTED
+ * - Note: reason is included in response but not stored in database (no column exists)
+ *
+ * @param supabase - Supabase client from context.locals
+ * @param currentUserId - ID of the current user (must be HR)
+ * @param requestId - ID of the vacation request to reject
+ * @param reason - Reason for rejection (1-500 characters)
+ * @returns Promise with rejection response
+ * @throws Error if validation fails, user lacks permissions, or business rules violated
+ */
+export async function rejectVacationRequest(
+  supabase: SupabaseClient,
+  currentUserId: string,
+  requestId: string,
+  reason: string
+): Promise<RejectVacationRequestResponseDTO> {
+  // 1. Fetch current user's role
+  const { data: currentUser, error: userError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", currentUserId)
+    .is("deleted_at", null)
+    .single();
+
+  if (userError || !currentUser) {
+    console.error("[VacationRequestsService] Failed to fetch current user:", userError);
+    throw new Error("Failed to verify user permissions");
+  }
+
+  // 2. Verify user is HR
+  if (currentUser.role !== "HR") {
+    throw new Error("Only HR can reject vacation requests");
+  }
+
+  // 3. Fetch vacation request by ID
+  const { data: vacationRequest, error: requestError } = await supabase
+    .from("vacation_requests")
+    .select("id, user_id, status")
+    .eq("id", requestId)
+    .single();
+
+  if (requestError || !vacationRequest) {
+    if (requestError?.code === "PGRST116") {
+      throw new Error("Vacation request not found");
+    }
+    console.error("[VacationRequestsService] Failed to fetch vacation request:", requestError);
+    throw new Error("Failed to fetch vacation request");
+  }
+
+  // 4. Check if user is owner of request (HR cannot reject own request)
+  if (vacationRequest.user_id === currentUserId) {
+    throw new Error("You cannot reject your own vacation request");
+  }
+
+  // 5. Verify HR is member of at least one team with request owner
+  const { data: hasCommonTeam, error: teamCheckError } = await supabase.rpc(
+    "check_common_team",
+    {
+      user1_id: currentUserId,
+      user2_id: vacationRequest.user_id,
+    }
+  );
+
+  if (teamCheckError) {
+    console.error("[VacationRequestsService] Failed to check team membership:", teamCheckError);
+    throw new Error("Failed to verify team membership");
+  }
+
+  if (!hasCommonTeam) {
+    throw new Error("You are not authorized to reject this request");
+  }
+
+  // 6. Check if request status is SUBMITTED
+  if (vacationRequest.status !== "SUBMITTED") {
+    throw new Error("Request must be in SUBMITTED status");
+  }
+
+  // 7. Update vacation_requests table
+  const now = new Date().toISOString();
+  const { data: updatedRequest, error: updateError } = await supabase
+    .from("vacation_requests")
+    .update({
+      status: "REJECTED",
+      processed_by_user_id: currentUserId,
+      processed_at: now,
+    })
+    .eq("id", requestId)
+    .eq("status", "SUBMITTED") // Ensure status hasn't changed
+    .select()
+    .single();
+
+  if (updateError || !updatedRequest) {
+    console.error("[VacationRequestsService] Failed to reject vacation request:", updateError);
+    throw new Error("Failed to reject vacation request");
+  }
+
+  // 8. Build response (reason included but not stored in DB)
+  const response: RejectVacationRequestResponseDTO = {
+    id: updatedRequest.id,
+    status: "REJECTED",
+    processedByUserId: updatedRequest.processed_by_user_id!,
+    processedAt: updatedRequest.processed_at!,
+  };
+
+  return response;
+}
+
+/**
+ * Cancel a vacation request (Employee - owner only)
+ * Implements business logic for cancelling vacation requests
+ * - Verifies user is owner of the request
+ * - Checks request status is SUBMITTED or APPROVED
+ * - Validates vacation hasn't started more than 1 day ago (for APPROVED requests)
+ * - Updates request status to CANCELLED
+ * - Returns number of days that will be returned to user's allowance
+ *
+ * @param supabase - Supabase client from context.locals
+ * @param currentUserId - ID of the current user (must be request owner)
+ * @param requestId - ID of the vacation request to cancel
+ * @returns Promise with cancellation response including days returned
+ * @throws Error if validation fails, user lacks permissions, or business rules violated
+ */
+export async function cancelVacationRequest(
+  supabase: SupabaseClient,
+  currentUserId: string,
+  requestId: string
+): Promise<CancelVacationRequestResponseDTO> {
+  // 1. Fetch vacation request by ID
+  const { data: vacationRequest, error: requestError } = await supabase
+    .from("vacation_requests")
+    .select("id, user_id, start_date, end_date, business_days_count, status")
+    .eq("id", requestId)
+    .single();
+
+  if (requestError || !vacationRequest) {
+    if (requestError?.code === "PGRST116") {
+      throw new Error("Vacation request not found");
+    }
+    console.error("[VacationRequestsService] Failed to fetch vacation request:", requestError);
+    throw new Error("Failed to fetch vacation request");
+  }
+
+  // 2. Verify current user is owner of request
+  if (vacationRequest.user_id !== currentUserId) {
+    throw new Error("You can only cancel your own vacation requests");
+  }
+
+  // 3. Check if request status is SUBMITTED or APPROVED
+  if (vacationRequest.status !== "SUBMITTED" && vacationRequest.status !== "APPROVED") {
+    throw new Error("Only SUBMITTED or APPROVED requests can be cancelled");
+  }
+
+  // 4. Check cancellation time constraint for APPROVED requests
+  if (vacationRequest.status === "APPROVED") {
+    const startDate = new Date(vacationRequest.start_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Calculate difference in days
+    const diffTime = today.getTime() - startDate.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays > 1) {
+      throw new Error("Cannot cancel vacation that started more than 1 day ago");
+    }
+  }
+
+  // 5. Update vacation_requests table
+  const now = new Date().toISOString();
+  const { data: updatedRequest, error: updateError } = await supabase
+    .from("vacation_requests")
+    .update({
+      status: "CANCELLED",
+      updated_at: now,
+    })
+    .eq("id", requestId)
+    .in("status", ["SUBMITTED", "APPROVED"]) // Ensure status hasn't changed
+    .select()
+    .single();
+
+  if (updateError || !updatedRequest) {
+    console.error("[VacationRequestsService] Failed to cancel vacation request:", updateError);
+    throw new Error("Failed to cancel vacation request");
+  }
+
+  // 6. Build response with days returned
+  const response: CancelVacationRequestResponseDTO = {
+    id: updatedRequest.id,
+    status: "CANCELLED",
+    daysReturned: vacationRequest.business_days_count,
+    updatedAt: updatedRequest.updated_at,
   };
 
   return response;
