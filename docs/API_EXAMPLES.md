@@ -24,6 +24,11 @@ This document provides practical examples of using the Vacation Planner API.
   - [Approve Vacation Request](#approve-vacation-request-hr-only)
   - [Reject Vacation Request](#reject-vacation-request-hr-only)
   - [Cancel Vacation Request](#cancel-vacation-request-employee---owner-only)
+- [Vacation Allowances API](#vacation-allowances-api)
+  - [Get User Vacation Allowances](#get-user-vacation-allowances)
+  - [Get User Vacation Allowance by Year](#get-user-vacation-allowance-by-year)
+  - [Business Logic](#business-logic)
+  - [Database Optimizations](#database-optimizations)
 - [Common Use Cases](#common-use-cases)
 - [Error Handling](#error-handling)
 
@@ -676,6 +681,403 @@ curl "http://localhost:3000/api/users?includeDeleted=true"
 ```
 
 **Use Case:** Admin audit view showing both active and deactivated users.
+
+---
+
+## Vacation Allowances API
+
+### Overview
+
+API endpoints for managing user vacation allowances with computed fields for used and remaining days.
+
+### Get User Vacation Allowances
+
+Retrieves all vacation allowances for a user with optional year filtering.
+
+**Endpoint:** `GET /api/users/:userId/vacation-allowances`
+
+**Authorization:**
+- `EMPLOYEE`: Can only view their own allowances
+- `HR`: Can view allowances for active users only
+- `ADMINISTRATOR`: Can view all allowances including deleted users
+
+**Path Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `userId` | UUID | Yes | ID of the user |
+
+**Query Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `year` | number | No | Filter by specific year (2000-2100) |
+
+#### Example 25: Get All Vacation Allowances for User
+
+**Request:**
+```bash
+curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000010/vacation-allowances"
+```
+
+**Response (200):**
+```json
+{
+  "userId": "00000000-0000-0000-0000-000000000010",
+  "allowances": [
+    {
+      "id": "3fcc77b9-1225-4c9b-9918-876e23776dd5",
+      "userId": "00000000-0000-0000-0000-000000000010",
+      "year": 2025,
+      "totalDays": 26,
+      "carryoverDays": 0,
+      "usedDays": 10,
+      "usedCarryoverDays": 0,
+      "usedCurrentYearDays": 10,
+      "remainingDays": 16,
+      "remainingCarryoverDays": 0,
+      "remainingCurrentYearDays": 16,
+      "carryoverExpiresAt": "2025-03-31",
+      "createdAt": "2026-01-11T21:25:34.571656+00:00",
+      "updatedAt": "2026-01-11T21:25:34.571656+00:00"
+    }
+  ]
+}
+```
+
+**Use Case:** Display employee's vacation balance in their profile dashboard.
+
+---
+
+#### Example 26: Filter Allowances by Year
+
+**Request:**
+```bash
+curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000010/vacation-allowances?year=2025"
+```
+
+**Response (200):**
+```json
+{
+  "userId": "00000000-0000-0000-0000-000000000010",
+  "allowances": [
+    {
+      "id": "3fcc77b9-1225-4c9b-9918-876e23776dd5",
+      "userId": "00000000-0000-0000-0000-000000000010",
+      "year": 2025,
+      "totalDays": 26,
+      "carryoverDays": 0,
+      "usedDays": 10,
+      "usedCarryoverDays": 0,
+      "usedCurrentYearDays": 10,
+      "remainingDays": 16,
+      "remainingCarryoverDays": 0,
+      "remainingCurrentYearDays": 16,
+      "carryoverExpiresAt": "2025-03-31",
+      "createdAt": "2026-01-11T21:25:34.571656+00:00",
+      "updatedAt": "2026-01-11T21:25:34.571656+00:00"
+    }
+  ]
+}
+```
+
+**Use Case:** Show specific year's vacation balance in annual summary.
+
+---
+
+#### Example 27: Invalid User ID Format
+
+**Request:**
+```bash
+curl "http://localhost:3000/api/users/invalid-uuid/vacation-allowances"
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "Invalid user ID format",
+  "details": {
+    "userId": ["Invalid UUID format"]
+  }
+}
+```
+
+---
+
+#### Example 28: Access Denied - Employee Viewing Others
+
+**Request:**
+```bash
+# Employee trying to view another user's allowances
+curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000002/vacation-allowances"
+```
+
+**Response (403 Forbidden):**
+```json
+{
+  "error": "Forbidden: You can only view your own vacation allowances"
+}
+```
+
+---
+
+#### Example 29: User Not Found
+
+**Request:**
+```bash
+curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000099/vacation-allowances"
+```
+
+**Response (404 Not Found):**
+```json
+{
+  "error": "User not found"
+}
+```
+
+---
+
+### Get User Vacation Allowance by Year
+
+Retrieves a single vacation allowance for a specific year.
+
+**Endpoint:** `GET /api/users/:userId/vacation-allowances/:year`
+
+**Authorization:**
+- `EMPLOYEE`: Can only view their own allowances
+- `HR`: Can view allowances for active users only
+- `ADMINISTRATOR`: Can view all allowances including deleted users
+
+**Path Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `userId` | UUID | Yes | ID of the user |
+| `year` | number | Yes | Year of the allowance (2000-2100) |
+
+#### Example 30: Get Allowance for Specific Year
+
+**Request:**
+```bash
+curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000010/vacation-allowances/2025"
+```
+
+**Response (200):**
+```json
+{
+  "data": {
+    "id": "3fcc77b9-1225-4c9b-9918-876e23776dd5",
+    "userId": "00000000-0000-0000-0000-000000000010",
+    "year": 2025,
+    "totalDays": 26,
+    "carryoverDays": 0,
+    "usedDays": 10,
+    "usedCarryoverDays": 0,
+    "usedCurrentYearDays": 10,
+    "remainingDays": 16,
+    "remainingCarryoverDays": 0,
+    "remainingCurrentYearDays": 16,
+    "carryoverExpiresAt": "2025-03-31",
+    "createdAt": "2026-01-11T21:25:34.571656+00:00",
+    "updatedAt": "2026-01-11T21:25:34.571656+00:00"
+  }
+}
+```
+
+**Use Case:** Quick lookup of vacation balance for current year.
+
+---
+
+#### Example 31: Year Out of Range
+
+**Request:**
+```bash
+curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000010/vacation-allowances/1999"
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "Invalid parameters",
+  "details": {
+    "year": ["Year must be at least 2000"]
+  }
+}
+```
+
+---
+
+#### Example 32: Allowance Not Found for Year
+
+**Request:**
+```bash
+curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000010/vacation-allowances/2027"
+```
+
+**Response (404 Not Found):**
+```json
+{
+  "error": "Vacation allowance for year 2027 not found"
+}
+```
+
+---
+
+### Business Logic
+
+#### Computed Fields
+
+The API automatically calculates several fields based on approved vacation requests:
+
+1. **usedDays**: Total vacation days used (carryover + current year)
+2. **usedCarryoverDays**: Days used from carry-over allowance
+3. **usedCurrentYearDays**: Days used from current year allowance
+4. **remainingDays**: Total remaining days available
+5. **remainingCarryoverDays**: Remaining carry-over days
+6. **remainingCurrentYearDays**: Remaining current year days
+
+#### Carry-over Logic
+
+- Carry-over days expire on **March 31st** of each year
+- Days are consumed in order: **carry-over first, then current year days**
+- Only **APPROVED** vacation requests count towards used days
+- Vacation requests are processed chronologically by start date
+
+**Example:**
+
+User has:
+- 26 total days for 2025
+- 5 carry-over days from 2024
+- Total available: 31 days
+
+Vacation requests:
+1. Feb 15-19 (5 days) → Uses 5 carry-over days
+2. Apr 10-14 (5 days) → Uses 5 current year days (carry-over expired)
+3. Dec 20-31 (10 days) → Uses 10 current year days
+
+Result:
+- usedCarryoverDays: 5
+- usedCurrentYearDays: 15
+- remainingCarryoverDays: 0 (expired)
+- remainingCurrentYearDays: 11
+
+---
+
+### Database Optimizations
+
+#### Indexes
+
+The following indexes optimize vacation allowances queries:
+
+1. **idx_vacation_allowances_user_year**: Composite index on (user_id, year DESC)
+   - Optimizes queries by user and year
+   - Years ordered descending for recent-first queries
+
+2. **idx_vacation_requests_user_status_dates**: Partial index on (user_id, status, start_date, end_date)
+   - Only indexes APPROVED requests
+   - Optimizes used days calculations
+   - Reduces index size by ~75%
+
+---
+
+#### Example 33: React Component - Vacation Balance Display
+
+```typescript
+import React, { useEffect, useState } from 'react';
+
+interface VacationAllowance {
+  id: string;
+  userId: string;
+  year: number;
+  totalDays: number;
+  carryoverDays: number;
+  usedDays: number;
+  usedCarryoverDays: number;
+  usedCurrentYearDays: number;
+  remainingDays: number;
+  remainingCarryoverDays: number;
+  remainingCurrentYearDays: number;
+  carryoverExpiresAt: string;
+}
+
+interface VacationBalanceProps {
+  userId: string;
+  year?: number;
+}
+
+const VacationBalance: React.FC<VacationBalanceProps> = ({ userId, year }) => {
+  const [allowances, setAllowances] = useState<VacationAllowance[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAllowances = async () => {
+      try {
+        const yearParam = year ? `?year=${year}` : '';
+        const response = await fetch(`/api/users/${userId}/vacation-allowances${yearParam}`);
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error);
+        }
+        
+        const data = await response.json();
+        setAllowances(data.allowances);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch allowances');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllowances();
+  }, [userId, year]);
+
+  if (loading) return <div>Loading vacation balance...</div>;
+  if (error) return <div className="error">Error: {error}</div>;
+  if (allowances.length === 0) return <div>No vacation allowances found</div>;
+
+  return (
+    <div className="vacation-balance">
+      <h2>Vacation Balance</h2>
+      {allowances.map((allowance) => (
+        <div key={allowance.id} className="allowance-card">
+          <h3>Year {allowance.year}</h3>
+          <div className="balance-grid">
+            <div className="balance-item">
+              <span className="label">Total Days:</span>
+              <span className="value">{allowance.totalDays}</span>
+            </div>
+            <div className="balance-item">
+              <span className="label">Carryover Days:</span>
+              <span className="value">{allowance.carryoverDays}</span>
+            </div>
+            <div className="balance-item">
+              <span className="label">Used Days:</span>
+              <span className="value">{allowance.usedDays}</span>
+            </div>
+            <div className="balance-item highlight">
+              <span className="label">Remaining Days:</span>
+              <span className="value">{allowance.remainingDays}</span>
+            </div>
+          </div>
+          {allowance.carryoverDays > 0 && (
+            <div className="carryover-notice">
+              <p>
+                Carryover days expire on: {new Date(allowance.carryoverExpiresAt).toLocaleDateString()}
+              </p>
+              <p>
+                Remaining carryover: {allowance.remainingCarryoverDays} days
+              </p>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default VacationBalance;
+```
+
+**Use Case:** Display user's vacation balance in a dashboard or profile page.
 
 ---
 
@@ -2327,20 +2729,18 @@ curl -X POST "http://localhost:4321/api/vacation-requests/other-user-request-id/
 - **Threshold Warning**: System calculates team occupancy and warns if threshold exceeded
 - **Common Team**: HR must share at least one team with request owner
 - **Time Constraint**: Cannot cancel APPROVED vacation that started more than 1 day ago
-**Request:**
-```bash
-### JavaScript Examples
 
-#### Fetch All Vacation Requests
+---
 
-```javascript
-async function getVacationRequests(filters = {}) {
 ## Additional Resources
 
-- **Full API Documentation:** See [.ai/api-users-documentation.md](.ai/api-users-documentation.md)
 - **Type Definitions:** See [src/types.ts](../src/types.ts)
 - **Test Scripts:** See [tests/api/](../tests/api/)
-- **Implementation Plan:** See [.ai/view-implementation-plan.md](.ai/view-implementation-plan.md)
+  - Users API tests: `./tests/api/users-*.test.sh`
+  - Teams API tests: `./tests/api/teams-*.test.sh`
+  - Vacation Requests tests: `./tests/api/vacation-request-*.test.sh`
+  - Vacation Allowances tests: `./tests/api/vacation-allowances.test.sh`
+  - Run all tests: `./tests/api/run-all.sh`
 
 ---
 
@@ -2351,4 +2751,6 @@ For issues or questions:
 2. Review test scripts in `tests/api/` for working examples
 3. Check server logs in `/tmp/astro-test.log`
 4. Ensure Supabase is running: `supabase status`
+
+
 

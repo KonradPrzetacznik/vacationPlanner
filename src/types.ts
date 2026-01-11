@@ -87,8 +87,9 @@ export interface RegisterRequestDTO {
 /**
  * User DTO - Public user information
  * Derived from Users entity, excludes sensitive fields
+ * NOTE: Legacy type - commented out as Users table doesn't exist in current schema
  */
-export type UserDTO = Pick<Users, "id" | "email" | "full_name" | "role" | "created_at" | "updated_at">;
+// export type UserDTO = Pick<Users, "id" | "email" | "full_name" | "role" | "created_at" | "updated_at">;
 
 /**
  * Session information
@@ -103,144 +104,158 @@ export interface SessionDTO {
 /**
  * Complete authentication response
  * Combines user information with session tokens
+ * NOTE: Legacy type - commented out as UserDTO doesn't exist
  */
-export interface AuthResponseDTO {
-  user: UserDTO;
-  session: SessionDTO;
-}
+// export interface AuthResponseDTO {
+//   user: UserDTO;
+//   session: SessionDTO;
+// }
 
 // ============================================================================
-// Vacation DTOs
+// Vacation DTOs (LEGACY - tables don't exist in current schema)
 // ============================================================================
 
 /**
  * Create vacation command
  * Based on VacationsInsert, used for creating new vacations
+ * NOTE: Legacy type - Vacations table doesn't exist in current schema
  */
-export interface CreateVacationDTO {
-  name: string;
-  description: string;
-  start_date: string;
-  end_date: string;
-  location?: string;
-  max_participants?: number;
-}
+// export interface CreateVacationDTO {
+//   name: string;
+//   description: string;
+//   start_date: string;
+//   end_date: string;
+//   location?: string;
+//   max_participants?: number;
+// }
 
 /**
  * Update vacation command
  * Partial version allows updating individual fields
+ * NOTE: Legacy type
  */
-export type UpdateVacationDTO = Partial<CreateVacationDTO>;
+// export type UpdateVacationDTO = Partial<CreateVacationDTO>;
 
 /**
  * Basic vacation DTO
  * Derived from Vacations entity with additional computed fields
+ * NOTE: Legacy type - Vacations table doesn't exist in current schema
  */
-export type VacationDTO = Vacations & {
-  participants_count: number;
-  user_status?: "pending" | "approved" | "rejected" | "none";
-};
+// export type VacationDTO = Vacations & {
+//   participants_count: number;
+//   user_status?: "pending" | "approved" | "rejected" | "none";
+// };
 
 /**
  * Vacation list item DTO
  * Simplified version for list views, optimized for performance
+ * NOTE: Legacy type
  */
-export type VacationListItemDTO = Pick<
-  Vacations,
-  "id" | "name" | "start_date" | "end_date" | "location" | "status" | "created_by"
-> & {
-  participants_count: number;
-  user_status?: "pending" | "approved" | "rejected" | "none";
-};
+// export type VacationListItemDTO = Pick<
+//   Vacations,
+//   "id" | "name" | "start_date" | "end_date" | "location" | "status" | "created_by"
+// > & {
+//   participants_count: number;
+//   user_status?: "pending" | "approved" | "rejected" | "none";
+// };
 
 /**
  * Vacation details DTO
  * Extended version with full participant information
+ * NOTE: Legacy type
  */
-export type VacationDetailsDTO = VacationDTO & {
-  participants: UserVacationDTO[];
-  created_by_user?: Pick<Users, "id" | "full_name" | "email">;
-};
+// export type VacationDetailsDTO = VacationDTO & {
+//   participants: UserVacationDTO[];
+//   created_by_user?: Pick<Users, "id" | "full_name" | "email">;
+// };
 
 // ============================================================================
-// Vacation Request DTOs
+// Vacation Request DTOs (LEGACY - old schema)
 // ============================================================================
 
 /**
  * Create vacation request command
  * Used when user requests to join a vacation
+ * NOTE: Legacy type - old vacation_requests schema
  */
-export interface CreateVacationRequestDTO {
-  vacation_id: string;
-}
+// export interface CreateVacationRequestDTO {
+//   vacation_id: string;
+// }
 
 /**
  * Update vacation request command
  * Used by admin to approve/reject requests
+ * NOTE: Legacy type
  */
-export interface UpdateVacationRequestDTO {
-  status: "pending" | "approved" | "rejected";
-  admin_notes?: string;
-}
+// export interface UpdateVacationRequestDTO {
+//   status: "pending" | "approved" | "rejected";
+//   admin_notes?: string;
+// }
 
 /**
  * Vacation request DTO
  * Derived from VacationRequests with denormalized user and vacation names
+ * NOTE: Legacy type
  */
-export type VacationRequestDTO = VacationRequests & {
-  user_name: string;
-  vacation_name: string;
-};
+// export type VacationRequestDTO = VacationRequests & {
+//   user_name: string;
+//   vacation_name: string;
+// };
 
 
 // ============================================================================
-// User Vacation DTOs
+// User Vacation DTOs (LEGACY - tables don't exist)
 // ============================================================================
 
 /**
  * User vacation DTO
  * Represents the many-to-many relationship between users and vacations
  * with denormalized names for convenience
+ * NOTE: Legacy type
  */
-export type UserVacationDTO = UserVacations & {
-  user_name: string;
-  vacation_name: string;
-};
+// export type UserVacationDTO = UserVacations & {
+//   user_name: string;
+//   vacation_name: string;
+// };
 
 /**
  * Create user vacation command
  * Used to directly add a user to a vacation (admin action)
+ * NOTE: Legacy type
  */
-export interface CreateUserVacationDTO {
-  vacation_id: string;
-  user_id: string;
-  role?: "participant" | "organizer";
-}
+// export interface CreateUserVacationDTO {
+//   vacation_id: string;
+//   user_id: string;
+//   role?: "participant" | "organizer";
+// }
 
 /**
  * Update user vacation command
  * Allows changing role or status
+ * NOTE: Legacy type
  */
-export interface UpdateUserVacationDTO {
-  role?: "participant" | "organizer";
-  status?: "active" | "cancelled" | "completed";
-}
+// export interface UpdateUserVacationDTO {
+//   role?: "participant" | "organizer";
+//   status?: "active" | "cancelled" | "completed";
+// }
 
 // ============================================================================
-// Notification DTOs
+// Notification DTOs (LEGACY - tables don't exist)
 // ============================================================================
 
 /**
  * Notification DTO
  * Direct mapping from Notifications entity
+ * NOTE: Legacy type
  */
-export type NotificationDTO = Notifications;
+// export type NotificationDTO = Notifications;
 
 /**
  * Create notification command
  * Omits auto-generated fields (id, timestamps)
+ * NOTE: Legacy type
  */
-export type CreateNotificationDTO = Omit<NotificationsInsert, "id" | "created_at" | "read_at">;
+// export type CreateNotificationDTO = Omit<NotificationsInsert, "id" | "created_at" | "read_at">;
 
 /**
  * Mark notification as read command
@@ -264,9 +279,9 @@ export interface MarkAllNotificationsReadDTO {
  * Audit log DTO
  * Derived from AuditLogs with user email for easier reading
  */
-export type AuditLogDTO = AuditLogs & {
-  user_email?: string;
-};
+// export type AuditLogDTO = AuditLogs & {
+//   user_email?: string;
+// };
 
 /**
  * Audit log filter DTO
@@ -970,5 +985,59 @@ export interface CancelVacationRequestResponseDTO {
   status: "CANCELLED";
   daysReturned: number;
   updatedAt: string; // ISO datetime
+}
+
+// ============================================================================
+// Vacation Allowances DTOs
+// ============================================================================
+
+/**
+ * Get vacation allowances query parameters DTO
+ * Used for filtering allowances by year
+ */
+export interface GetVacationAllowancesQueryDTO {
+  year?: number; // Optional filter by specific year (2000-2100)
+}
+
+/**
+ * Vacation allowance DTO with computed fields
+ * Connected to: Database['public']['Tables']['vacation_allowances']['Row']
+ * Connected to: Database['public']['Tables']['vacation_requests']['Row'] (for calculations)
+ */
+export interface VacationAllowanceDTO {
+  id: string;
+  userId: string;
+  year: number;
+  totalDays: number;
+  carryoverDays: number;
+
+  // Computed fields - calculated from vacation_requests
+  usedDays: number; // Total used days (carryover + current year)
+  usedCarryoverDays: number; // Used days from carryover
+  usedCurrentYearDays: number; // Used days from current year
+  remainingDays: number; // Total remaining days
+  remainingCarryoverDays: number; // Remaining carryover days
+  remainingCurrentYearDays: number; // Remaining current year days
+
+  carryoverExpiresAt: string; // ISO date (YYYY-MM-DD) - always March 31st of the year
+  createdAt: string; // ISO datetime
+  updatedAt: string; // ISO datetime
+}
+
+/**
+ * Get vacation allowances response DTO
+ * Returns list of allowances for user
+ */
+export interface GetVacationAllowancesResponseDTO {
+  userId: string;
+  allowances: VacationAllowanceDTO[];
+}
+
+/**
+ * Get vacation allowance by year response DTO
+ * Returns single allowance for specific year
+ */
+export interface GetVacationAllowanceByYearResponseDTO {
+  data: VacationAllowanceDTO;
 }
 

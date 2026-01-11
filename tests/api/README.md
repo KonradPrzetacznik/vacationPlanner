@@ -29,6 +29,7 @@ tests/api/
 ├── vacation-requests-list.test.sh # Tests for GET /api/vacation-requests (list endpoint)
 ├── vacation-request-by-id.test.sh # Tests for GET /api/vacation-requests/:id (details endpoint)
 ├── vacation-request-create.test.sh # Tests for POST /api/vacation-requests (create request)
+├── vacation-allowances.test.sh # Tests for GET /api/users/:userId/vacation-allowances (vacation allowances)
 ├── run-all.sh                # Master script to run all tests
 └── README.md                 # This file
 ```
@@ -89,6 +90,12 @@ Individual tests also handle server management automatically:
 
 # Test create vacation request (with comprehensive validation)
 ./tests/api/vacation-request-create.test.sh
+```
+
+**Vacation Allowances Tests:**
+```bash
+# Test vacation allowances endpoints (with computed fields and carry-over logic)
+./tests/api/vacation-allowances.test.sh
 ```
 
 ## How Server Management Works
@@ -229,6 +236,21 @@ Tests for `DELETE /api/teams/:id`:
 - ✅ Idempotency check (double delete)
 - ✅ Authorization check (HR/ADMIN only)
 - ✅ CASCADE deletion of team members
+
+### vacation-allowances.test.sh
+Tests for `GET /api/users/:userId/vacation-allowances` and `GET /api/users/:userId/vacation-allowances/:year`:
+- ✅ Get all vacation allowances for user
+- ✅ Filter allowances by year (query parameter)
+- ✅ Get allowance for specific year (path parameter)
+- ✅ Verify computed fields (usedDays, remainingDays)
+- ✅ Verify carry-over logic calculations
+- ✅ Verify user with used vacation days
+- ✅ Invalid UUID format (400 error)
+- ✅ Year out of range validation (< 2000, > 2100)
+- ✅ Non-existent user (404 error)
+- ✅ Non-existent allowance for year (404 error)
+- ✅ Compare allowances across different users
+- ✅ Authorization checks (RBAC with DEFAULT_USER_ID)
 
 ## Writing New Tests
 

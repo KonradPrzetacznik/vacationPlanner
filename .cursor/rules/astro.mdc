@@ -17,3 +17,4 @@ alwaysApply: false
 - Implement hybrid rendering with server-side rendering where needed
 - Use Astro.cookies for server-side cookie management
 - Leverage import.meta.env for environment variables
+- server is run on port 3000 by default, if it's not run on that port kill all node process and run again
