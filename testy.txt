@@ -1,0 +1,1397 @@
+[0;36m╔════════════════════════════════════════════════════════════╗[0m
+[0;36m║          Vacation Planner - API Test Suite                ║[0m
+[0;36m╚════════════════════════════════════════════════════════════╝[0m
+
+[0;32m✓ Serwer już jest uruchomiony na http://localhost:3000[0m
+
+[0;34m🔍 Discovering test files...[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: settings-by-key[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting GET /api/settings/:key endpoint[0m
+[0;34m========================================[0m
+
+[1;33mTest 1: GET /api/settings/default_vacation_days[0m
+[0;32m✓ PASS[0m - GET default_vacation_days returns 200 (HTTP 200)
+Response:
+{
+  "key": "default_vacation_days",
+  "value": 26,
+  "description": "Default number of vacation days per year",
+  "updatedAt": "2026-01-11T22:51:32.556856+00:00"
+}
+[0;32m✓[0m Correct key returned
+[0;32m✓[0m Value: 26
+
+[1;33mTest 2: GET /api/settings/team_occupancy_threshold[0m
+[0;32m✓ PASS[0m - GET team_occupancy_threshold returns 200 (HTTP 200)
+Response:
+{
+  "key": "team_occupancy_threshold",
+  "value": 50,
+  "description": "Percentage threshold (0-100) for maximum team members on vacation simultaneously",
+  "updatedAt": "2026-01-11T22:51:32.556856+00:00"
+}
+[0;32m✓[0m Correct key returned
+[0;32m✓[0m Value: 50
+
+[1;33mTest 3: GET /api/settings/nonexistent_key (should return 404)[0m
+[0;32m✓ PASS[0m - GET nonexistent key returns 404 (HTTP 404)
+Error response:
+{
+  "error": "Setting not found"
+}
+[0;32m✓[0m Correct error message
+
+[1;33mTest 4: GET /api/settings/ with empty key[0m
+[0;31m✗[0m Unexpected status code: 200
+
+[0;34m========================================[0m
+[0;34mTest Summary[0m
+[0;34m========================================[0m
+All GET /api/settings/:key tests completed!
+
+[0;32m✓ settings-by-key PASSED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: settings-list[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting GET /api/settings endpoint[0m
+[0;34m========================================[0m
+
+[1;33mTest 1: Basic GET /api/settings[0m
+[0;32m✓ PASS[0m - GET /api/settings returns 200 (HTTP 200)
+Response preview:
+{
+  "data": [
+    {
+      "key": "default_vacation_days",
+      "value": 26,
+      "description": "Default number of vacation days per year",
+      "updatedAt": "2026-01-11T22:51:32.556856+00:00"
+    },
+    {
+      "key": "team_occupancy_threshold",
+      "value": 50,
+      "description": "Percentage threshold (0-100) for maximum team members on vacation simultaneously",
+      "updatedAt": "2026-01-11T22:51:32.556856+00:00"
+    }
+  ]
+}
+[0;32m✓[0m Response contains 'data' array
+[0;32m✓[0m default_vacation_days: 26
+[0;32m✓[0m team_occupancy_threshold: 50
+
+[1;33mTest 2: Verify setting structure (key, value, description, updatedAt)[0m
+[0;32m✓[0m Setting has 'key' field
+[0;32m✓[0m Setting has 'value' field (type: number)
+[0;32m✓[0m Setting has 'description' field
+[0;32m✓[0m Setting has 'updatedAt' field
+
+[0;34m========================================[0m
+[0;34mTest Summary[0m
+[0;34m========================================[0m
+All GET /api/settings tests completed!
+
+[0;32m✓ settings-list PASSED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: settings-update[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting PUT /api/settings/:key endpoint[0m
+[0;34m========================================[0m
+
+[1;33mTest 1: PUT /api/settings/default_vacation_days with valid value[0m
+[0;32m✓ PASS[0m - PUT default_vacation_days returns 200 (HTTP 200)
+Response:
+{
+  "key": "default_vacation_days",
+  "value": 26,
+  "description": "Default number of vacation days per year",
+  "updatedAt": "2026-01-11T22:52:33.707569+00:00"
+}
+[0;32m✓[0m Value updated correctly to 26
+
+[1;33mTest 2: PUT /api/settings/team_occupancy_threshold with valid value[0m
+[0;32m✓ PASS[0m - PUT team_occupancy_threshold returns 200 (HTTP 200)
+[0;32m✓[0m Value updated correctly to 50
+
+[1;33mTest 3: PUT team_occupancy_threshold with value > 100 (should fail)[0m
+[0;32m✓ PASS[0m - Validation: value > 100 returns 400 (HTTP 400)
+Error response:
+{
+  "error": "Invalid value for team_occupancy_threshold: must be between 0 and 100"
+}
+[0;32m✓[0m Correct validation error message
+
+[1;33mTest 4: PUT with negative value (should fail)[0m
+[0;32m✓ PASS[0m - Validation: negative value returns 400 (HTTP 400)
+Error response:
+{
+  "error": "Invalid request body",
+  "details": {
+    "value": [
+      "Value must be non-negative"
+    ]
+  }
+}
+[0;32m✓[0m Correct validation error
+
+[1;33mTest 5: PUT with float value (should fail, integer required)[0m
+[0;32m✓ PASS[0m - Validation: float value returns 400 (HTTP 400)
+Error response:
+{
+  "error": "Invalid request body",
+  "details": {
+    "value": [
+      "Value must be an integer"
+    ]
+  }
+}
+[0;32m✓[0m Correct validation error for integer
+
+[1;33mTest 6: PUT with missing value field (should fail)[0m
+[0;32m✓ PASS[0m - Validation: missing value returns 400 (HTTP 400)
+[0;32m✓[0m Missing value field handled correctly
+
+[1;33mTest 7: PUT with invalid JSON (should fail)[0m
+[0;32m✓ PASS[0m - Validation: invalid JSON returns 400 (HTTP 400)
+[0;32m✓[0m Correct error for invalid JSON
+
+[1;33mTest 8: PUT /api/settings/nonexistent_key (should fail)[0m
+[0;32m✓ PASS[0m - PUT nonexistent key returns 404 (HTTP 404)
+[0;32m✓[0m Correct 404 for nonexistent key
+
+[0;34m========================================[0m
+[0;34mTest Summary[0m
+[0;34m========================================[0m
+All PUT /api/settings/:key tests completed!
+
+[0;32m✓ settings-update PASSED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: team-calendar[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting GET /api/teams/:id/calendar[0m
+[0;34m========================================[0m
+
+[1;33mTest 1: Pobranie kalendarza zespołu - default date range[0m
+[0;32m✓ PASS[0m - Pobranie kalendarza z domyślnym zakresem dat (HTTP 200)
+Response structure:
+{
+  "teamId": "10000000-0000-0000-0000-000000000001",
+  "teamName": "Green Team",
+  "startDate": "2026-01-04",
+  "endDate": "2026-01-25",
+  "memberCount": 5
+}
+
+[1;33mTest 2: Pobranie kalendarza z filtrem month=2026-01[0m
+[0;32m✓ PASS[0m - Filtrowanie po miesiącu (HTTP 200)
+Date range:
+{
+  "startDate": "2025-12-31",
+  "endDate": "2026-01-30"
+}
+
+[1;33mTest 3: Pobranie kalendarza z custom date range[0m
+[0;32m✓ PASS[0m - Custom date range (HTTP 200)
+Date range:
+{
+  "startDate": "2026-01-01",
+  "endDate": "2026-01-31"
+}
+
+[1;33mTest 4: Pobranie kalendarza z filtrem includeStatus=APPROVED[0m
+[0;32m✓ PASS[0m - Filtrowanie po statusie APPROVED (HTTP 200)
+Members with vacations:
+{
+  "firstName": "Grzegorz",
+  "lastName": "Brzęczyszczykiewicz-EMP",
+  "vacationCount": 0
+}
+{
+  "firstName": "Władysław",
+  "lastName": "Kargul-EMP",
+  "vacationCount": 0
+}
+{
+  "firstName": "Jacek",
+  "lastName": "Kwiatkowski-EMP",
+  "vacationCount": 0
+}
+{
+  "firstName": "Kazimierz",
+  "lastName": "Pawlak-EMP",
+  "vacationCount": 0
+}
+{
+  "firstName": "Marian",
+  "lastName": "Paździoch-EMP",
+  "vacationCount": 0
+}
+
+[1;33mTest 5: Pobranie kalendarza z wieloma statusami[0m
+[0;32m✓ PASS[0m - Filtrowanie po wielu statusach (HTTP 200)
+Total vacations across all members:
+Total: 0
+
+[1;33mTest 6: Błąd - month z startDate jednocześnie[0m
+[0;32m✓ PASS[0m - Walidacja - month i startDate wykluczają się (HTTP 400)
+Validation error:
+"Invalid query parameters"
+
+[1;33mTest 7: Nieprawidłowy format daty[0m
+[0;32m✓ PASS[0m - Walidacja - nieprawidłowy format daty (HTTP 400)
+Validation error:
+{
+  "startDate": [
+    "Invalid date format. Expected YYYY-MM-DD"
+  ]
+}
+
+[1;33mTest 8: startDate po endDate[0m
+[0;32m✓ PASS[0m - Walidacja - startDate musi być przed endDate (HTTP 400)
+Validation error:
+"Invalid query parameters"
+
+[1;33mTest 9: Nieprawidłowy format month[0m
+[0;32m✓ PASS[0m - Walidacja - nieprawidłowy format month (HTTP 400)
+Validation error:
+{
+  "month": [
+    "Invalid month format. Expected YYYY-MM"
+  ]
+}
+
+[1;33mTest 10: Nieprawidłowy status[0m
+[0;32m✓ PASS[0m - Walidacja - nieprawidłowy status (HTTP 400)
+Validation error:
+{
+  "includeStatus": [
+    "Invalid input"
+  ]
+}
+
+[1;33mTest 11: Nieistniejący zespół[0m
+[0;32m✓ PASS[0m - Team not found (HTTP 404)
+Error message:
+Team not found
+
+[1;33mTest 12: Nieprawidłowy UUID team ID[0m
+[0;32m✓ PASS[0m - Walidacja - nieprawidłowy team ID (HTTP 400)
+Validation error:
+{
+  "id": [
+    "Invalid team ID format"
+  ]
+}
+
+[1;33mTest 13: Zakres dat przekracza 1 rok[0m
+[0;32m✓ PASS[0m - Walidacja - limit 1 roku (HTTP 400)
+Validation error:
+"Invalid query parameters"
+
+[1;33mTest 14: Weryfikacja struktury odpowiedzi[0m
+[0;32m✓ PASS[0m - Pełna struktura odpowiedzi (HTTP 200)
+Full response structure:
+{
+  "teamId": "10000000-0000-0000-0000-000000000001",
+  "teamName": "Green Team",
+  "startDate": "2025-12-31",
+  "endDate": "2026-01-30",
+  "members": [
+    {
+      "id": "00000000-0000-0000-0000-000000000014",
+      "firstName": "Grzegorz",
+      "lastName": "Brzęczyszczykiewicz-EMP",
+      "vacations": []
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000012",
+      "firstName": "Władysław",
+      "lastName": "Kargul-EMP",
+      "vacations": []
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000011",
+      "firstName": "Jacek",
+      "lastName": "Kwiatkowski-EMP",
+      "vacations": []
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000010",
+      "firstName": "Kazimierz",
+      "lastName": "Pawlak-EMP",
+      "vacations": []
+    },
+    {
+      "id": "00000000-0000-0000-0000-000000000013",
+      "firstName": "Marian",
+      "lastName": "Paździoch-EMP",
+      "vacations": []
+    }
+  ]
+}
+[0;32m✓[0m All required fields present
+
+[0;34m========================================[0m
+[0;34mTest suite completed[0m
+[0;34m========================================[0m
+
+[0;32m✓ team-calendar PASSED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: team-members-add[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting POST /api/teams/:id/members[0m
+[0;34m========================================[0m
+
+[1;33mTest 1: Dodanie pojedynczego członka do zespołu Red Team[0m
+[0;32m✓ PASS[0m - Dodanie pojedynczego członka (HTTP 200)
+Response preview:
+{
+  "message": "Members added successfully",
+  "added": [
+    {
+      "id": "effe0122-adb3-4069-a14f-db897a8ae27d",
+      "userId": "00000000-0000-0000-0000-000000000019",
+      "teamId": "10000000-0000-0000-0000-000000000002",
+      "createdAt": "2026-01-11T22:52:34.42405+00:00"
+    }
+  ]
+}
+
+[1;33mTest 2: Dodanie wielu członków jednocześnie (bulk)[0m
+[0;32m✓ PASS[0m - Dodanie wielu członków (HTTP 200)
+Response preview:
+{
+  "message": "Members added successfully",
+  "addedCount": 2
+}
+
+[1;33mTest 3: Próba dodania użytkownika, który już jest członkiem[0m
+[0;32m✓ PASS[0m - Odrzucenie duplikatu członka (HTTP 400)
+Error message:
+User 00000000-0000-0000-0000-000000000010 is already a member of this team
+
+[1;33mTest 4: Próba dodania nieistniejącego użytkownika[0m
+[0;32m✓ PASS[0m - Odrzucenie nieistniejącego użytkownika (HTTP 404)
+Error message:
+User 00000000-0000-0000-0000-999999999999 not found
+
+[1;33mTest 5: Próba dodania do nieistniejącego zespołu[0m
+[0;32m✓ PASS[0m - Odrzucenie nieistniejącego zespołu (HTTP 404)
+Error message:
+Team not found
+
+[1;33mTest 6: Nieprawidłowy format UUID[0m
+[0;32m✓ PASS[0m - Walidacja - nieprawidłowy UUID (HTTP 400)
+Validation errors:
+{
+  "userIds": [
+    "Each user ID must be a valid UUID"
+  ]
+}
+
+[1;33mTest 7: Pusta tablica userIds[0m
+[0;32m✓ PASS[0m - Walidacja - pusta tablica (HTTP 400)
+Validation errors:
+{
+  "userIds": [
+    "At least one user ID is required"
+  ]
+}
+
+[1;33mTest 8: Brak wymaganego pola userIds[0m
+[0;32m✓ PASS[0m - Walidacja - brak userIds (HTTP 400)
+Validation errors:
+{
+  "userIds": [
+    "Required"
+  ]
+}
+
+[1;33mTest 9: Nieprawidłowy JSON w request body[0m
+[0;32m✓ PASS[0m - Walidacja - nieprawidłowy JSON (HTTP 400)
+Error message:
+Invalid JSON in request body
+
+[1;33mTest 10: Nieprawidłowy format team ID w URL[0m
+[0;32m✓ PASS[0m - Walidacja - nieprawidłowy team ID (HTTP 400)
+Validation errors:
+{
+  "id": [
+    "Invalid team ID format"
+  ]
+}
+
+[1;33mTest 11: Próba dodania więcej niż 100 członków[0m
+[0;32m✓ PASS[0m - Walidacja - limit 100 członków (HTTP 400)
+Validation errors:
+{
+  "userIds": [
+    "Cannot add more than 100 members at once"
+  ]
+}
+
+[0;34m========================================[0m
+[0;34mTest suite completed[0m
+[0;34m========================================[0m
+
+[0;32m✓ team-members-add PASSED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: team-members-remove[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting DELETE /api/teams/:id/members/:userId[0m
+[0;34m========================================[0m
+
+[1;33mPrzygotowanie: Dodanie członka do Red Team[0m
+Member added for testing
+
+[1;33mTest 1: Usunięcie członka z zespołu[0m
+[0;32m✓ PASS[0m - Usunięcie członka z zespołu (HTTP 200)
+Response preview:
+{
+  "message": "Member removed successfully"
+}
+
+[1;33mTest 2: Próba usunięcia członka, który nie jest w zespole[0m
+[0;31m✗ FAIL[0m - Odrzucenie usunięcia nieistniejącego członkostwa (Expected HTTP 404, got 200)
+
+[1;33mTest 3: Próba usunięcia z nieistniejącego zespołu[0m
+[0;32m✓ PASS[0m - Odrzucenie nieistniejącego zespołu (HTTP 404)
+Error message:
+Team not found
+
+[1;33mTest 4: Próba usunięcia nieistniejącego użytkownika[0m
+[0;32m✓ PASS[0m - Odrzucenie nieistniejącego użytkownika (HTTP 404)
+Error message:
+User not found
+
+[1;33mTest 5: Nieprawidłowy format UUID dla team ID[0m
+[0;32m✓ PASS[0m - Walidacja - nieprawidłowy team ID (HTTP 400)
+Validation errors:
+{
+  "id": [
+    "Team ID must be a valid UUID"
+  ]
+}
+
+[1;33mTest 6: Nieprawidłowy format UUID dla user ID[0m
+[0;32m✓ PASS[0m - Walidacja - nieprawidłowy user ID (HTTP 400)
+Validation errors:
+{
+  "userId": [
+    "User ID must be a valid UUID"
+  ]
+}
+
+[1;33mTest 7: Weryfikacja usunięcia - sprawdzenie listy członków[0m
+[0;32m✓ PASS[0m - Pobranie zespołu po usunięciu członka (HTTP 200)
+[0;32m✓[0m Member successfully removed from team
+
+[1;33mTest 8: Próba ponownego usunięcia już usuniętego członka[0m
+[0;32m✓ PASS[0m - Odrzucenie ponownego usunięcia (HTTP 404)
+Error message:
+User is not a member of this team
+
+[0;34m========================================[0m
+[0;34mTest suite completed[0m
+[0;34m========================================[0m
+
+[0;32m✓ team-members-remove PASSED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: teams-by-id[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting GET /api/teams/:id endpoint[0m
+[0;34m========================================[0m
+
+[1;33mTODO: Implement tests for GET /api/teams/:id[0m
+
+[0;32m✓ teams-by-id PASSED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: teams-create[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting POST /api/teams endpoint[0m
+[0;34m========================================[0m
+
+[1;33mTODO: Implement tests for POST /api/teams[0m
+
+[0;32m✓ teams-create PASSED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: teams-delete[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting DELETE /api/teams/:id endpoint[0m
+[0;34m========================================[0m
+
+[1;33mTODO: Implement tests for DELETE /api/teams/:id[0m
+
+[0;32m✓ teams-delete PASSED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: teams-list[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting GET /api/teams endpoint[0m
+[0;34m========================================[0m
+
+[1;33mTest 1: Podstawowe GET /api/teams[0m
+[0;32m✓ PASS[0m - Podstawowe GET /api/teams (HTTP 200)
+Response preview:
+  - Green Team (ID: 10000000-0000-0000-0000-000000000001)
+  - Red Team (ID: 10000000-0000-0000-0000-000000000002)
+Total teams: 2
+
+[1;33mTest 2: Paginacja (limit=5, offset=0)[0m
+[0;32m✓ PASS[0m - Paginacja limit=5 (HTTP 200)
+Returned teams count: 2
+
+[1;33mTest 3: Włączenie licznika członków (includeMemberCount=true)[0m
+[0;32m✓ PASS[0m - includeMemberCount=true (HTTP 200)
+Teams with member counts:
+  - Green Team: 5 members
+  - Red Team: 3 members
+
+[1;33mTest 4: Walidacja - nieprawidłowy limit (999)[0m
+[0;32m✓ PASS[0m - Walidacja limit max 100 (HTTP 400)
+Error message:
+Invalid query parameters
+
+[1;33mTest 5: Walidacja - ujemny offset[0m
+[0;32m✓ PASS[0m - Walidacja offset >= 0 (HTTP 400)
+Error message:
+Invalid query parameters
+
+[1;33mTest 6: Edge case - limit=1[0m
+[0;32m✓ PASS[0m - Edge case limit=1 (HTTP 200)
+Returned teams count: 1 (should be 1)
+
+[1;33mTest 7: Edge case - limit=100 (max)[0m
+[0;32m✓ PASS[0m - Edge case limit=100 (HTTP 200)
+Returned teams count: 2
+
+[0;34m========================================[0m
+[0;34mTests completed[0m
+[0;34m========================================[0m
+
+[0;32m✓ teams-list PASSED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: teams-update[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting PATCH /api/teams/:id endpoint[0m
+[0;34m========================================[0m
+
+[1;33mTODO: Implement tests for PATCH /api/teams/:id[0m
+
+[0;32m✓ teams-update PASSED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: user-by-id[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+📝 Test 1: Get existing user with teams
+{
+  "data": {
+    "id": "00000000-0000-0000-0000-000000000010",
+    "firstName": "Kazimierz",
+    "lastName": "Pawlak-EMP",
+    "email": "kazimierz.pawlak@vacationplanner.pl",
+    "role": "EMPLOYEE",
+    "deletedAt": null,
+    "createdAt": "2026-01-11T22:51:33.226939+00:00",
+    "updatedAt": "2026-01-11T22:51:33.226939+00:00",
+    "teams": [
+      {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "Green Team"
+      },
+      {
+        "id": "10000000-0000-0000-0000-000000000002",
+        "name": "Red Team"
+      }
+    ]
+  }
+}
+
+📝 Test 2: Invalid UUID format (should return 400)
+{
+  "error": "Invalid user ID format",
+  "details": {
+    "id": [
+      "Invalid user ID format"
+    ]
+  }
+}
+
+📝 Test 3: Non-existent user (should return 404)
+{
+  "error": "User not found"
+}
+
+📝 Test 4: User without teams
+{
+  "data": {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "firstName": "Admin",
+    "lastName": "User-ADM",
+    "email": "admin.user@vacationplanner.pl",
+    "role": "ADMINISTRATOR",
+    "deletedAt": null,
+    "createdAt": "2026-01-11T22:51:33.226939+00:00",
+    "updatedAt": "2026-01-11T22:51:33.226939+00:00",
+    "teams": []
+  }
+}
+
+📝 Test 5: User with one team
+{
+  "data": {
+    "id": "00000000-0000-0000-0000-000000000011",
+    "firstName": "Jacek",
+    "lastName": "Kwiatkowski-EMP",
+    "email": "jacek.kwiatkowski@vacationplanner.pl",
+    "role": "EMPLOYEE",
+    "deletedAt": null,
+    "createdAt": "2026-01-11T22:51:33.226939+00:00",
+    "updatedAt": "2026-01-11T22:51:33.226939+00:00",
+    "teams": [
+      {
+        "id": "10000000-0000-0000-0000-000000000001",
+        "name": "Green Team"
+      }
+    ]
+  }
+}
+
+✅ Tests completed!
+
+[0;32m✓ user-by-id PASSED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: users-create[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting POST /api/users endpoint[0m
+[0;34m========================================[0m
+
+[1;33mTest 1: Utworzenie nowego użytkownika (EMPLOYEE)[0m
+[0;31m✗ FAIL[0m - Utworzenie nowego użytkownika (Expected HTTP 201, got 403)
+
+[1;33mTest 2: Utworzenie użytkownika z rolą ADMINISTRATOR[0m
+[0;31m✗ FAIL[0m - Utworzenie użytkownika ADMINISTRATOR (Expected HTTP 201, got 403)
+
+[1;33mTest 3: Utworzenie użytkownika z rolą HR[0m
+[0;31m✗ FAIL[0m - Utworzenie użytkownika HR (Expected HTTP 201, got 403)
+
+[1;33mTest 4: Próba utworzenia użytkownika z duplikatem emaila[0m
+[0;31m✗ FAIL[0m - Odrzucenie duplikatu emaila (Expected HTTP 400, got 403)
+
+[1;33mTest 5: Brak wymaganego pola firstName[0m
+[0;31m✗ FAIL[0m - Walidacja - brak firstName (Expected HTTP 400, got 403)
+
+[1;33mTest 6: Nieprawidłowy format emaila[0m
+[0;31m✗ FAIL[0m - Walidacja - nieprawidłowy email (Expected HTTP 400, got 403)
+
+[1;33mTest 7: Hasło za krótkie (min. 8 znaków)[0m
+[0;31m✗ FAIL[0m - Walidacja - hasło za krótkie (Expected HTTP 400, got 403)
+
+[1;33mTest 8: Nieprawidłowy JSON w body[0m
+[0;31m✗ FAIL[0m - Walidacja - nieprawidłowy JSON (Expected HTTP 400, got 403)
+
+[1;33mTest 9: Nieprawidłowa wartość dla roli[0m
+[0;31m✗ FAIL[0m - Walidacja - nieprawidłowa rola (Expected HTTP 400, got 403)
+
+[0;34m========================================[0m
+[0;34mTests completed[0m
+[0;34m========================================[0m
+
+[0;32m✓ users-create PASSED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: users-delete[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting DELETE /api/users/:id endpoint[0m
+[0;34m========================================[0m
+
+[1;33mPrzygotowanie: Tworzenie użytkownika testowego[0m
+[0;31m✗[0m Nie udało się utworzyć użytkownika testowego
+
+[0;31m✗ users-delete FAILED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: users-list[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting GET /api/users endpoint[0m
+[0;34m========================================[0m
+
+[1;33mTest 1: Podstawowe GET /api/users[0m
+[0;32m✓ PASS[0m - Podstawowe GET /api/users (HTTP 200)
+Response preview:
+  - Admin User-ADM (admin.user@vacationplanner.pl) - ADMINISTRATOR
+  - Ferdynand Kiepski-HR (ferdynand.kiepski@vacationplanner.pl) - HR
+  - Halina Kiepska-HR (halina.kiepska@vacationplanner.pl) - HR
+Total users: 13
+
+[1;33mTest 2: Paginacja (limit=5, offset=0)[0m
+[0;32m✓ PASS[0m - Paginacja limit=5 (HTTP 200)
+Returned users count: 5
+
+[1;33mTest 3: Filtrowanie po roli (role=EMPLOYEE)[0m
+[0;32m✓ PASS[0m - Filtrowanie role=EMPLOYEE (HTTP 200)
+Employees count: 10
+
+[1;33mTest 4: Walidacja - nieprawidłowy limit (999)[0m
+[0;32m✓ PASS[0m - Walidacja limit max 100 (HTTP 400)
+Error message:
+Invalid query parameters
+
+[1;33mTest 5: Walidacja - nieprawidłowy UUID[0m
+[0;32m✓ PASS[0m - Walidacja UUID (HTTP 400)
+Error message:
+Invalid query parameters
+
+[1;33mTest 6: Filtrowanie po roli (role=HR)[0m
+[0;32m✓ PASS[0m - Filtrowanie role=HR (HTTP 200)
+HR users count: 2
+  - Ferdynand Kiepski-HR
+  - Halina Kiepska-HR
+
+[1;33mTest 7: IncludeDeleted parameter[0m
+[0;32m✓ PASS[0m - IncludeDeleted=true (HTTP 200)
+
+[0;34m========================================[0m
+[0;34mTests completed![0m
+[0;34m========================================[0m
+
+[1;33mNote:[0m Serwer musi być uruchomiony na porcie 3000
+Uruchom: \033[0;32mnpm run dev\033[0m
+
+[0;32m✓ users-list PASSED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: users-update[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting PATCH /api/users/:id endpoint[0m
+[0;34m========================================[0m
+
+[1;33mPrzygotowanie: Tworzenie użytkownika testowego[0m
+[0;31m✗[0m Nie udało się utworzyć użytkownika testowego
+
+[0;31m✗ users-update FAILED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: vacation-allowances-create[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting POST /api/vacation-allowances endpoint[0m
+[0;34m========================================[0m
+
+[1;33mPobieranie ID użytkownika z bazy...[0m
+[0;32m✓ Użytkownik testowy ID: 00000000-0000-0000-0000-000000000001[0m
+
+[1;33mTest 1: Utworzenie vacation allowance dla użytkownika[0m
+[0;32m✓ PASS[0m - Utworzenie vacation allowance (HTTP 201)
+Response preview:
+{
+  "id": "dc2686ff-5851-4b8b-8334-d415be4b4c89",
+  "userId": "00000000-0000-0000-0000-000000000001",
+  "year": 2086,
+  "totalDays": 26,
+  "carryoverDays": 3,
+  "createdAt": "2026-01-11T22:52:36.758128+00:00"
+}
+Created allowance ID: dc2686ff-5851-4b8b-8334-d415be4b4c89
+
+[1;33mTest 2: Utworzenie vacation allowance bez dni przeniesionych[0m
+[0;32m✓ PASS[0m - Utworzenie vacation allowance (carryover=0) (HTTP 201)
+Response preview:
+{
+  "id": "27a471bc-1781-4fd5-a620-85ec35cb0341",
+  "year": 2087,
+  "totalDays": 26,
+  "carryoverDays": 0
+}
+
+[1;33mTest 3: Próba utworzenia duplikatu vacation allowance[0m
+[0;32m✓ PASS[0m - Odrzucenie duplikatu (user+year) (HTTP 400)
+Error message:
+Vacation allowance for this user and year already exists
+
+[1;33mTest 4: Walidacja - nieprawidłowy UUID użytkownika[0m
+[0;32m✓ PASS[0m - Odrzucenie nieprawidłowego UUID (HTTP 400)
+
+[1;33mTest 5: Walidacja - rok poza zakresem (< 2000)[0m
+[0;32m✓ PASS[0m - Odrzucenie roku < 2000 (HTTP 400)
+Validation error:
+{
+  "year": [
+    "Year must be at least 2000"
+  ]
+}
+
+[1;33mTest 6: Walidacja - rok poza zakresem (> 2100)[0m
+[0;32m✓ PASS[0m - Odrzucenie roku > 2100 (HTTP 400)
+
+[1;33mTest 7: Walidacja - ujemna liczba totalDays[0m
+[0;32m✓ PASS[0m - Odrzucenie ujemnej liczby totalDays (HTTP 400)
+Validation error:
+{
+  "totalDays": [
+    "Total days cannot be negative"
+  ]
+}
+
+[1;33mTest 8: Walidacja - ujemna liczba carryoverDays[0m
+[0;32m✓ PASS[0m - Odrzucenie ujemnej liczby carryoverDays (HTTP 400)
+
+[1;33mTest 9: Próba utworzenia dla nieistniejącego użytkownika[0m
+[0;32m✓ PASS[0m - Odrzucenie nieistniejącego użytkownika (HTTP 404)
+Error message:
+User not found
+
+[1;33mTest 10: Walidacja - brakujące pole userId[0m
+[0;32m✓ PASS[0m - Odrzucenie braku pola userId (HTTP 400)
+
+[1;33mTest 11: Walidacja - nieprawidłowy JSON[0m
+[0;32m✓ PASS[0m - Odrzucenie nieprawidłowego JSON (HTTP 400)
+Error message:
+Invalid JSON in request body
+
+[0;34m========================================[0m
+[0;34mPOST /api/vacation-allowances tests completed[0m
+[0;34m========================================[0m
+
+[0;32m✓ vacation-allowances-create PASSED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: vacation-allowances[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting GET /api/users/:userId/vacation-allowances[0m
+[0;34m========================================[0m
+
+[1;33mTest 1: GET /api/users/:userId/vacation-allowances[0m
+[0;32m✓ PASS[0m - Pobieranie allowances dla użytkownika (HTTP 200)
+Response preview:
+  User ID: 00000000-0000-0000-0000-000000000001
+  Allowances count: 4
+  - Year 2087: 26 total, 0 used, 26 remaining
+  - Year 2086: 26 total, 0 used, 29 remaining
+  - Year 2026: 26 total, 0 used, 26 remaining
+  - Year 2025: 26 total, 0 used, 26 remaining
+
+[1;33mTest 2: Filtrowanie po roku (?year=2025)[0m
+[0;32m✓ PASS[0m - Filtrowanie po roku 2025 (HTTP 200)
+  Filtered allowances count: 1
+  - Year 2025: 26 days
+
+[1;33mTest 3: Użytkownik z wykorzystanymi dniami urlopu[0m
+[0;32m✓ PASS[0m - Allowance z obliczonymi dniami (HTTP 200)
+Computed fields:
+  Total days: 26
+  Carryover days: 0
+  Used days: 10
+    - From carryover: 0
+    - From current year: 10
+  Remaining days: 16
+    - Carryover: 0
+    - Current year: 16
+  Carryover expires: 2025-03-31
+
+[1;33mTest 4: Walidacja - nieprawidłowy UUID[0m
+[0;32m✓ PASS[0m - Walidacja UUID (HTTP 400)
+Error message:
+Invalid user ID format
+
+[1;33mTest 5: Walidacja - rok poza zakresem (1999)[0m
+[0;32m✓ PASS[0m - Walidacja rok < 2000 (HTTP 400)
+Error message:
+Invalid query parameters
+
+[1;33mTest 6: Walidacja - rok poza zakresem (2101)[0m
+[0;32m✓ PASS[0m - Walidacja rok > 2100 (HTTP 400)
+Error message:
+Invalid query parameters
+
+[1;33mTest 7: 404 - Użytkownik nie istnieje[0m
+[0;32m✓ PASS[0m - Nieistniejący użytkownik (HTTP 404)
+Error message:
+User not found
+
+[1;33mTest 8: 404 - Allowance dla roku nie istnieje[0m
+[0;32m✓ PASS[0m - Nieistniejąca allowance dla roku (HTTP 404)
+Error message:
+Vacation allowance for year 2027 not found
+
+[1;33mTest 9: GET /api/users/:userId/vacation-allowances/:year[0m
+[0;32m✓ PASS[0m - Pobieranie allowance dla konkretnego roku (HTTP 200)
+Response data:
+  Year: 2026
+  Total days: 26
+  Carryover: 0
+  Used: 0
+  Remaining: 26
+
+[1;33mTest 10: Walidacja - nieprawidłowy rok w path[0m
+[0;32m✓ PASS[0m - Walidacja rok w path < 2000 (HTTP 400)
+Error message:
+Invalid parameters
+
+[1;33mTest 11: Porównanie allowances różnych użytkowników[0m
+User 1 (Admin):
+  Used: 0/26 days
+User 10 (Employee with vacation):
+  Used: 10/26 days
+
+[0;34m========================================[0m
+[0;34mTests completed![0m
+[0;34m========================================[0m
+
+[1;33mSummary:[0m
+- All vacation allowances endpoints tested
+- Validated computed fields (used/remaining days)
+- Validated carry-over logic
+- Tested error handling (400, 404)
+- Tested both list and single-year endpoints
+
+[1;33mNote:[0m Serwer musi być uruchomiony na porcie 3000
+Uruchom: \033[0;32mnpm run dev\033[0m
+
+[0;32m✓ vacation-allowances PASSED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: vacation-allowances-update[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting PATCH /api/vacation-allowances/:id endpoint[0m
+[0;34m========================================[0m
+
+[1;33mPobieranie ID użytkownika z bazy...[0m
+[0;32m✓ Użytkownik testowy ID: 00000000-0000-0000-0000-000000000001[0m
+
+[1;33mTworzenie vacation allowance dla testów PATCH...[0m
+[0;32m✓ Utworzono vacation allowance ID: 8830a844-b721-4a5b-a401-31a860fdb355[0m
+
+[1;33mTest 1: Aktualizacja totalDays[0m
+[0;32m✓ PASS[0m - Aktualizacja totalDays (HTTP 200)
+Response preview:
+{
+  "id": "8830a844-b721-4a5b-a401-31a860fdb355",
+  "totalDays": 28,
+  "carryoverDays": 2,
+  "updatedAt": "2026-01-11T22:52:37.615365+00:00"
+}
+[0;32m✓ totalDays zaktualizowane poprawnie na 28[0m
+
+[1;33mTest 2: Aktualizacja carryoverDays[0m
+[0;32m✓ PASS[0m - Aktualizacja carryoverDays (HTTP 200)
+Response preview:
+{
+  "id": "8830a844-b721-4a5b-a401-31a860fdb355",
+  "totalDays": 28,
+  "carryoverDays": 5,
+  "updatedAt": "2026-01-11T22:52:37.68027+00:00"
+}
+[0;32m✓ carryoverDays zaktualizowane poprawnie na 5[0m
+
+[1;33mTest 3: Aktualizacja totalDays i carryoverDays jednocześnie[0m
+[0;32m✓ PASS[0m - Aktualizacja obu pól (HTTP 200)
+Response preview:
+{
+  "totalDays": 30,
+  "carryoverDays": 7
+}
+
+[1;33mTest 4: Walidacja - pusty body[0m
+[0;32m✓ PASS[0m - Odrzucenie pustego body (HTTP 400)
+Error message:
+"Invalid request body"
+
+[1;33mTest 5: Walidacja - ujemna wartość totalDays[0m
+[0;32m✓ PASS[0m - Odrzucenie ujemnej wartości totalDays (HTTP 400)
+Validation error:
+{
+  "totalDays": [
+    "Total days cannot be negative"
+  ]
+}
+
+[1;33mTest 6: Walidacja - ujemna wartość carryoverDays[0m
+[0;32m✓ PASS[0m - Odrzucenie ujemnej wartości carryoverDays (HTTP 400)
+
+[1;33mTest 7: Aktualizacja nieistniejącego allowance[0m
+[0;32m✓ PASS[0m - Odrzucenie nieistniejącego allowance (HTTP 404)
+Error message:
+Vacation allowance not found
+
+[1;33mTest 8: Walidacja - nieprawidłowy UUID w path[0m
+[0;32m✓ PASS[0m - Odrzucenie nieprawidłowego UUID (HTTP 400)
+Error message:
+"Invalid vacation allowance ID format"
+
+[1;33mTest 9: Walidacja - nieprawidłowy JSON[0m
+[0;32m✓ PASS[0m - Odrzucenie nieprawidłowego JSON (HTTP 400)
+Error message:
+Invalid JSON in request body
+
+[1;33mTest 10: Aktualizacja na wartość 0 (dozwolone)[0m
+[0;32m✓ PASS[0m - Aktualizacja carryoverDays na 0 (HTTP 200)
+Response preview:
+{
+  "carryoverDays": 0
+}
+[0;32m✓ carryoverDays zaktualizowane poprawnie na 0[0m
+
+[0;34m========================================[0m
+[0;34mPATCH /api/vacation-allowances/:id tests completed[0m
+[0;34m========================================[0m
+
+[0;32m✓ vacation-allowances-update PASSED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: vacation-request-approve[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting POST /api/vacation-requests/:id/approve endpoint[0m
+[0;34m========================================[0m
+
+[1;33mFinding a SUBMITTED vacation request...[0m
+[1;33mNo SUBMITTED vacation request found. Creating one for testing...[0m
+[0;32m✓ Created test vacation request: c9d7f5be-6f43-423c-8298-95ca98fe53cd[0m
+Using vacation request ID: c9d7f5be-6f43-423c-8298-95ca98fe53cd
+
+[1;33mTest 1: POST approve without threshold exceeded[0m
+[0;31m✗ FAIL[0m - Approve vacation request (Expected HTTP 200, got 403)
+
+[1;33mTest 2: POST approve on already APPROVED request[0m
+[0;31m✗ FAIL[0m - Approve already approved request (Expected HTTP 400, got 403)
+
+[1;33mTest 3: POST approve with invalid UUID[0m
+[0;32m✓ PASS[0m - Invalid UUID format (HTTP 400)
+Error message: Invalid vacation request ID format
+
+[1;33mTest 4: POST approve with non-existent UUID[0m
+[0;32m✓ PASS[0m - Non-existent vacation request (HTTP 404)
+Error message: Vacation request not found
+
+[1;33mTest 5: POST approve with invalid body[0m
+[0;31m✗ FAIL[0m - Approve with extra fields in body (Expected HTTP 200 or 400, got 403)
+  Status: 403
+
+[0;34m========================================[0m
+[0;34mPOST /api/vacation-requests/:id/approve tests completed[0m
+[0;34m========================================[0m
+
+[0;32m✓ vacation-request-approve PASSED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: vacation-request-by-id[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting GET /api/vacation-requests/:id endpoint[0m
+[0;34m========================================[0m
+
+[1;33mFetching a sample vacation request ID...[0m
+[0;31m✗ No vacation requests found in the system. Please seed the database first.[0m
+
+[0;31m✗ vacation-request-by-id FAILED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: vacation-request-cancel[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting POST /api/vacation-requests/:id/cancel endpoint[0m
+[0;34m========================================[0m
+
+[1;33mFinding a SUBMITTED vacation request...[0m
+[1;33mNo SUBMITTED vacation request found. Creating one for testing...[0m
+[0;32m✓ Created test vacation request: c13e2848-daa9-452c-81cf-edd00dac26ca[0m
+Using vacation request ID: c13e2848-daa9-452c-81cf-edd00dac26ca
+
+[1;33mTest 1: POST cancel on SUBMITTED request[0m
+[0;32m✓ PASS[0m - Cancel SUBMITTED vacation request (HTTP 200)
+Response preview:
+  ID: c13e2848-daa9-452c-81cf-edd00dac26ca
+  Status: CANCELLED
+  Days Returned: 5
+  Updated At: 2026-01-11T22:52:38.822063+00:00
+
+[1;33mTest 2: POST cancel on already CANCELLED request[0m
+[0;32m✓ PASS[0m - Cancel already cancelled request (HTTP 400)
+Error message: Only SUBMITTED or APPROVED requests can be cancelled
+
+[1;33mTest 3: POST cancel on APPROVED request (future date)[0m
+[1;33m⚠ Could not approve request, skipping cancel test[0m
+
+[1;33mTest 4: POST cancel on REJECTED request[0m
+[0;31m✗ FAIL[0m - Cancel REJECTED request (Expected HTTP 400, got 200)
+
+[1;33mTest 5: POST cancel with invalid UUID[0m
+[0;32m✓ PASS[0m - Invalid UUID format (HTTP 400)
+Error message: Invalid vacation request ID format
+
+[1;33mTest 6: POST cancel with non-existent UUID[0m
+[0;32m✓ PASS[0m - Non-existent vacation request (HTTP 404)
+Error message: Vacation request not found
+
+[0;34m========================================[0m
+[0;34mPOST /api/vacation-requests/:id/cancel tests completed[0m
+[0;34m========================================[0m
+
+[0;32m✓ vacation-request-cancel PASSED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: vacation-request-create[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting POST /api/vacation-requests endpoint[0m
+[0;34m========================================[0m
+
+[1;33mTest 1: POST with valid vacation request data[0m
+[0;32m✓ PASS[0m - Create vacation request (HTTP 201)
+Response preview:
+  ID: 5ba84bf7-59fe-419e-b5ce-01efb2498807
+  Dates: 2026-02-02 to 2026-02-06
+  Business Days: 5
+  Status: SUBMITTED
+
+[1;33mTest 2: POST with missing startDate[0m
+[0;32m✓ PASS[0m - Missing startDate (HTTP 400)
+Error message: Invalid request data
+
+[1;33mTest 3: POST with invalid date format[0m
+[0;32m✓ PASS[0m - Invalid date format (HTTP 400)
+Error message: Invalid request data
+
+[1;33mTest 4: POST with date in the past[0m
+[0;32m✓ PASS[0m - Date in the past (HTTP 400)
+Error message: Invalid request data
+
+[1;33mTest 5: POST with weekend date (Saturday)[0m
+[0;32m✓ PASS[0m - Weekend start date (HTTP 400)
+Error message: Invalid request data
+
+[1;33mTest 6: POST with endDate before startDate[0m
+[0;32m✓ PASS[0m - EndDate before startDate (HTTP 400)
+Error message: Invalid request data
+
+[1;33mTest 7: POST with invalid JSON[0m
+[0;32m✓ PASS[0m - Invalid JSON body (HTTP 400)
+Error message: Invalid request body
+
+[1;33mTest 8: POST with overlapping dates (if previous request succeeded)[0m
+[0;32m✓ PASS[0m - Overlapping vacation request (HTTP 409)
+Error message: You already have a vacation request for overlapping dates
+
+[0;34m========================================[0m
+[0;34mPOST /api/vacation-requests tests completed[0m
+[0;34m========================================[0m
+[1;33mNote: Created vacation request with ID: 5ba84bf7-59fe-419e-b5ce-01efb2498807[0m
+[1;33mYou may want to clean it up manually if needed.[0m
+
+[0;32m✓ vacation-request-create PASSED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: vacation-request-reject[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting POST /api/vacation-requests/:id/reject endpoint[0m
+[0;34m========================================[0m
+
+[1;33mFinding a SUBMITTED vacation request...[0m
+[1;33mNo SUBMITTED vacation request found. Creating one for testing...[0m
+[0;32m✓ Created test vacation request: c8000e93-c4d0-42b1-be76-3cb0b28ff3ed[0m
+Using vacation request ID: c8000e93-c4d0-42b1-be76-3cb0b28ff3ed
+
+[1;33mTest 1: POST reject with valid reason[0m
+[0;31m✗ FAIL[0m - Reject vacation request (Expected HTTP 200, got 403)
+
+[1;33mTest 2: POST reject on already REJECTED request[0m
+[0;31m✗ FAIL[0m - Reject already rejected request (Expected HTTP 400, got 403)
+
+[1;33mTest 3: POST reject without reason[0m
+[0;32m✓ PASS[0m - Reject without reason (HTTP 400)
+Error message: Required
+
+[1;33mTest 4: POST reject with reason too long[0m
+[0;32m✓ PASS[0m - Reject with reason too long (HTTP 400)
+Error message: Reason must be at most 500 characters
+
+[1;33mTest 5: POST reject with invalid UUID[0m
+[0;32m✓ PASS[0m - Invalid UUID format (HTTP 400)
+Error message: Invalid vacation request ID format
+
+[1;33mTest 6: POST reject with non-existent UUID[0m
+[0;32m✓ PASS[0m - Non-existent vacation request (HTTP 404)
+Error message: Vacation request not found
+
+[0;34m========================================[0m
+[0;34mPOST /api/vacation-requests/:id/reject tests completed[0m
+[0;34m========================================[0m
+
+[0;32m✓ vacation-request-reject PASSED[0m
+
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+[0;36mRunning: vacation-requests-list[0m
+[0;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+
+[0;32m✓ Serwer jest zarządzany przez nadrzędny skrypt[0m
+
+[0;34m========================================[0m
+[0;34mTesting GET /api/vacation-requests endpoint[0m
+[0;34m========================================[0m
+
+[1;33mTest 1: Podstawowe GET /api/vacation-requests[0m
+[0;32m✓ PASS[0m - Podstawowe GET /api/vacation-requests (HTTP 200)
+Response preview:
+Total vacation requests: 0
+
+[1;33mTest 2: Paginacja (limit=5, offset=0)[0m
+[0;32m✓ PASS[0m - Paginacja limit=5 (HTTP 200)
+Returned requests count: 0
+Pagination: limit=5, offset=0
+
+[1;33mTest 3: Filtrowanie po statusie (status=SUBMITTED)[0m
+[0;32m✓ PASS[0m - Filtrowanie status=SUBMITTED (HTTP 200)
+Submitted requests count: 0
+
+[1;33mTest 4: Filtrowanie po wielu statusach (SUBMITTED i APPROVED)[0m
+[0;32m✓ PASS[0m - Filtrowanie multiple status (HTTP 200)
+Requests with SUBMITTED or APPROVED status: 0
+
+[1;33mTest 5: Walidacja - nieprawidłowy limit (999)[0m
+[0;32m✓ PASS[0m - Walidacja limit max 100 (HTTP 400)
+Error message:
+Invalid query parameters
+
+[1;33mTest 6: Walidacja - nieprawidłowy UUID[0m
+[0;32m✓ PASS[0m - Walidacja UUID (HTTP 400)
+Error message:
+Invalid query parameters
+
+[1;33mTest 7: Walidacja - nieprawidłowy format daty[0m
+[0;32m✓ PASS[0m - Walidacja date format (HTTP 400)
+Error message:
+Invalid query parameters
+
+[1;33mTest 8: Filtrowanie po dacie rozpoczęcia (startDate=2026-01-01)[0m
+[0;32m✓ PASS[0m - Filtrowanie startDate (HTTP 200)
+Requests starting from 2026-01-01: 0
+
+[1;33mTest 9: Filtrowanie po zakresie dat (startDate=2026-01-01, endDate=2026-12-31)[0m
+[0;32m✓ PASS[0m - Filtrowanie date range (HTTP 200)
+Requests in 2026: 0
+
+[1;33mTest 10: Walidacja - nieprawidłowy status[0m
+[0;32m✓ PASS[0m - Walidacja status enum (HTTP 400)
+Error message:
+Invalid query parameters
+
+[0;34m========================================[0m
+[0;34mTest Summary[0m
+[0;34m========================================[0m
+All tests completed!
+
+
+[0;32m✓ vacation-requests-list PASSED[0m
+
+[0;36m╔════════════════════════════════════════════════════════════╗[0m
+[0;36m║                     Test Summary                           ║[0m
+[0;36m╚════════════════════════════════════════════════════════════╝[0m
+
+Total tests:  [0;34m25[0m
+Passed:       [0;32m22[0m
+Failed:       [0;31m3[0m
+
+[0;31m❌ Some tests failed[0m
