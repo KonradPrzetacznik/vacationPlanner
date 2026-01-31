@@ -114,7 +114,7 @@ export async function getSettingByKey(
 
 /**
  * Update setting value
- * Only HR users can update settings
+ * Only HR and ADMINISTRATOR users can update settings
  * Additional validation for team_occupancy_threshold (must be 0-100)
  *
  * @param supabase - Supabase client from context.locals
@@ -130,9 +130,9 @@ export async function updateSetting(
   key: string,
   data: UpdateSettingDTO
 ): Promise<UpdateSettingResponseDTO> {
-  // 1. Authorization: Only HR can update settings
-  if (currentUserRole !== "HR") {
-    throw new Error("Only HR users can update settings");
+  // 1. Authorization: Only HR and ADMINISTRATOR can update settings
+  if (currentUserRole !== "HR" && currentUserRole !== "ADMINISTRATOR") {
+    throw new Error("Only HR and ADMINISTRATOR users can update settings");
   }
 
   // 2. Check if setting exists
@@ -159,6 +159,14 @@ export async function updateSetting(
     if (data.value < 0 || data.value > 100) {
       throw new Error(
         "Invalid value for team_occupancy_threshold: must be between 0 and 100"
+      );
+    }
+  }
+
+  if (key === "default_vacation_days") {
+    if (data.value < 1 || data.value > 365) {
+      throw new Error(
+        "Invalid value for default_vacation_days: must be between 1 and 365"
       );
     }
   }

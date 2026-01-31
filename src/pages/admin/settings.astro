@@ -1,0 +1,78 @@
+---
+/**
+ * Admin Settings Page
+ * Accessible at /admin/settings
+ * Only administrators and HR can access this page
+ */
+
+import Layout from "@/layouts/Layout.astro";
+import { SettingsForm } from "@/components/forms/SettingsForm";
+import { Toaster } from "@/components/ui/sonner";
+import type { SettingsFormValues } from "@/lib/schemas/settings-form.schema";
+import type { GetAllSettingsResponseDTO } from "@/types";
+
+// Disable prerendering for this page
+export const prerender = false;
+
+// Fetch settings from API
+const apiUrl = new URL("/api/settings", Astro.url.origin);
+
+let initialSettings: SettingsFormValues | null = null;
+let errorMessage: string | null = null;
+
+try {
+  const response = await fetch(apiUrl.toString(), {
+    headers: {
+      // Pass cookies for authentication (when implemented)
+      cookie: Astro.request.headers.get("cookie") || "",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch settings: ${response.statusText}`);
+  }
+
+  const data: GetAllSettingsResponseDTO = await response.json();
+
+  // Transform API response to form values
+  initialSettings = {
+    default_vacation_days:
+      data.data.find((s) => s.key === "default_vacation_days")?.value || 26,
+    team_occupancy_threshold:
+      data.data.find((s) => s.key === "team_occupancy_threshold")?.value || 75,
+  };
+} catch (error) {
+  console.error("Failed to load settings:", error);
+  errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+}
+---
+
+<Layout title="Ustawienia - VacationPlanner">
+  <main class="container mx-auto px-4 py-8">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold tracking-tight">Ustawienia</h1>
+      <p class="text-muted-foreground mt-2">
+        Zarządzaj globalnymi parametrami aplikacji
+      </p>
+    </div>
+
+    {
+      errorMessage ? (
+        <div class="rounded-lg border border-destructive bg-destructive/10 p-4">
+          <h2 class="text-lg font-semibold text-destructive">
+            Błąd ładowania ustawień
+          </h2>
+          <p class="text-sm text-destructive/90 mt-1">{errorMessage}</p>
+        </div>
+      ) : initialSettings ? (
+        <SettingsForm initialSettings={initialSettings} client:load />
+      ) : (
+        <div class="rounded-lg border p-4">
+          <p class="text-muted-foreground">Ładowanie ustawień...</p>
+        </div>
+      )
+    }
+
+    <Toaster client:load />
+  </main>
+</Layout>

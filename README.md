@@ -249,6 +249,104 @@ curl "http://localhost:3000/api/users/uuid" | jq .
 
 **Usage Examples:** See [API Examples](docs/API_EXAMPLES.md) for practical code examples in multiple languages.
 
+---
+
+### Settings API
+
+#### GET /api/settings
+
+Retrieves all global application settings.
+
+**Authorization:** 
+- ADMINISTRATOR: Can view all settings
+- HR: Can view all settings
+- EMPLOYEE: Can view all settings
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "key": "default_vacation_days",
+      "value": 26,
+      "description": "Default number of vacation days per year",
+      "updatedAt": "2026-01-30T21:00:00Z"
+    },
+    {
+      "key": "team_occupancy_threshold",
+      "value": 75,
+      "description": "Percentage threshold (0-100) for maximum team members on vacation simultaneously",
+      "updatedAt": "2026-01-30T21:00:00Z"
+    }
+  ]
+}
+```
+
+**Example:**
+```bash
+curl "http://localhost:3000/api/settings"
+```
+
+---
+
+#### POST /api/settings
+
+Updates multiple settings at once (bulk update).
+
+**Authorization:** 
+- ADMINISTRATOR: Can update settings
+- HR: Can update settings
+- EMPLOYEE: Cannot update settings (403)
+
+**Request Body:**
+```json
+[
+  {"key": "default_vacation_days", "value": 28},
+  {"key": "team_occupancy_threshold", "value": 80}
+]
+```
+
+**Validation Rules:**
+- `default_vacation_days`: Must be integer between 1-365
+- `team_occupancy_threshold`: Must be integer between 0-100
+
+**Response (200 OK):**
+```json
+{
+  "data": [
+    {
+      "key": "default_vacation_days",
+      "value": 28,
+      "description": "Default number of vacation days per year",
+      "updatedAt": "2026-01-30T22:00:00Z"
+    },
+    {
+      "key": "team_occupancy_threshold",
+      "value": 80,
+      "description": "Percentage threshold (0-100) for maximum team members on vacation simultaneously",
+      "updatedAt": "2026-01-30T22:00:00Z"
+    }
+  ]
+}
+```
+
+**Error Responses:**
+- `400 Bad Request`: Validation error (value out of range)
+- `403 Forbidden`: Unauthorized (not HR or ADMINISTRATOR)
+- `404 Not Found`: Setting key doesn't exist
+- `500 Internal Server Error`: Server error
+
+**Example:**
+```bash
+curl -X POST "http://localhost:3000/api/settings" \
+  -H "Content-Type: application/json" \
+  -d '[{"key": "default_vacation_days", "value": 28}]'
+```
+
+**Full Settings Documentation:** See [Settings View Documentation](docs/SETTINGS_VIEW.md) for UI and complete feature details.
+
+---
+
 ## Testing
 
 ### Automated API Tests
@@ -261,6 +359,8 @@ tests/
 └── api/
     ├── users-list.test.sh                    # Tests for GET /api/users
     ├── user-by-id.test.sh                    # Tests for GET /api/users/:id
+    ├── settings-list.test.sh                 # Tests for GET /api/settings
+    ├── settings-bulk-update.test.sh          # Tests for POST /api/settings
     ├── vacation-request-approve.test.sh      # Tests for POST /api/vacation-requests/:id/approve
     ├── vacation-request-reject.test.sh       # Tests for POST /api/vacation-requests/:id/reject
     ├── vacation-request-cancel.test.sh       # Tests for POST /api/vacation-requests/:id/cancel
