@@ -15,17 +15,32 @@ export const onRequest = defineMiddleware(async (context, next) => {
         .eq("id", DEFAULT_USER_ID)
         .single();
 
-    // Check if user exists and has required role
-    if (
-      profileError ||
-      !currentUserProfile ||
-      (currentUserProfile.role !== "ADMINISTRATOR" &&
-        currentUserProfile.role !== "HR")
-    ) {
-      // Redirect to home page or return 403
+    if (profileError || !currentUserProfile) {
       return new Response("Forbidden: You don't have access to this page", {
         status: 403,
       });
+    }
+
+    // Define role requirements for specific routes
+    const isUsersRoute = context.url.pathname.startsWith("/admin/users");
+
+    if (isUsersRoute) {
+      // /admin/users requires ADMINISTRATOR role only
+      if (currentUserProfile.role !== "ADMINISTRATOR") {
+        return new Response("Forbidden: Administrator role required", {
+          status: 403,
+        });
+      }
+    } else {
+      // Other /admin routes require ADMINISTRATOR or HR
+      if (
+        currentUserProfile.role !== "ADMINISTRATOR" &&
+        currentUserProfile.role !== "HR"
+      ) {
+        return new Response("Forbidden: You don't have access to this page", {
+          status: 403,
+        });
+      }
     }
   }
 

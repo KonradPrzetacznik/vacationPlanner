@@ -1,0 +1,93 @@
+---
+/**
+ * Admin Users Management Page
+ * Accessible at /admin/users
+ * Only administrators can access this page
+ */
+
+import Layout from "@/layouts/Layout.astro";
+import { UsersManagement } from "@/components/users/UsersManagement.tsx";
+import { Toaster } from "@/components/ui/sonner";
+import type { GetUsersResponseDTO } from "@/types";
+
+// Disable prerendering for this page
+export const prerender = false;
+
+// Get current user from database
+let currentUserId: string | null = null;
+try {
+  // Import DEFAULT_USER_ID for development
+  const { DEFAULT_USER_ID } = await import("@/db/supabase.client");
+  currentUserId = DEFAULT_USER_ID;
+} catch (error) {
+  console.error("Failed to get current user:", error);
+}
+
+if (!currentUserId) {
+  return Astro.redirect("/login");
+}
+
+// Fetch users from API
+const apiUrl = new URL("/api/users", Astro.url.origin);
+// Set default params for initial load
+apiUrl.searchParams.set("limit", "50");
+apiUrl.searchParams.set("offset", "0");
+apiUrl.searchParams.set("includeDeleted", "false");
+
+let initialData: GetUsersResponseDTO | null = null;
+let errorMessage: string | null = null;
+
+try {
+  const response = await fetch(apiUrl.toString(), {
+    headers: {
+      // Pass cookies for authentication (when implemented)
+      cookie: Astro.request.headers.get("cookie") || "",
+    },
+  });
+
+  if (response.status === 401) {
+    // Not authenticated - redirect to login
+    return Astro.redirect("/login");
+  }
+
+  if (response.status === 403) {
+    // Not authorized - show error
+    errorMessage = "Nie masz uprawnień do przeglądania tej strony. Wymagana rola: Administrator.";
+  } else if (!response.ok) {
+    throw new Error(`Failed to fetch users: ${response.statusText}`);
+  } else {
+    initialData = await response.json();
+  }
+} catch (error) {
+  console.error("Failed to load users:", error);
+  errorMessage = error instanceof Error ? error.message : "Nieznany błąd podczas ładowania użytkowników";
+}
+---
+
+<Layout title="Zarządzanie użytkownikami - VacationPlanner">
+  <main class="container mx-auto px-4 py-8">
+    {
+      errorMessage ? (
+        <div class="rounded-lg border border-destructive bg-destructive/10 p-4">
+          <h2 class="text-lg font-semibold text-destructive">
+            Błąd ładowania użytkowników
+          </h2>
+          <p class="text-sm text-destructive/90 mt-1">{errorMessage}</p>
+        </div>
+      ) : initialData ? (
+        <UsersManagement
+          initialUsers={initialData.data}
+          initialPagination={initialData.pagination}
+          currentUserId={currentUserId}
+          client:load
+        />
+      ) : (
+        <div class="rounded-lg border p-4">
+          <p class="text-muted-foreground">Ładowanie użytkowników...</p>
+        </div>
+      )
+    }
+
+    <Toaster client:load />
+  </main>
+</Layout>

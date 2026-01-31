@@ -1,0 +1,194 @@
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         /admin/users (Astro SSR)                        │
+│                                                                         │
+│  • Fetches initial data from API                                       │
+│  • Middleware authorization check (ADMINISTRATOR only)                 │
+│  • Passes data to React component                                      │
+└────────────────────────────┬────────────────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      UsersManagement (React)                            │
+│                                                                         │
+│  State Management:                                                      │
+│  • users: UserListItemDTO[]                                            │
+│  • pagination: { limit, offset, total }                                │
+│  • filters: { searchQuery, roleFilter, showDeleted }                   │
+│  • userFormDialog: { isOpen, mode, editingUser }                       │
+│  • deleteDialog: { isOpen, userId, userName }                          │
+│                                                                         │
+│  Custom Hook: useUsersManagement()                                      │
+│  • Manages all state and CRUD operations                               │
+│  • Integrates with API endpoints                                        │
+│  • Client-side search filtering                                         │
+└───┬─────────┬─────────┬──────────┬──────────┬──────────┬───────────────┘
+    │         │         │          │          │          │
+    ▼         ▼         ▼          ▼          ▼          ▼
+┌───────┐ ┌──────┐ ┌──────┐ ┌──────────┐ ┌─────────┐ ┌────────┐
+│ Page  │ │Users │ │Users │ │  Users   │ │  User   │ │ Delete │
+│Header │ │Filter│ │Table │ │Pagination│ │  Form   │ │Confirm │
+│       │ │      │ │      │ │          │ │ Dialog  │ │ Dialog │
+└───────┘ └──────┘ └──────┘ └──────────┘ └─────────┘ └────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           PageHeader                                    │
+├─────────────────────────────────────────────────────────────────────────┤
+│  • Title: "Zarządzanie użytkownikami"                                  │
+│  • Button: "Dodaj użytkownika" → Opens UserFormDialog                  │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          UsersFilters                                   │
+├─────────────────────────────────────────────────────────────────────────┤
+│  • Search Input (debounced 300ms): firstName, lastName, email          │
+│  • Role Select: ALL | ADMINISTRATOR | HR | EMPLOYEE                    │
+│  • Checkbox: "Pokaż usuniętych użytkowników"                           │
+│  • Button: "Wyczyść filtry" (when filters active)                      │
+│                                                                         │
+│  Hook: useDebounce(searchQuery, 300)                                   │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           UsersTable                                    │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Columns:                                                               │
+│  • Imię                                                                 │
+│  • Nazwisko                                                             │
+│  • Email                                                                │
+│  • Rola (Badge: ADMINISTRATOR=red, HR=default, EMPLOYEE=secondary)     │
+│  • Status (Badge: Aktywny=green, Usunięty=red)                         │
+│  • Akcje:                                                               │
+│    - Edit Button (Pencil icon) → Opens UserFormDialog                  │
+│    - Delete Button (Trash icon) → Opens DeleteConfirmDialog            │
+│                                                                         │
+│  States:                                                                │
+│  • Loading: Shows spinner                                              │
+│  • Empty: Shows "Nie znaleziono użytkowników"                          │
+│  • Deleted rows: opacity-60 (dimmed)                                   │
+│  • Edit/Delete disabled for deleted users                              │
+│  • Delete disabled for current user                                    │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        UsersPagination                                  │
+├─────────────────────────────────────────────────────────────────────────┤
+│  • Info: "Wyświetlanie X-Y z Z użytkowników"                           │
+│  • Button: "Poprzednia" (disabled when offset=0)                       │
+│  • Text: "Strona N z M"                                                │
+│  • Button: "Następna" (disabled when no more pages)                    │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        UserFormDialog                                   │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Mode: CREATE | EDIT                                                    │
+│                                                                         │
+│  Fields (CREATE):                                                       │
+│  • firstName (required, 1-100 chars)                                   │
+│  • lastName (required, 1-100 chars)                                    │
+│  • email (required, valid format, unique)                              │
+│  • role (required, select: ADMINISTRATOR|HR|EMPLOYEE)                  │
+│  • temporaryPassword (required, min 8 chars)                           │
+│                                                                         │
+│  Fields (EDIT):                                                         │
+│  • firstName (required, 1-100 chars)                                   │
+│  • lastName (required, 1-100 chars)                                    │
+│  • role (required, disabled if editing self)                           │
+│  • email (not editable)                                                │
+│                                                                         │
+│  Validation: Zod schemas (createUserSchema, editUserSchema)            │
+│  Form Library: react-hook-form                                         │
+│  Buttons: "Anuluj" | "Utwórz użytkownika" / "Zapisz zmiany"           │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      DeleteConfirmDialog                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  • Title: "Czy na pewno chcesz usunąć użytkownika?"                   │
+│  • Message: Shows user name                                            │
+│  • Warning: "Wszystkie przyszłe wnioski urlopowe zostaną anulowane"   │
+│  • Buttons:                                                             │
+│    - "Anuluj" (cancel)                                                 │
+│    - "Usuń użytkownika" (destructive red button)                       │
+│                                                                         │
+│  On Success: Shows toast with cancelled vacations count                │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         API Integration                                 │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  GET /api/users?limit=50&offset=0&role=...&includeDeleted=false       │
+│  └─→ Returns: GetUsersResponseDTO { data, pagination }                 │
+│                                                                         │
+│  POST /api/users                                                        │
+│  └─→ Body: CreateUserDTO                                               │
+│  └─→ Returns: CreateUserResponseDTO                                    │
+│                                                                         │
+│  PATCH /api/users/:id                                                   │
+│  └─→ Body: UpdateUserDTO                                               │
+│  └─→ Returns: UpdateUserResponseDTO                                    │
+│                                                                         │
+│  DELETE /api/users/:id                                                  │
+│  └─→ Returns: DeleteUserResponseDTO { cancelledVacations }             │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                       Custom Hooks                                      │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  useUsersManagement(initialUsers, initialPagination, currentUserId)    │
+│  ├─ State: users, pagination, filters, isLoading                       │
+│  ├─ Functions: updateFilters, updatePagination                         │
+│  ├─ CRUD: createUser, updateUser, deleteUser, refreshUsers             │
+│  └─ Effects: Auto-fetch on filters/pagination change                   │
+│                                                                         │
+│  useDebounce<T>(value, delay)                                          │
+│  └─ Returns debounced value after delay (300ms for search)             │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      Authorization Flow                                 │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  Request: /admin/users                                                  │
+│      ↓                                                                  │
+│  Middleware: Check if user role = ADMINISTRATOR                         │
+│      ↓ (Yes)                      ↓ (No)                               │
+│  Allow access              Return 403 Forbidden                         │
+│      ↓                                                                  │
+│  Astro Page: Fetch initial data                                        │
+│      ↓                                                                  │
+│  React Component: Render UI                                            │
+│      ↓                                                                  │
+│  API Calls: Backend validates role again                               │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         Data Flow                                       │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  1. Initial Load (SSR)                                                 │
+│     Astro → API → Database → API → Astro → React Component             │
+│                                                                         │
+│  2. Filter Change (Client)                                             │
+│     UsersFilters → useUsersManagement → API → Update State             │
+│                                                                         │
+│  3. Create User (Client)                                               │
+│     UserFormDialog → useUsersManagement.createUser() → API             │
+│     → Toast Success → Refresh List                                     │
+│                                                                         │
+│  4. Update User (Client)                                               │
+│     UsersTable → UserFormDialog → useUsersManagement.updateUser()      │
+│     → API → Toast Success → Refresh List                               │
+│                                                                         │
+│  5. Delete User (Client)                                               │
+│     UsersTable → DeleteConfirmDialog → useUsersManagement.deleteUser() │
+│     → API → Toast Success (with cancelled count) → Refresh List        │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
