@@ -1,0 +1,19 @@
+---
+/**
+ * Teams Management Page
+ * Accessible at /teams
+ * Only HR and ADMINISTRATOR can access this page (enforced by API)
+ */
+
+import Layout from "@/layouts/Layout.astro";
+import { TeamsManagementView } from "@/components/teams/TeamsManagementView";
+import { Toaster } from "@/components/ui/sonner";
+
+// Disable prerendering for this page
+export const prerender = false;
+---
+
+<Layout title="Zarządzanie zespołami">
+  <TeamsManagementView client:load />
+  <Toaster client:load />
+</Layout>
