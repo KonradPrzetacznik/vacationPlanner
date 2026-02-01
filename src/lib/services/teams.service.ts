@@ -8,7 +8,6 @@ import type {
   GetTeamsQueryDTO,
   GetTeamsResponseDTO,
   TeamListItemDTO,
-  TeamDetailsDTO,
   TeamMemberDTO,
   GetTeamByIdResponseDTO,
   CreateTeamDTO,
@@ -70,9 +69,7 @@ export async function getTeams(
   }
 
   // 2. Build base query for teams
-  let teamsQuery = supabase
-    .from("teams")
-    .select("id, name, created_at, updated_at", { count: "exact" });
+  let teamsQuery = supabase.from("teams").select("id, name, created_at, updated_at", { count: "exact" });
 
   // Apply team filter for EMPLOYEE
   if (teamIds !== null) {
@@ -231,18 +228,15 @@ export async function getTeamById(
 
   if (memberIds.length > 0) {
     // Call RPC to get emails from auth.users
-    const { data: emailsData, error: emailsError } = await supabase.rpc(
-      "get_user_emails" as any,
-      {
-        user_ids: memberIds,
-      }
-    );
+    const { data: emailsData, error: emailsError } = await supabase.rpc("get_user_emails", {
+      user_ids: memberIds,
+    });
 
     if (emailsError) {
       console.error("[TeamsService] Failed to fetch member emails:", emailsError);
       // Don't throw, just log - emails are non-critical
     } else if (emailsData && Array.isArray(emailsData)) {
-      (emailsData as Array<{ id: string; email: string }>).forEach((item) => {
+      (emailsData as { id: string; email: string }[]).forEach((item) => {
         emailsMap.set(item.id, item.email);
       });
     }
@@ -287,10 +281,7 @@ export async function getTeamById(
  * @returns Promise with created team data
  * @throws Error if team name already exists
  */
-export async function createTeam(
-  supabase: SupabaseClient,
-  data: CreateTeamDTO
-): Promise<CreateTeamResponseDTO> {
+export async function createTeam(supabase: SupabaseClient, data: CreateTeamDTO): Promise<CreateTeamResponseDTO> {
   const { name } = data;
 
   // 1. Check if team name already exists
@@ -410,10 +401,7 @@ export async function updateTeam(
  * @returns Promise with deletion confirmation
  * @throws Error if team not found
  */
-export async function deleteTeam(
-  supabase: SupabaseClient,
-  teamId: string
-): Promise<DeleteTeamResponseDTO> {
+export async function deleteTeam(supabase: SupabaseClient, teamId: string): Promise<DeleteTeamResponseDTO> {
   // 1. Check if team exists
   const { data: existingTeam, error: fetchError } = await supabase
     .from("teams")
@@ -426,10 +414,7 @@ export async function deleteTeam(
   }
 
   // 2. Delete team (CASCADE automatically removes team_members records)
-  const { error: deleteError } = await supabase
-    .from("teams")
-    .delete()
-    .eq("id", teamId);
+  const { error: deleteError } = await supabase.from("teams").delete().eq("id", teamId);
 
   if (deleteError) {
     console.error("[TeamsService] Failed to delete team:", deleteError);
@@ -460,21 +445,14 @@ export async function addMembers(
   userIds: string[]
 ): Promise<TeamMembershipDTO[]> {
   // 1. Check if team exists
-  const { data: team, error: teamError } = await supabase
-    .from("teams")
-    .select("id")
-    .eq("id", teamId)
-    .single();
+  const { data: team, error: teamError } = await supabase.from("teams").select("id").eq("id", teamId).single();
 
   if (teamError || !team) {
     throw new Error("Team not found");
   }
 
   // 2. Validate all users exist and are not deleted
-  const { data: users, error: usersError } = await supabase
-    .from("profiles")
-    .select("id, deleted_at")
-    .in("id", userIds);
+  const { data: users, error: usersError } = await supabase.from("profiles").select("id, deleted_at").in("id", userIds);
 
   if (usersError) {
     console.error("[TeamsService] Failed to fetch users:", usersError);
@@ -545,28 +523,16 @@ export async function addMembers(
  * @returns Promise that resolves when member is removed
  * @throws Error if team not found, user not found, or membership doesn't exist
  */
-export async function removeMember(
-  supabase: SupabaseClient,
-  teamId: string,
-  userId: string
-): Promise<void> {
+export async function removeMember(supabase: SupabaseClient, teamId: string, userId: string): Promise<void> {
   // 1. Check if team exists
-  const { data: team, error: teamError } = await supabase
-    .from("teams")
-    .select("id")
-    .eq("id", teamId)
-    .single();
+  const { data: team, error: teamError } = await supabase.from("teams").select("id").eq("id", teamId).single();
 
   if (teamError || !team) {
     throw new Error("Team not found");
   }
 
   // 2. Check if user exists
-  const { data: user, error: userError } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("id", userId)
-    .single();
+  const { data: user, error: userError } = await supabase.from("profiles").select("id").eq("id", userId).single();
 
   if (userError || !user) {
     throw new Error("User not found");
@@ -614,8 +580,8 @@ function getDefaultDateRange(): { startDate: string; endDate: string } {
   twoWeeksAhead.setDate(today.getDate() + 14);
 
   return {
-    startDate: oneWeekAgo.toISOString().split('T')[0],
-    endDate: twoWeeksAhead.toISOString().split('T')[0]
+    startDate: oneWeekAgo.toISOString().split("T")[0],
+    endDate: twoWeeksAhead.toISOString().split("T")[0],
   };
 }
 
@@ -624,13 +590,13 @@ function getDefaultDateRange(): { startDate: string; endDate: string } {
  * Converts month string (YYYY-MM) to start and end dates
  */
 function getMonthDateRange(month: string): { startDate: string; endDate: string } {
-  const [year, monthNum] = month.split('-').map(Number);
+  const [year, monthNum] = month.split("-").map(Number);
   const startDate = new Date(year, monthNum - 1, 1);
   const endDate = new Date(year, monthNum, 0); // Last day of month
 
   return {
-    startDate: startDate.toISOString().split('T')[0],
-    endDate: endDate.toISOString().split('T')[0]
+    startDate: startDate.toISOString().split("T")[0],
+    endDate: endDate.toISOString().split("T")[0],
   };
 }
 
@@ -655,11 +621,7 @@ export async function getCalendar(
   filters: GetTeamCalendarQueryDTO
 ): Promise<GetTeamCalendarResponseDTO> {
   // 1. Check if team exists and get team name
-  const { data: team, error: teamError } = await supabase
-    .from("teams")
-    .select("id, name")
-    .eq("id", teamId)
-    .single();
+  const { data: team, error: teamError } = await supabase.from("teams").select("id, name").eq("id", teamId).single();
 
   if (teamError || !team) {
     throw new Error("Team not found");
@@ -748,8 +710,7 @@ export async function getCalendar(
     vacationsQuery = vacationsQuery.in("status", filters.includeStatus);
   }
 
-  const { data: vacationsData, error: vacationsError } = await vacationsQuery
-    .order("start_date", { ascending: true });
+  const { data: vacationsData, error: vacationsError } = await vacationsQuery.order("start_date", { ascending: true });
 
   if (vacationsError) {
     console.error("[TeamsService] Failed to fetch vacation requests:", vacationsError);
@@ -759,16 +720,20 @@ export async function getCalendar(
   // 7. Group vacations by user ID
   const vacationsByUser = new Map<string, TeamCalendarVacationDTO[]>();
   vacationsData?.forEach((vacation) => {
-    if (!vacationsByUser.has(vacation.user_id)) {
+    const userVacations = vacationsByUser.get(vacation.user_id);
+    if (!userVacations) {
       vacationsByUser.set(vacation.user_id, []);
     }
-    vacationsByUser.get(vacation.user_id)!.push({
-      id: vacation.id,
-      startDate: vacation.start_date,
-      endDate: vacation.end_date,
-      businessDaysCount: vacation.business_days_count,
-      status: vacation.status as "SUBMITTED" | "APPROVED" | "REJECTED" | "CANCELLED",
-    });
+    const vacationList = vacationsByUser.get(vacation.user_id);
+    if (vacationList) {
+      vacationList.push({
+        id: vacation.id,
+        startDate: vacation.start_date,
+        endDate: vacation.end_date,
+        businessDaysCount: vacation.business_days_count,
+        status: vacation.status as "SUBMITTED" | "APPROVED" | "REJECTED" | "CANCELLED",
+      });
+    }
   });
 
   // 8. Map to TeamCalendarMemberDTO[] and sort by last name
@@ -791,4 +756,3 @@ export async function getCalendar(
     members,
   };
 }
-

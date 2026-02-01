@@ -76,12 +76,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
 
     // 4. Call service to get team details
     const startTime = Date.now();
-    const result = await getTeamById(
-      locals.supabase,
-      teamId,
-      currentUserId,
-      currentUserProfile.role
-    );
+    const result = await getTeamById(locals.supabase, teamId, currentUserId, currentUserProfile.role);
     const duration = Date.now() - startTime;
 
     // Log slow queries
@@ -178,13 +173,10 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
 
     // 4. Check if user is HR or ADMINISTRATOR
     if (currentUserProfile.role !== "HR" && currentUserProfile.role !== "ADMINISTRATOR") {
-      return new Response(
-        JSON.stringify({ error: "Insufficient permissions" }),
-        {
-          status: 403,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Insufficient permissions" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // 5. Parse and validate request body
@@ -314,13 +306,10 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
 
     // 4. Check if user is HR or ADMINISTRATOR
     if (currentUserProfile.role !== "HR" && currentUserProfile.role !== "ADMINISTRATOR") {
-      return new Response(
-        JSON.stringify({ error: "Insufficient permissions" }),
-        {
-          status: 403,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Insufficient permissions" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // 5. Call service to delete team
@@ -369,4 +358,3 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     });
   }
 };
-

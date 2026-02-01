@@ -35,7 +35,7 @@ export function useUsersManagement(
   const [users, setUsers] = useState<UserListItemDTO[]>(initialUsers);
 
   // Split pagination into separate primitives to prevent unnecessary re-renders
-  const [paginationLimit, setPaginationLimit] = useState(initialPagination.limit);
+  const [paginationLimit] = useState(initialPagination.limit);
   const [paginationOffset, setPaginationOffset] = useState(initialPagination.offset);
   const [paginationTotal, setPaginationTotal] = useState(initialPagination.total);
 
@@ -71,8 +71,7 @@ export function useUsersManagement(
       const data: GetUsersResponseDTO = await response.json();
       setUsers(data.data);
       setPaginationTotal(data.pagination.total);
-    } catch (error) {
-      console.error("Failed to fetch users:", error);
+    } catch {
       toast.error("Nie udało się pobrać listy użytkowników");
     } finally {
       setIsLoading(false);
@@ -103,10 +102,7 @@ export function useUsersManagement(
   /**
    * Update an existing user
    */
-  const updateUser = async (
-    userId: string,
-    data: UpdateUserDTO
-  ): Promise<UpdateUserResponseDTO> => {
+  const updateUser = async (userId: string, data: UpdateUserDTO): Promise<UpdateUserResponseDTO> => {
     const response = await fetch(`/api/users/${userId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -141,9 +137,7 @@ export function useUsersManagement(
 
     // Show success message with info about cancelled vacations
     if (result.cancelledVacations > 0) {
-      toast.success(
-        `Użytkownik został usunięty. Anulowano ${result.cancelledVacations} przyszłych urlopów.`
-      );
+      toast.success(`Użytkownik został usunięty. Anulowano ${result.cancelledVacations} przyszłych urlopów.`);
     } else {
       toast.success("Użytkownik został usunięty pomyślnie");
     }
@@ -189,10 +183,7 @@ export function useUsersManagement(
       const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
       const email = user.email.toLowerCase();
 
-      return (
-        fullName.includes(query) ||
-        email.includes(query)
-      );
+      return fullName.includes(query) || email.includes(query);
     })
     .sort((a, b) => {
       // Sort by role: ADMINISTRATOR first, then HR, then EMPLOYEE
@@ -210,17 +201,16 @@ export function useUsersManagement(
       }
 
       // If same role, sort by last name, then first name
-      const lastNameCompare = a.lastName.localeCompare(b.lastName, 'pl');
+      const lastNameCompare = a.lastName.localeCompare(b.lastName, "pl");
       if (lastNameCompare !== 0) return lastNameCompare;
 
-      return a.firstName.localeCompare(b.firstName, 'pl');
+      return a.firstName.localeCompare(b.firstName, "pl");
     });
 
   // Fetch users when filters or pagination change
   useEffect(() => {
     fetchUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paginationLimit, paginationOffset, showDeleted, roleFilter]);
+  }, [fetchUsers]);
 
   return {
     users: filteredUsers,

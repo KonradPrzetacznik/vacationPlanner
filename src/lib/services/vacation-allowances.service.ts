@@ -27,7 +27,7 @@ import type {
  */
 function calculateUsedDays(
   allowance: { year: number; carryover_days: number },
-  vacationRequests: Array<{ start_date: string; business_days_count: number; status: string }>
+  vacationRequests: { start_date: string; business_days_count: number; status: string }[]
 ): {
   usedCarryoverDays: number;
   usedCurrentYearDays: number;
@@ -87,13 +87,10 @@ function enrichAllowanceWithComputedFields(
     created_at: string;
     updated_at: string;
   },
-  vacationRequests: Array<{ start_date: string; business_days_count: number; status: string }>
+  vacationRequests: { start_date: string; business_days_count: number; status: string }[]
 ): VacationAllowanceDTO {
   // Calculate used days with carry-over logic
-  const { usedCarryoverDays, usedCurrentYearDays, usedDays } = calculateUsedDays(
-    allowance,
-    vacationRequests
-  );
+  const { usedCarryoverDays, usedCurrentYearDays, usedDays } = calculateUsedDays(allowance, vacationRequests);
 
   // Calculate remaining days
   const remainingCarryoverDays = Math.max(0, allowance.carryover_days - usedCarryoverDays);
@@ -291,10 +288,7 @@ export async function getVacationAllowanceByYear(
   }
 
   // 6. Enrich allowance with computed fields
-  const enrichedAllowance = enrichAllowanceWithComputedFields(
-    allowance,
-    vacationRequests || []
-  );
+  const enrichedAllowance = enrichAllowanceWithComputedFields(allowance, vacationRequests || []);
 
   return {
     data: enrichedAllowance,

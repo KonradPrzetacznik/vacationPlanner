@@ -34,24 +34,18 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
 
     if (profileError || !currentUserProfile) {
       console.error("[DELETE /api/teams/:id/members/:userId] Failed to fetch current user profile:", profileError);
-      return new Response(
-        JSON.stringify({ error: "Internal server error" }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // 3. Check if user is HR or ADMINISTRATOR
     if (currentUserProfile.role !== "HR" && currentUserProfile.role !== "ADMINISTRATOR") {
-      return new Response(
-        JSON.stringify({ error: "Only HR can remove team members" }),
-        {
-          status: 403,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Only HR can remove team members" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // 4. Validate path parameters (team ID and user ID)
@@ -114,44 +108,31 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     if (error instanceof Error) {
       // Not found errors (404)
       if (error.message === "Team not found") {
-        return new Response(
-          JSON.stringify({ error: "Team not found" }),
-          {
-            status: 404,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
+        return new Response(JSON.stringify({ error: "Team not found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
       }
 
       if (error.message === "User not found") {
-        return new Response(
-          JSON.stringify({ error: "User not found" }),
-          {
-            status: 404,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
+        return new Response(JSON.stringify({ error: "User not found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
       }
 
       if (error.message === "User is not a member of this team") {
-        return new Response(
-          JSON.stringify({ error: "User is not a member of this team" }),
-          {
-            status: 404,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
+        return new Response(JSON.stringify({ error: "User is not a member of this team" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
       }
     }
 
     // Generic internal server error (500)
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 };
-

@@ -18,12 +18,8 @@ export function PageHeader({ onAddUserClick }: PageHeaderProps) {
   return (
     <div className="flex items-center justify-between">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          Zarządzanie użytkownikami
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Przeglądaj, dodawaj i edytuj konta użytkowników
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight">Zarządzanie użytkownikami</h1>
+        <p className="text-muted-foreground mt-2">Przeglądaj, dodawaj i edytuj konta użytkowników</p>
       </div>
       <Button onClick={handleClick}>
         <Plus className="mr-2 h-4 w-4" />

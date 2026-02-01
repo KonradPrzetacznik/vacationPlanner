@@ -31,13 +31,29 @@ export function RequestListItem({ request, onCancel }: RequestListItemProps) {
   const getStatusBadge = (status: VacationRequestListItemDTO["status"]) => {
     switch (status) {
       case "SUBMITTED":
-        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Oczekujący</Badge>;
+        return (
+          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+            Oczekujący
+          </Badge>
+        );
       case "APPROVED":
-        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Zatwierdzony</Badge>;
+        return (
+          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+            Zatwierdzony
+          </Badge>
+        );
       case "REJECTED":
-        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Odrzucony</Badge>;
+        return (
+          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+            Odrzucony
+          </Badge>
+        );
       case "CANCELLED":
-        return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">Anulowany</Badge>;
+        return (
+          <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
+            Anulowany
+          </Badge>
+        );
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -80,9 +96,7 @@ export function RequestListItem({ request, onCancel }: RequestListItemProps) {
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 space-y-3">
           {/* Status Badge */}
-          <div>
-            {getStatusBadge(request.status)}
-          </div>
+          <div>{getStatusBadge(request.status)}</div>
 
           {/* Dates */}
           <div className="flex items-center gap-4 text-sm">
@@ -106,16 +120,12 @@ export function RequestListItem({ request, onCancel }: RequestListItemProps) {
           {request.processedByUserId && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <User className="h-4 w-4" />
-              <span>
-                Przetworzony: {formatDate(request.processedAt || "")}
-              </span>
+              <span>Przetworzony: {formatDate(request.processedAt || "")}</span>
             </div>
           )}
 
           {/* Created At */}
-          <div className="text-xs text-muted-foreground">
-            Utworzony: {formatDate(request.createdAt)}
-          </div>
+          <div className="text-xs text-muted-foreground">Utworzony: {formatDate(request.createdAt)}</div>
         </div>
 
         {/* Actions */}

@@ -6,12 +6,7 @@ import { z } from "zod";
 /**
  * Vacation request status enum
  */
-export const VacationRequestStatusSchema = z.enum([
-  "SUBMITTED",
-  "APPROVED",
-  "REJECTED",
-  "CANCELLED",
-]);
+export const VacationRequestStatusSchema = z.enum(["SUBMITTED", "APPROVED", "REJECTED", "CANCELLED"]);
 
 /**
  * Date string validation (YYYY-MM-DD format)
@@ -40,17 +35,9 @@ export const GetVacationRequestsQuerySchema = z.object({
     .max(100, "Limit must be at most 100")
     .default(50)
     .optional(),
-  offset: z.coerce
-    .number()
-    .int()
-    .min(0, "Offset must be non-negative")
-    .default(0)
-    .optional(),
+  offset: z.coerce.number().int().min(0, "Offset must be non-negative").default(0).optional(),
   status: z
-    .union([
-      VacationRequestStatusSchema,
-      z.array(VacationRequestStatusSchema),
-    ])
+    .union([VacationRequestStatusSchema, z.array(VacationRequestStatusSchema)])
     .transform((val) => (Array.isArray(val) ? val : [val]))
     .optional(),
   userId: UuidSchema.optional(),
@@ -59,9 +46,7 @@ export const GetVacationRequestsQuerySchema = z.object({
   endDate: DateStringSchema.optional(),
 });
 
-export type GetVacationRequestsQuerySchemaType = z.infer<
-  typeof GetVacationRequestsQuerySchema
->;
+export type GetVacationRequestsQuerySchemaType = z.infer<typeof GetVacationRequestsQuerySchema>;
 
 /**
  * Schema for vacation request ID parameter
@@ -70,9 +55,7 @@ export const VacationRequestIdParamSchema = z.object({
   id: UuidSchema,
 });
 
-export type VacationRequestIdParamSchemaType = z.infer<
-  typeof VacationRequestIdParamSchema
->;
+export type VacationRequestIdParamSchemaType = z.infer<typeof VacationRequestIdParamSchema>;
 
 /**
  * Schema for POST /api/vacation-requests/:id/approve body
@@ -81,21 +64,13 @@ export const ApproveVacationRequestSchema = z.object({
   acknowledgeThresholdWarning: z.boolean().optional().default(false),
 });
 
-export type ApproveVacationRequestSchemaType = z.infer<
-  typeof ApproveVacationRequestSchema
->;
+export type ApproveVacationRequestSchemaType = z.infer<typeof ApproveVacationRequestSchema>;
 
 /**
  * Schema for POST /api/vacation-requests/:id/reject body
  */
 export const RejectVacationRequestSchema = z.object({
-  reason: z
-    .string()
-    .min(1, "Reason is required")
-    .max(500, "Reason must be at most 500 characters"),
+  reason: z.string().min(1, "Reason is required").max(500, "Reason must be at most 500 characters"),
 });
 
-export type RejectVacationRequestSchemaType = z.infer<
-  typeof RejectVacationRequestSchema
->;
-
+export type RejectVacationRequestSchemaType = z.infer<typeof RejectVacationRequestSchema>;

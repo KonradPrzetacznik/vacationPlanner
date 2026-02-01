@@ -7,11 +7,10 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import type { EventInput, EventContentArg } from "@fullcalendar/core";
+import type { EventInput, EventContentArg, EventClickArg } from "@fullcalendar/core";
 import type { VacationRequestViewModel } from "@/types";
 import { VacationDetailsTooltip } from "./VacationDetailsTooltip";
 import plLocale from "@fullcalendar/core/locales/pl";
-
 
 interface CalendarProps {
   vacations: VacationRequestViewModel[];
@@ -29,7 +28,13 @@ const statusColors = {
   CANCELLED: "#6b7280", // gray-500
 };
 
-export const Calendar: React.FC<CalendarProps> = ({ vacations, onDateRangeChange, isLoading, onEventClick, initialDate }) => {
+export const Calendar: React.FC<CalendarProps> = ({
+  vacations,
+  onDateRangeChange,
+  isLoading,
+  onEventClick,
+  initialDate,
+}) => {
   const [tooltip, setTooltip] = useState<{
     vacation: VacationRequestViewModel;
     position: { x: number; y: number };
@@ -57,9 +62,7 @@ export const Calendar: React.FC<CalendarProps> = ({ vacations, onDateRangeChange
     id: vacation.id,
     title: `${vacation.user.firstName} ${vacation.user.lastName}`,
     start: vacation.startDate,
-    end: new Date(new Date(vacation.endDate).getTime() + 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0], // Add 1 day for exclusive end date
+    end: new Date(new Date(vacation.endDate).getTime() + 24 * 60 * 60 * 1000).toISOString().split("T")[0], // Add 1 day for exclusive end date
     backgroundColor: statusColors[vacation.status],
     borderColor: statusColors[vacation.status],
     extendedProps: {
@@ -80,9 +83,7 @@ export const Calendar: React.FC<CalendarProps> = ({ vacations, onDateRangeChange
     // Get new date range after navigation
     const view = calendarApi.view;
     const startDate = view.currentStart.toISOString().split("T")[0];
-    const endDate = new Date(view.currentEnd.getTime() - 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0];
+    const endDate = new Date(view.currentEnd.getTime() - 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
     console.log("[Calendar] Prev month:", { startDate, endDate });
     onDateRangeChange(startDate, endDate);
@@ -100,9 +101,7 @@ export const Calendar: React.FC<CalendarProps> = ({ vacations, onDateRangeChange
     // Get new date range after navigation
     const view = calendarApi.view;
     const startDate = view.currentStart.toISOString().split("T")[0];
-    const endDate = new Date(view.currentEnd.getTime() - 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0];
+    const endDate = new Date(view.currentEnd.getTime() - 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
     console.log("[Calendar] Next month:", { startDate, endDate });
     onDateRangeChange(startDate, endDate);
@@ -120,21 +119,22 @@ export const Calendar: React.FC<CalendarProps> = ({ vacations, onDateRangeChange
     // Get new date range after navigation
     const view = calendarApi.view;
     const startDate = view.currentStart.toISOString().split("T")[0];
-    const endDate = new Date(view.currentEnd.getTime() - 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0];
+    const endDate = new Date(view.currentEnd.getTime() - 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
     console.log("[Calendar] Today:", { startDate, endDate });
     onDateRangeChange(startDate, endDate);
   }, [onDateRangeChange, isLoading]);
 
   // Handle event click
-  const handleEventClick = useCallback((clickInfo: any) => {
-    if (onEventClick) {
-      const vacation = clickInfo.event.extendedProps.vacation as VacationRequestViewModel;
-      onEventClick(vacation);
-    }
-  }, [onEventClick]);
+  const handleEventClick = useCallback(
+    (clickInfo: EventClickArg) => {
+      if (onEventClick) {
+        const vacation = clickInfo.event.extendedProps.vacation as VacationRequestViewModel;
+        onEventClick(vacation);
+      }
+    },
+    [onEventClick]
+  );
 
   // Handle mouse enter on event
   const handleEventMouseEnter = useCallback((event: MouseEvent, vacation: VacationRequestViewModel) => {
@@ -166,9 +166,7 @@ export const Calendar: React.FC<CalendarProps> = ({ vacations, onDateRangeChange
         onMouseLeave={handleEventMouseLeave}
       >
         <div className="fc-event-title-container">
-          <div className="fc-event-title fc-sticky text-xs px-1 py-0.5 truncate">
-            {eventInfo.event.title}
-          </div>
+          <div className="fc-event-title fc-sticky text-xs px-1 py-0.5 truncate">{eventInfo.event.title}</div>
         </div>
       </div>
     );
@@ -201,9 +199,7 @@ export const Calendar: React.FC<CalendarProps> = ({ vacations, onDateRangeChange
             Następny →
           </button>
         </div>
-        <h2 className="text-xl font-semibold">
-          {calendarTitle}
-        </h2>
+        <h2 className="text-xl font-semibold">{calendarTitle}</h2>
       </div>
 
       <FullCalendar
@@ -228,12 +224,7 @@ export const Calendar: React.FC<CalendarProps> = ({ vacations, onDateRangeChange
         weekends={true}
       />
 
-      {tooltip && (
-        <VacationDetailsTooltip
-          vacation={tooltip.vacation}
-          position={tooltip.position}
-        />
-      )}
+      {tooltip && <VacationDetailsTooltip vacation={tooltip.vacation} position={tooltip.position} />}
 
       <style>{`
         .calendar-container {

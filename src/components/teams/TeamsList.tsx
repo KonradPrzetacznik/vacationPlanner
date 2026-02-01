@@ -15,12 +15,7 @@ interface TeamsListProps {
  * List component displaying available teams
  * Allows selection of a team to view details
  */
-export function TeamsList({
-  teams,
-  selectedTeamId,
-  onTeamSelect,
-  isLoading = false,
-}: TeamsListProps) {
+export function TeamsList({ teams, selectedTeamId, onTeamSelect, isLoading = false }: TeamsListProps) {
   if (isLoading) {
     return (
       <Card>
@@ -36,12 +31,8 @@ export function TeamsList({
       <Card>
         <CardContent className="p-8 text-center">
           <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <p className="text-muted-foreground font-medium mb-2">
-            Brak zespołów
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Utwórz pierwszy zespół, aby rozpocząć zarządzanie
-          </p>
+          <p className="text-muted-foreground font-medium mb-2">Brak zespołów</p>
+          <p className="text-sm text-muted-foreground">Utwórz pierwszy zespół, aby rozpocząć zarządzanie</p>
         </CardContent>
       </Card>
     );
@@ -91,8 +82,7 @@ function TeamsListItem({ team, isSelected, onClick }: TeamsListItemProps) {
           <div className="flex items-center gap-2 mt-1">
             <Users className="h-3.5 w-3.5 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">
-              {team.memberCount ?? 0}{" "}
-              {team.memberCount === 1 ? "członek" : "członków"}
+              {team.memberCount ?? 0} {team.memberCount === 1 ? "członek" : "członków"}
             </span>
           </div>
         </div>

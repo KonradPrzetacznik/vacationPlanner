@@ -2,20 +2,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import type {
-  TeamDetailsDTO,
-  UpdateTeamDTO,
-  UpdateTeamResponseDTO,
-  DeleteTeamResponseDTO,
-} from "@/types";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import type { TeamDetailsDTO, UpdateTeamDTO, UpdateTeamResponseDTO, DeleteTeamResponseDTO } from "@/types";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,23 +35,14 @@ interface TeamEditFormProps {
   team: TeamDetailsDTO;
   onTeamUpdate: () => void;
   onTeamDelete: () => void;
-  updateTeam: (
-    teamId: string,
-    data: UpdateTeamDTO
-  ) => Promise<UpdateTeamResponseDTO>;
+  updateTeam: (teamId: string, data: UpdateTeamDTO) => Promise<UpdateTeamResponseDTO>;
   deleteTeam: (teamId: string) => Promise<DeleteTeamResponseDTO>;
 }
 
 /**
  * Form for editing team name and deleting team
  */
-export function TeamEditForm({
-  team,
-  onTeamUpdate,
-  onTeamDelete,
-  updateTeam,
-  deleteTeam,
-}: TeamEditFormProps) {
+export function TeamEditForm({ team, onTeamUpdate, onTeamDelete, updateTeam, deleteTeam }: TeamEditFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -89,10 +68,7 @@ export function TeamEditForm({
       await updateTeam(team.id, values);
       onTeamUpdate();
     } catch (err) {
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "Nie udało się zaktualizować zespołu";
+      const errorMessage = err instanceof Error ? err.message : "Nie udało się zaktualizować zespołu";
       setError(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -107,8 +83,7 @@ export function TeamEditForm({
       await deleteTeam(team.id);
       onTeamDelete();
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Nie udało się usunąć zespołu";
+      const errorMessage = err instanceof Error ? err.message : "Nie udało się usunąć zespołu";
       setError(errorMessage);
     } finally {
       setIsDeleting(false);
@@ -120,11 +95,7 @@ export function TeamEditForm({
   return (
     <div className="space-y-4">
       {/* Error Message */}
-      {error && (
-        <div className="rounded-lg bg-destructive/15 p-3 text-sm text-destructive">
-          {error}
-        </div>
-      )}
+      {error && <div className="rounded-lg bg-destructive/15 p-3 text-sm text-destructive">{error}</div>}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
@@ -136,11 +107,7 @@ export function TeamEditForm({
               <FormItem>
                 <FormLabel>Nazwa zespołu</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="np. Zespół Backend"
-                    {...field}
-                    disabled={isSubmitting || isDeleting}
-                  />
+                  <Input placeholder="np. Zespół Backend" {...field} disabled={isSubmitting || isDeleting} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -149,13 +116,8 @@ export function TeamEditForm({
 
           {/* Action Buttons */}
           <div className="flex items-center justify-between pt-2">
-            <Button
-              type="submit"
-              disabled={!isDirty || isSubmitting || isDeleting}
-            >
-              {isSubmitting && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+            <Button type="submit" disabled={!isDirty || isSubmitting || isDeleting}>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               <Save className="mr-2 h-4 w-4" />
               Zapisz zmiany
             </Button>
@@ -163,27 +125,18 @@ export function TeamEditForm({
             {/* Delete Team Button */}
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  disabled={isSubmitting || isDeleting}
-                >
-                  {isDeleting && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
+                <Button type="button" variant="destructive" disabled={isSubmitting || isDeleting}>
+                  {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   <Trash2 className="mr-2 h-4 w-4" />
                   Usuń zespół
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    Czy na pewno chcesz usunąć ten zespół?
-                  </AlertDialogTitle>
+                  <AlertDialogTitle>Czy na pewno chcesz usunąć ten zespół?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Ta akcja jest nieodwracalna. Zespół "{team.name}" zostanie
-                    trwale usunięty, a wszyscy członkowie zostaną z niego
-                    usunięci.
+                    Ta akcja jest nieodwracalna. Zespół &quot;{team.name}&quot; zostanie trwale usunięty, a wszyscy
+                    członkowie zostaną z niego usunięci.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -206,17 +159,11 @@ export function TeamEditForm({
         <dl className="grid grid-cols-1 gap-2 text-sm">
           <div>
             <dt className="text-muted-foreground inline">Utworzono:</dt>
-            <dd className="inline ml-2">
-              {new Date(team.createdAt).toLocaleString("pl-PL")}
-            </dd>
+            <dd className="inline ml-2">{new Date(team.createdAt).toLocaleString("pl-PL")}</dd>
           </div>
           <div>
-            <dt className="text-muted-foreground inline">
-              Ostatnia modyfikacja:
-            </dt>
-            <dd className="inline ml-2">
-              {new Date(team.updatedAt).toLocaleString("pl-PL")}
-            </dd>
+            <dt className="text-muted-foreground inline">Ostatnia modyfikacja:</dt>
+            <dd className="inline ml-2">{new Date(team.updatedAt).toLocaleString("pl-PL")}</dd>
           </div>
         </dl>
       </div>

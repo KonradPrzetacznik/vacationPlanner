@@ -67,9 +67,7 @@ export function TeamsManagementView() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Zarządzanie zespołami</h1>
-          <p className="text-muted-foreground mt-2">
-            Twórz zespoły i zarządzaj ich członkami
-          </p>
+          <p className="text-muted-foreground mt-2">Twórz zespoły i zarządzaj ich członkami</p>
         </div>
         <Button onClick={handleOpenCreateModal} size="lg">
           <Plus className="mr-2 h-4 w-4" />
@@ -105,9 +103,7 @@ export function TeamsManagementView() {
           ) : (
             <div className="flex items-center justify-center h-[400px] border-2 border-dashed rounded-lg">
               <div className="text-center">
-                <p className="text-muted-foreground text-lg">
-                  Wybierz zespół z listy, aby zobaczyć szczegóły
-                </p>
+                <p className="text-muted-foreground text-lg">Wybierz zespół z listy, aby zobaczyć szczegóły</p>
               </div>
             </div>
           )}
@@ -124,4 +120,3 @@ export function TeamsManagementView() {
     </div>
   );
 }
-

@@ -4,10 +4,7 @@
  */
 import type { APIRoute } from "astro";
 import { DEFAULT_USER_ID } from "@/db/supabase.client";
-import {
-  VacationRequestIdParamSchema,
-  RejectVacationRequestSchema,
-} from "@/lib/schemas/vacation-requests.schema";
+import { VacationRequestIdParamSchema, RejectVacationRequestSchema } from "@/lib/schemas/vacation-requests.schema";
 import { rejectVacationRequest } from "@/lib/services/vacation-requests.service";
 
 export const prerender = false;
@@ -25,13 +22,10 @@ export const POST: APIRoute = async (context) => {
     });
 
     if (!paramValidation.success) {
-      return new Response(
-        JSON.stringify({ error: "Invalid vacation request ID format" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Invalid vacation request ID format" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const { id } = paramValidation.data;
@@ -51,8 +45,7 @@ export const POST: APIRoute = async (context) => {
     const bodyValidation = RejectVacationRequestSchema.safeParse(requestBody);
 
     if (!bodyValidation.success) {
-      const errorMessage =
-        bodyValidation.error.errors[0]?.message || "Invalid request body";
+      const errorMessage = bodyValidation.error.errors[0]?.message || "Invalid request body";
       return new Response(JSON.stringify({ error: errorMessage }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
@@ -62,12 +55,7 @@ export const POST: APIRoute = async (context) => {
     const { reason } = bodyValidation.data;
 
     // 4. Call rejectVacationRequest service
-    const response = await rejectVacationRequest(
-      supabase,
-      currentUserId,
-      id,
-      reason
-    );
+    const response = await rejectVacationRequest(supabase, currentUserId, id, reason);
 
     // 5. Return success response
     return new Response(JSON.stringify(response), {
@@ -77,8 +65,7 @@ export const POST: APIRoute = async (context) => {
   } catch (error) {
     console.error("[RejectVacationRequestEndpoint] Error:", error);
 
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to reject vacation request";
+    const errorMessage = error instanceof Error ? error.message : "Failed to reject vacation request";
 
     // Determine status code based on error message
     let statusCode = 500;
@@ -107,4 +94,3 @@ export const POST: APIRoute = async (context) => {
     });
   }
 };
-

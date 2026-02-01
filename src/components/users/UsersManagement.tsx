@@ -14,27 +14,13 @@ interface UsersManagementProps {
   currentUserId: string;
 }
 
-
 /**
  * Main component for Users Management view
  * Orchestrates all subcomponents and manages state
  */
-export function UsersManagement({
-  initialUsers,
-  initialPagination,
-  currentUserId,
-}: UsersManagementProps) {
-  const {
-    users,
-    pagination,
-    filters,
-    isLoading,
-    updateFilters,
-    updatePagination,
-    createUser,
-    updateUser,
-    deleteUser,
-  } = useUsersManagement(initialUsers, initialPagination, currentUserId);
+export function UsersManagement({ initialUsers, initialPagination, currentUserId }: UsersManagementProps) {
+  const { users, pagination, filters, isLoading, updateFilters, updatePagination, createUser, updateUser, deleteUser } =
+    useUsersManagement(initialUsers, initialPagination, currentUserId);
 
   // Dialog states - split to prevent unnecessary re-renders
   const [isUserFormOpen, setIsUserFormOpen] = useState(false);

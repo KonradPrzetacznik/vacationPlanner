@@ -69,16 +69,13 @@ export function DeleteConfirmDialog({
               Uwaga: Wszystkie przyszłe wnioski urlopowe tego użytkownika zostaną automatycznie anulowane.
             </div>
             <div className="text-sm">
-              Tej operacji nie można cofnąć. Użytkownik nie będzie mógł się zalogować, a jego dane pozostaną w systemie jako archiwalne.
+              Tej operacji nie można cofnąć. Użytkownik nie będzie mógł się zalogować, a jego dane pozostaną w systemie
+              jako archiwalne.
             </div>
           </div>
         </AlertDialogHeader>
 
-        {error && (
-          <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-            {error}
-          </div>
-        )}
+        {error && <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
 
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isDeleting}>Anuluj</AlertDialogCancel>

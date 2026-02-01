@@ -27,10 +27,7 @@ const statusColors = {
   CANCELLED: "bg-gray-100 text-gray-800 border-gray-200",
 };
 
-export const VacationsList: React.FC<VacationsListProps> = ({
-  vacations,
-  onVacationClick,
-}) => {
+export const VacationsList: React.FC<VacationsListProps> = ({ vacations, onVacationClick }) => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("pl-PL", {
@@ -56,12 +53,12 @@ export const VacationsList: React.FC<VacationsListProps> = ({
 
       <div className="divide-y">
         {sortedVacations.map((vacation) => (
-          <div
+          <button
             key={vacation.id}
             onClick={() => onVacationClick?.(vacation)}
-            className={`p-4 hover:bg-accent/50 transition-colors ${
-              onVacationClick ? "cursor-pointer" : ""
-            }`}
+            disabled={!onVacationClick}
+            className={`w-full p-4 hover:bg-accent/50 transition-colors text-left ${onVacationClick ? "cursor-pointer" : ""} disabled:cursor-default`}
+            type="button"
           >
             <div className="flex items-start justify-between gap-4">
               {/* User Info */}
@@ -79,8 +76,7 @@ export const VacationsList: React.FC<VacationsListProps> = ({
                   {formatDate(vacation.startDate)} - {formatDate(vacation.endDate)}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  ({vacation.businessDaysCount}{" "}
-                  {vacation.businessDaysCount === 1 ? "dzień" : "dni"})
+                  ({vacation.businessDaysCount} {vacation.businessDaysCount === 1 ? "dzień" : "dni"})
                 </span>
               </div>
 
@@ -95,7 +91,7 @@ export const VacationsList: React.FC<VacationsListProps> = ({
                 </span>
               </div>
             </div>
-          </div>
+          </button>
         ))}
       </div>
     </div>

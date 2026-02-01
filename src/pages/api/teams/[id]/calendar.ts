@@ -34,13 +34,10 @@ export const GET: APIRoute = async ({ params, request, locals }) => {
 
     if (profileError || !currentUserProfile) {
       console.error("[GET /api/teams/:id/calendar] Failed to fetch current user profile:", profileError);
-      return new Response(
-        JSON.stringify({ error: "Internal server error" }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // 3. Validate path parameter (team ID)
@@ -67,9 +64,8 @@ export const GET: APIRoute = async ({ params, request, locals }) => {
       startDate: url.searchParams.get("startDate") || undefined,
       endDate: url.searchParams.get("endDate") || undefined,
       month: url.searchParams.get("month") || undefined,
-      includeStatus: url.searchParams.getAll("includeStatus").length > 0
-        ? url.searchParams.getAll("includeStatus")
-        : undefined,
+      includeStatus:
+        url.searchParams.getAll("includeStatus").length > 0 ? url.searchParams.getAll("includeStatus") : undefined,
     };
 
     const queryValidation = getTeamCalendarQuerySchema.safeParse(queryParams);
@@ -111,13 +107,10 @@ export const GET: APIRoute = async ({ params, request, locals }) => {
     }
 
     // 6. Return success response
-    return new Response(
-      JSON.stringify(calendar),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify(calendar), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("[GET /api/teams/:id/calendar] Error:", {
       timestamp: new Date().toISOString(),
@@ -131,35 +124,25 @@ export const GET: APIRoute = async ({ params, request, locals }) => {
     if (error instanceof Error) {
       // Not found errors (404)
       if (error.message === "Team not found") {
-        return new Response(
-          JSON.stringify({ error: "Team not found" }),
-          {
-            status: 404,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
+        return new Response(JSON.stringify({ error: "Team not found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
       }
 
       // Forbidden errors (403)
       if (error.message === "You are not a member of this team") {
-        return new Response(
-          JSON.stringify({ error: "You are not a member of this team" }),
-          {
-            status: 403,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
+        return new Response(JSON.stringify({ error: "You are not a member of this team" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
       }
     }
 
     // Generic internal server error (500)
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 };
-

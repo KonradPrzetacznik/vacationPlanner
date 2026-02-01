@@ -1,10 +1,5 @@
 import { useState } from "react";
-import type {
-  TeamMemberDTO,
-  AddTeamMembersDTO,
-  AddTeamMembersResponseDTO,
-  RemoveTeamMemberResponseDTO,
-} from "@/types";
+import type { TeamMemberDTO, AddTeamMembersDTO, AddTeamMembersResponseDTO, RemoveTeamMemberResponseDTO } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -24,14 +19,8 @@ interface TeamMembersListProps {
   teamId: string;
   members: TeamMemberDTO[];
   onMemberRemove: () => void;
-  addTeamMembers: (
-    teamId: string,
-    data: AddTeamMembersDTO
-  ) => Promise<AddTeamMembersResponseDTO>;
-  removeTeamMember: (
-    teamId: string,
-    userId: string
-  ) => Promise<RemoveTeamMemberResponseDTO>;
+  addTeamMembers: (teamId: string, data: AddTeamMembersDTO) => Promise<AddTeamMembersResponseDTO>;
+  removeTeamMember: (teamId: string, userId: string) => Promise<RemoveTeamMemberResponseDTO>;
 }
 
 /**
@@ -120,12 +109,8 @@ export function TeamMembersList({
     return (
       <div className="text-center py-8">
         <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-        <p className="text-muted-foreground font-medium mb-2">
-          Brak członków w zespole
-        </p>
-        <p className="text-sm text-muted-foreground mb-4">
-          Dodaj pierwszego członka, aby rozpocząć współpracę
-        </p>
+        <p className="text-muted-foreground font-medium mb-2">Brak członków w zespole</p>
+        <p className="text-sm text-muted-foreground mb-4">Dodaj pierwszego członka, aby rozpocząć współpracę</p>
         <Button onClick={handleOpenAddModal}>
           <Plus className="mr-2 h-4 w-4" />
           Dodaj członka
@@ -133,7 +118,7 @@ export function TeamMembersList({
 
         <AddTeamMemberModal
           teamId={teamId}
-          existingMemberIds={members.map(m => m.id)}
+          existingMemberIds={members.map((m) => m.id)}
           isOpen={isAddModalOpen}
           onClose={handleCloseAddModal}
           onMembersAdd={handleMembersAdd}
@@ -154,10 +139,7 @@ export function TeamMembersList({
 
       <div className="divide-y rounded-lg border">
         {members.map((member) => (
-          <div
-            key={member.id}
-            className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
-          >
+          <div key={member.id} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3">
                 <div>
@@ -168,9 +150,7 @@ export function TeamMembersList({
                 </div>
               </div>
               <div className="flex items-center gap-2 mt-2">
-                <Badge variant={getRoleBadgeVariant(member.role)}>
-                  {getRoleLabel(member.role)}
-                </Badge>
+                <Badge variant={getRoleBadgeVariant(member.role)}>{getRoleLabel(member.role)}</Badge>
                 <span className="text-xs text-muted-foreground">
                   Dołączył: {new Date(member.joinedAt).toLocaleDateString("pl-PL")}
                 </span>
@@ -180,12 +160,7 @@ export function TeamMembersList({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() =>
-                handleRemoveMember(
-                  member.id,
-                  `${member.firstName} ${member.lastName}`
-                )
-              }
+              onClick={() => handleRemoveMember(member.id, `${member.firstName} ${member.lastName}`)}
             >
               <UserMinus className="h-4 w-4" />
             </Button>
@@ -195,7 +170,7 @@ export function TeamMembersList({
 
       <AddTeamMemberModal
         teamId={teamId}
-        existingMemberIds={members.map(m => m.id)}
+        existingMemberIds={members.map((m) => m.id)}
         isOpen={isAddModalOpen}
         onClose={handleCloseAddModal}
         onMembersAdd={handleMembersAdd}
@@ -204,17 +179,14 @@ export function TeamMembersList({
 
       <AlertDialog
         open={removeDialogState.isOpen}
-        onOpenChange={(open) =>
-          !open &&
-          setRemoveDialogState({ isOpen: false, userId: "", userName: "" })
-        }
+        onOpenChange={(open) => !open && setRemoveDialogState({ isOpen: false, userId: "", userName: "" })}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Usunąć członka z zespołu?</AlertDialogTitle>
             <AlertDialogDescription>
-              Czy na pewno chcesz usunąć <strong>{removeDialogState.userName}</strong>{" "}
-              z tego zespołu? Użytkownik przestanie być członkiem zespołu.
+              Czy na pewno chcesz usunąć <strong>{removeDialogState.userName}</strong> z tego zespołu? Użytkownik
+              przestanie być członkiem zespołu.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

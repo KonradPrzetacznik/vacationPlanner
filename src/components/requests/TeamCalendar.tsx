@@ -5,13 +5,7 @@
 import { useState, useEffect } from "react";
 import { Calendar, Users, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "../ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import type { GetTeamCalendarResponseDTO } from "@/types";
 
 interface Team {
@@ -27,9 +21,7 @@ interface TeamCalendarProps {
  * Component displaying team vacation calendar
  */
 export function TeamCalendar({ userTeams }: TeamCalendarProps) {
-  const [selectedTeamId, setSelectedTeamId] = useState<string>(
-    userTeams.length > 0 ? userTeams[0].id : ""
-  );
+  const [selectedTeamId, setSelectedTeamId] = useState<string>(userTeams.length > 0 ? userTeams[0].id : "");
   const [calendarData, setCalendarData] = useState<GetTeamCalendarResponseDTO | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +33,7 @@ export function TeamCalendar({ userTeams }: TeamCalendarProps) {
   const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
   const formatDateForAPI = (date: Date) => {
-    return date.toISOString().split('T')[0];
+    return date.toISOString().split("T")[0];
   };
 
   const [dateRange, setDateRange] = useState({
@@ -63,9 +55,7 @@ export function TeamCalendar({ userTeams }: TeamCalendarProps) {
           endDate: dateRange.endDate,
         });
 
-        const response = await fetch(
-          `/api/teams/${selectedTeamId}/calendar?${params.toString()}`
-        );
+        const response = await fetch(`/api/teams/${selectedTeamId}/calendar?${params.toString()}`);
 
         if (!response.ok) {
           throw new Error("Nie udało się pobrać kalendarza zespołu");
@@ -74,8 +64,7 @@ export function TeamCalendar({ userTeams }: TeamCalendarProps) {
         const data: GetTeamCalendarResponseDTO = await response.json();
         setCalendarData(data);
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Nieznany błąd";
+        const errorMessage = err instanceof Error ? err.message : "Nieznany błąd";
         setError(errorMessage);
         console.error("Error fetching team calendar:", err);
       } finally {
@@ -105,11 +94,11 @@ export function TeamCalendar({ userTeams }: TeamCalendarProps) {
     }
   };
 
-  const changeMonth = (direction: 'prev' | 'next') => {
+  const changeMonth = (direction: "prev" | "next") => {
     const currentStart = new Date(dateRange.startDate);
     let newDate: Date;
 
-    if (direction === 'prev') {
+    if (direction === "prev") {
       newDate = new Date(currentStart.getFullYear(), currentStart.getMonth() - 1, 1);
     } else {
       newDate = new Date(currentStart.getFullYear(), currentStart.getMonth() + 1, 1);
@@ -154,16 +143,8 @@ export function TeamCalendar({ userTeams }: TeamCalendarProps) {
             <Calendar className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-semibold">Kalendarz zespołu</h2>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
-            {isExpanded ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )}
+          <Button variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)}>
+            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </Button>
         </div>
 
@@ -190,21 +171,11 @@ export function TeamCalendar({ userTeams }: TeamCalendarProps) {
 
             {/* Month Navigation */}
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => changeMonth('prev')}
-              >
+              <Button variant="outline" size="sm" onClick={() => changeMonth("prev")}>
                 ←
               </Button>
-              <span className="text-sm font-medium min-w-[140px] text-center">
-                {getCurrentMonthYear()}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => changeMonth('next')}
-              >
+              <span className="text-sm font-medium min-w-[140px] text-center">{getCurrentMonthYear()}</span>
+              <Button variant="outline" size="sm" onClick={() => changeMonth("next")}>
                 →
               </Button>
             </div>
@@ -215,11 +186,7 @@ export function TeamCalendar({ userTeams }: TeamCalendarProps) {
       {/* Content */}
       {isExpanded && (
         <div className="p-6">
-          {isLoading && (
-            <div className="text-center py-8 text-muted-foreground">
-              Ładowanie kalendarza...
-            </div>
-          )}
+          {isLoading && <div className="text-center py-8 text-muted-foreground">Ładowanie kalendarza...</div>}
 
           {error && (
             <div className="rounded-md border border-red-200 bg-red-50 p-4 text-red-800">
@@ -230,24 +197,17 @@ export function TeamCalendar({ userTeams }: TeamCalendarProps) {
           {!isLoading && !error && calendarData && (
             <div className="space-y-4">
               {calendarData.members.length === 0 ? (
-                <p className="text-center text-muted-foreground py-4">
-                  Brak członków w zespole
-                </p>
+                <p className="text-center text-muted-foreground py-4">Brak członków w zespole</p>
               ) : (
                 calendarData.members.map((member) => (
-                  <div
-                    key={member.id}
-                    className="border rounded-lg p-4 hover:bg-accent/50 transition-colors"
-                  >
+                  <div key={member.id} className="border rounded-lg p-4 hover:bg-accent/50 transition-colors">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <h4 className="font-medium">
                           {member.firstName} {member.lastName}
                         </h4>
                         {member.vacations.length === 0 ? (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Brak urlopów w tym okresie
-                          </p>
+                          <p className="text-sm text-muted-foreground mt-1">Brak urlopów w tym okresie</p>
                         ) : (
                           <div className="mt-2 space-y-2">
                             {member.vacations.map((vacation) => (
@@ -259,12 +219,9 @@ export function TeamCalendar({ userTeams }: TeamCalendarProps) {
                               >
                                 <Calendar className="h-3 w-3" />
                                 <span>
-                                  {formatDate(vacation.startDate)} -{" "}
-                                  {formatDate(vacation.endDate)}
+                                  {formatDate(vacation.startDate)} - {formatDate(vacation.endDate)}
                                 </span>
-                                <span className="font-semibold">
-                                  ({vacation.businessDaysCount} dni)
-                                </span>
+                                <span className="font-semibold">({vacation.businessDaysCount} dni)</span>
                               </div>
                             ))}
                           </div>

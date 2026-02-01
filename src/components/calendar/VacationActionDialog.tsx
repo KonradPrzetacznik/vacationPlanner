@@ -146,9 +146,7 @@ export const VacationActionDialog: React.FC<VacationActionDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Szczegóły wniosku urlopowego</DialogTitle>
           <DialogDescription>
-            {canTakeAction
-              ? "Możesz zatwierdzić lub odrzucić ten wniosek"
-              : "Ten wniosek nie może być już edytowany"}
+            {canTakeAction ? "Możesz zatwierdzić lub odrzucić ten wniosek" : "Ten wniosek nie może być już edytowany"}
           </DialogDescription>
         </DialogHeader>
 
@@ -175,17 +173,11 @@ export const VacationActionDialog: React.FC<VacationActionDialogProps> = ({
           {/* Status */}
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Status:</span>
-            <span className={`font-medium ${getStatusColor(vacation.status)}`}>
-              {getStatusLabel(vacation.status)}
-            </span>
+            <span className={`font-medium ${getStatusColor(vacation.status)}`}>{getStatusLabel(vacation.status)}</span>
           </div>
 
           {/* Error message */}
-          {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
-              {error}
-            </div>
-          )}
+          {error && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div>}
 
           {/* Reject form */}
           {showRejectForm && (
@@ -206,11 +198,7 @@ export const VacationActionDialog: React.FC<VacationActionDialogProps> = ({
         <DialogFooter>
           {!showRejectForm ? (
             <>
-              <Button
-                variant="outline"
-                onClick={handleClose}
-                disabled={isApproving || isRejecting}
-              >
+              <Button variant="outline" onClick={handleClose} disabled={isApproving || isRejecting}>
                 Zamknij
               </Button>
               {canTakeAction && (
@@ -223,10 +211,7 @@ export const VacationActionDialog: React.FC<VacationActionDialogProps> = ({
                     <XCircle className="h-4 w-4 mr-2" />
                     Odrzuć
                   </Button>
-                  <Button
-                    onClick={handleApprove}
-                    disabled={isApproving || isRejecting}
-                  >
+                  <Button onClick={handleApprove} disabled={isApproving || isRejecting}>
                     {isApproving ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -255,11 +240,7 @@ export const VacationActionDialog: React.FC<VacationActionDialogProps> = ({
               >
                 Anuluj
               </Button>
-              <Button
-                variant="destructive"
-                onClick={handleReject}
-                disabled={isRejecting || !rejectReason.trim()}
-              >
+              <Button variant="destructive" onClick={handleReject} disabled={isRejecting || !rejectReason.trim()}>
                 {isRejecting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />

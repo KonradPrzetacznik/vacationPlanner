@@ -13,28 +13,13 @@ import { z } from "zod";
  * Note: No password field - users are invited via email and set their own password
  */
 export const createUserSchema = z.object({
-  firstName: z
-    .string()
-    .min(1, "First name is required")
-    .max(100, "First name must be at most 100 characters")
-    .trim(),
+  firstName: z.string().min(1, "First name is required").max(100, "First name must be at most 100 characters").trim(),
 
-  lastName: z
-    .string()
-    .min(1, "Last name is required")
-    .max(100, "Last name must be at most 100 characters")
-    .trim(),
+  lastName: z.string().min(1, "Last name is required").max(100, "Last name must be at most 100 characters").trim(),
 
-  email: z
-    .string()
-    .email("Invalid email format")
-    .toLowerCase()
-    .trim(),
+  email: z.string().email("Invalid email format").toLowerCase().trim(),
 
-  role: z
-    .enum(["ADMINISTRATOR", "HR", "EMPLOYEE"])
-    .optional()
-    .default("EMPLOYEE"),
+  role: z.enum(["ADMINISTRATOR", "HR", "EMPLOYEE"]).optional().default("EMPLOYEE"),
 });
 
 /**
@@ -57,9 +42,7 @@ export const updateUserSchema = z
       .trim()
       .optional(),
 
-    role: z
-      .enum(["ADMINISTRATOR", "HR", "EMPLOYEE"])
-      .optional(),
+    role: z.enum(["ADMINISTRATOR", "HR", "EMPLOYEE"]).optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field must be provided",
@@ -76,4 +59,3 @@ export const userIdSchema = z.string().uuid("Invalid user ID format");
  */
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
-

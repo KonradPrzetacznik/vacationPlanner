@@ -82,10 +82,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
     // Handle specific error types
     if (error instanceof Error) {
       // Authorization errors
-      if (
-        error.message.includes("only view your own") ||
-        error.message.includes("not a member of this team")
-      ) {
+      if (error.message.includes("only view your own") || error.message.includes("not a member of this team")) {
         return new Response(JSON.stringify({ error: error.message }), {
           status: 403,
           headers: { "Content-Type": "application/json" },
@@ -93,10 +90,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
       }
 
       // Not found errors
-      if (
-        error.message.includes("not found") ||
-        error.message.includes("User not found")
-      ) {
+      if (error.message.includes("not found") || error.message.includes("User not found")) {
         return new Response(JSON.stringify({ error: error.message }), {
           status: 404,
           headers: { "Content-Type": "application/json" },
@@ -105,13 +99,10 @@ export const GET: APIRoute = async ({ url, locals }) => {
     }
 
     // Generic server error
-    return new Response(
-      JSON.stringify({ error: "Failed to fetch vacation requests" }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: "Failed to fetch vacation requests" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 };
 
@@ -139,13 +130,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const currentUserId = DEFAULT_USER_ID;
 
     if (!currentUserId) {
-      return new Response(
-        JSON.stringify({ error: "Not authenticated" }),
-        {
-          status: 401,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Not authenticated" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Parse request body
@@ -154,13 +142,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
       requestBody = await request.json();
     } catch (error) {
       console.error("[POST /api/vacation-requests] Failed to parse request body:", error);
-      return new Response(
-        JSON.stringify({ error: "Invalid request body" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Invalid request body" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Validate request data
@@ -182,11 +167,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const validatedData = validationResult.data;
 
     // Call service to create vacation request
-    const result = await createVacationRequest(
-      supabase,
-      currentUserId,
-      validatedData
-    );
+    const result = await createVacationRequest(supabase, currentUserId, validatedData);
 
     // Return success response with 201 Created
     const response: CreateVacationRequestResponseDTO = result;
@@ -209,24 +190,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
         error.message.includes("Insufficient vacation days") ||
         error.message.includes("must include at least one business day")
       ) {
-        return new Response(
-          JSON.stringify({ error: error.message }),
-          {
-            status: 400,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
       }
 
       // Conflict errors (409)
       if (error.message.includes("overlapping")) {
-        return new Response(
-          JSON.stringify({ error: error.message }),
-          {
-            status: 409,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 409,
+          headers: { "Content-Type": "application/json" },
+        });
       }
 
       // Server errors related to verification (500)
@@ -235,24 +210,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
         error.message.includes("Failed to calculate") ||
         error.message.includes("Failed to check")
       ) {
-        return new Response(
-          JSON.stringify({ error: error.message }),
-          {
-            status: 500,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        });
       }
     }
 
     // Generic server error
-    return new Response(
-      JSON.stringify({ error: "Failed to create vacation request" }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: "Failed to create vacation request" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 };
-

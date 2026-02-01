@@ -57,11 +57,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     });
 
     // Verify OTP token (works for both recovery and invite)
-    const { data: verifyData, error: verifyError } =
-      await supabase.auth.verifyOtp({
-        token_hash: token,
-        type: type,
-      });
+    const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
+      token_hash: token,
+      type: type,
+    });
 
     if (verifyError || !verifyData.user) {
       return new Response(

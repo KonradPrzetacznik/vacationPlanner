@@ -22,13 +22,10 @@ export const POST: APIRoute = async (context) => {
     });
 
     if (!paramValidation.success) {
-      return new Response(
-        JSON.stringify({ error: "Invalid vacation request ID format" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Invalid vacation request ID format" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const { id } = paramValidation.data;
@@ -44,18 +41,14 @@ export const POST: APIRoute = async (context) => {
   } catch (error) {
     console.error("[CancelVacationRequestEndpoint] Error:", error);
 
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to cancel vacation request";
+    const errorMessage = error instanceof Error ? error.message : "Failed to cancel vacation request";
 
     // Determine status code based on error message
     let statusCode = 500;
 
     if (errorMessage.includes("not found")) {
       statusCode = 404;
-    } else if (
-      errorMessage.includes("can only cancel your own") ||
-      errorMessage.includes("not authorized")
-    ) {
+    } else if (errorMessage.includes("can only cancel your own") || errorMessage.includes("not authorized")) {
       statusCode = 403;
     } else if (
       errorMessage.includes("Only SUBMITTED or APPROVED") ||
@@ -73,4 +66,3 @@ export const POST: APIRoute = async (context) => {
     });
   }
 };
-

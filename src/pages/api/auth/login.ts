@@ -71,11 +71,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     // Check if user has profile in database
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id, role")
-      .eq("id", data.user.id)
-      .single();
+    const { data: profile } = await supabase.from("profiles").select("id, role").eq("id", data.user.id).single();
 
     if (!profile) {
       // If profile doesn't exist, sign out and return error

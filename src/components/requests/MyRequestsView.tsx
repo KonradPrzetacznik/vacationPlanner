@@ -25,19 +25,11 @@ interface MyRequestsViewProps {
 /**
  * Main view component for managing user's vacation requests
  */
-export default function MyRequestsView({
-  initialRequests,
-  initialAllowance,
-  userTeams,
-}: MyRequestsViewProps) {
-  const {
-    requests,
-    allowance,
-    isLoading,
-    error,
-    setFilters,
-    cancelRequest,
-  } = useMyRequests(initialRequests, initialAllowance);
+export default function MyRequestsView({ initialRequests, initialAllowance, userTeams }: MyRequestsViewProps) {
+  const { requests, allowance, isLoading, error, setFilters, cancelRequest } = useMyRequests(
+    initialRequests,
+    initialAllowance
+  );
 
   const handleFilterChange = (newFilters: RequestFilters) => {
     setFilters(newFilters);

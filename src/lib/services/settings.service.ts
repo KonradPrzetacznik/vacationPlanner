@@ -51,9 +51,7 @@ function mapToSettingDTO(row: {
  * @returns Promise with all settings
  * @throws Error if database query fails
  */
-export async function getAllSettings(
-  supabase: SupabaseClient
-): Promise<GetAllSettingsResponseDTO> {
+export async function getAllSettings(supabase: SupabaseClient): Promise<GetAllSettingsResponseDTO> {
   // Fetch all settings ordered by key
   const { data: settings, error: queryError } = await supabase
     .from("settings")
@@ -84,16 +82,9 @@ export async function getAllSettings(
  * @returns Promise with setting data
  * @throws Error if setting not found or query fails
  */
-export async function getSettingByKey(
-  supabase: SupabaseClient,
-  key: string
-): Promise<GetSettingResponseDTO> {
+export async function getSettingByKey(supabase: SupabaseClient, key: string): Promise<GetSettingResponseDTO> {
   // Fetch setting by primary key
-  const { data: setting, error: queryError } = await supabase
-    .from("settings")
-    .select("*")
-    .eq("key", key)
-    .single();
+  const { data: setting, error: queryError } = await supabase.from("settings").select("*").eq("key", key).single();
 
   if (queryError) {
     // Check if error is "not found"
@@ -157,17 +148,13 @@ export async function updateSetting(
   // 3. Additional validation based on setting key
   if (key === "team_occupancy_threshold") {
     if (data.value < 0 || data.value > 100) {
-      throw new Error(
-        "Invalid value for team_occupancy_threshold: must be between 0 and 100"
-      );
+      throw new Error("Invalid value for team_occupancy_threshold: must be between 0 and 100");
     }
   }
 
   if (key === "default_vacation_days") {
     if (data.value < 1 || data.value > 365) {
-      throw new Error(
-        "Invalid value for default_vacation_days: must be between 1 and 365"
-      );
+      throw new Error("Invalid value for default_vacation_days: must be between 1 and 365");
     }
   }
 
@@ -194,4 +181,3 @@ export async function updateSetting(
   // 5. Map to DTO and return
   return mapToSettingDTO(updatedSetting);
 }
-

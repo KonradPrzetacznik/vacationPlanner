@@ -1,10 +1,5 @@
 import { useState, useEffect } from "react";
-import type {
-  AddTeamMembersDTO,
-  AddTeamMembersResponseDTO,
-  UserListItemDTO,
-  GetUsersResponseDTO,
-} from "@/types";
+import type { AddTeamMembersDTO, AddTeamMembersResponseDTO, UserListItemDTO, GetUsersResponseDTO } from "@/types";
 import {
   Dialog,
   DialogContent,
@@ -26,10 +21,7 @@ interface AddTeamMemberModalProps {
   isOpen: boolean;
   onClose: () => void;
   onMembersAdd: () => void;
-  addTeamMembers: (
-    teamId: string,
-    data: AddTeamMembersDTO
-  ) => Promise<AddTeamMembersResponseDTO>;
+  addTeamMembers: (teamId: string, data: AddTeamMembersDTO) => Promise<AddTeamMembersResponseDTO>;
 }
 
 export function AddTeamMemberModal({
@@ -70,8 +62,7 @@ export function AddTeamMemberModal({
         const data: GetUsersResponseDTO = await response.json();
         setUsers(data.data);
       } catch (err) {
-        console.error("Failed to fetch users:", err);
-        setError("Nie udało się pobrać listy użytkowników");
+        setError(err instanceof Error ? err.message : "Nie udało się pobrać listy użytkowników");
       } finally {
         setIsLoading(false);
       }
@@ -112,10 +103,7 @@ export function AddTeamMemberModal({
       });
       onMembersAdd();
     } catch (err) {
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "Nie udało się dodać członków do zespołu";
+      const errorMessage = err instanceof Error ? err.message : "Nie udało się dodać członków do zespołu";
       setError(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -176,17 +164,11 @@ export function AddTeamMemberModal({
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Dodaj członków do zespołu</DialogTitle>
-          <DialogDescription>
-            Wyszukaj i wybierz użytkowników, których chcesz dodać do zespołu.
-          </DialogDescription>
+          <DialogDescription>Wyszukaj i wybierz użytkowników, których chcesz dodać do zespołu.</DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 overflow-hidden flex flex-col space-y-4">
-          {error && (
-            <div className="rounded-lg bg-destructive/15 p-3 text-sm text-destructive">
-              {error}
-            </div>
-          )}
+          {error && <div className="rounded-lg bg-destructive/15 p-3 text-sm text-destructive">{error}</div>}
 
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -206,16 +188,23 @@ export function AddTeamMemberModal({
               </div>
             ) : filteredUsers.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">
-                {searchQuery
-                  ? "Nie znaleziono użytkowników"
-                  : "Brak dostępnych użytkowników"}
+                {searchQuery ? "Nie znaleziono użytkowników" : "Brak dostępnych użytkowników"}
               </div>
             ) : (
               <div className="divide-y">
                 {filteredUsers.map((user) => (
-                  <label
+                  <div
                     key={user.id}
+                    role="button"
+                    tabIndex={0}
                     className="flex items-center gap-3 p-4 hover:bg-muted/50 cursor-pointer transition-colors"
+                    onClick={() => handleToggleUser(user.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleToggleUser(user.id);
+                      }
+                    }}
                   >
                     <Checkbox
                       checked={selectedUserIds.has(user.id)}
@@ -226,16 +215,12 @@ export function AddTeamMemberModal({
                       <p className="font-medium">
                         {user.firstName} {user.lastName}
                       </p>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {user.email}
-                      </p>
+                      <p className="text-sm text-muted-foreground truncate">{user.email}</p>
                       <div className="mt-1">
-                        <Badge variant={getRoleBadgeVariant(user.role)}>
-                          {getRoleLabel(user.role)}
-                        </Badge>
+                        <Badge variant={getRoleBadgeVariant(user.role)}>{getRoleLabel(user.role)}</Badge>
                       </div>
                     </div>
-                  </label>
+                  </div>
                 ))}
               </div>
             )}
@@ -244,28 +229,16 @@ export function AddTeamMemberModal({
           {selectedUserIds.size > 0 && (
             <div className="text-sm text-muted-foreground">
               Wybrano: <strong>{selectedUserIds.size}</strong>{" "}
-              {selectedUserIds.size === 1
-                ? "użytkownika"
-                : selectedUserIds.size < 5
-                ? "użytkowników"
-                : "użytkowników"}
+              {selectedUserIds.size === 1 ? "użytkownika" : selectedUserIds.size < 5 ? "użytkowników" : "użytkowników"}
             </div>
           )}
         </div>
 
         <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            disabled={isSubmitting}
-          >
+          <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
             Anuluj
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={selectedUserIds.size === 0 || isSubmitting}
-          >
+          <Button onClick={handleSubmit} disabled={selectedUserIds.size === 0 || isSubmitting}>
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Dodaj ({selectedUserIds.size})
           </Button>

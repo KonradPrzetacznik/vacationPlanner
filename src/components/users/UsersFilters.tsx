@@ -38,8 +38,7 @@ export function UsersFilters({
     onSearchChange(debouncedSearchQuery);
   }, [debouncedSearchQuery, onSearchChange]);
 
-  const hasActiveFilters =
-    searchQuery !== "" || roleFilter !== "ALL" || showDeleted;
+  const hasActiveFilters = searchQuery !== "" || roleFilter !== "ALL" || showDeleted;
 
   return (
     <div className="rounded-lg border bg-card p-4">
@@ -70,9 +69,7 @@ export function UsersFilters({
             </Label>
             <Select
               value={roleFilter}
-              onValueChange={(value) =>
-                onRoleFilterChange(value as UsersFiltersProps["roleFilter"])
-              }
+              onValueChange={(value) => onRoleFilterChange(value as UsersFiltersProps["roleFilter"])}
             >
               <SelectTrigger id="role-filter">
                 <SelectValue placeholder="Filtruj po roli" />
@@ -91,9 +88,7 @@ export function UsersFilters({
             <Checkbox
               id="show-deleted"
               checked={showDeleted}
-              onCheckedChange={(checked) =>
-                onShowDeletedChange(checked === true)
-              }
+              onCheckedChange={(checked) => onShowDeletedChange(checked === true)}
             />
             <Label
               htmlFor="show-deleted"
@@ -105,12 +100,7 @@ export function UsersFilters({
 
           {/* Clear Filters Button */}
           {hasActiveFilters && onClearFilters && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClearFilters}
-              className="ml-auto"
-            >
+            <Button variant="ghost" size="sm" onClick={onClearFilters} className="ml-auto">
               <X className="mr-2 h-4 w-4" />
               Wyczyść filtry
             </Button>

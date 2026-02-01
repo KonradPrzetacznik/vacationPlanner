@@ -35,19 +35,19 @@ export function useTeamCalendar(initialTeamId: string): UseTeamCalendarReturn {
     // Helper function to format date as YYYY-MM-DD in local timezone
     const formatLocalDate = (date: Date): string => {
       const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
       return `${year}-${month}-${day}`;
     };
 
     // Try to read month from URL
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
-      const monthParam = url.searchParams.get('month');
+      const monthParam = url.searchParams.get("month");
 
       if (monthParam && /^\d{4}-\d{2}$/.test(monthParam)) {
         // Parse YYYY-MM format
-        const [year, month] = monthParam.split('-').map(Number);
+        const [year, month] = monthParam.split("-").map(Number);
         const start = new Date(year, month - 1, 1);
         const end = new Date(year, month, 0); // Last day of the month
 
@@ -85,83 +85,80 @@ export function useTeamCalendar(initialTeamId: string): UseTeamCalendarReturn {
   const lastFetchedRef = useRef<{ teamId: string; start: string; end: string } | null>(null);
 
   // Fetch calendar data
-  const fetchCalendarData = useCallback(
-    async (teamId: string, range: { start: string; end: string }) => {
-      setIsLoading(true);
-      setError(null);
+  const fetchCalendarData = useCallback(async (teamId: string, range: { start: string; end: string }) => {
+    setIsLoading(true);
+    setError(null);
 
-      // Add timeout controller (30 seconds)
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
+    // Add timeout controller (30 seconds)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-      try {
-        // Build query parameters
-        const params = new URLSearchParams({
-          startDate: range.start,
-          endDate: range.end,
-        });
+    try {
+      // Build query parameters
+      const params = new URLSearchParams({
+        startDate: range.start,
+        endDate: range.end,
+      });
 
-        // Add all status filters to show all vacation requests
-        params.append("includeStatus", "SUBMITTED");
-        params.append("includeStatus", "APPROVED");
-        params.append("includeStatus", "REJECTED");
-        params.append("includeStatus", "CANCELLED");
+      // Add all status filters to show all vacation requests
+      params.append("includeStatus", "SUBMITTED");
+      params.append("includeStatus", "APPROVED");
+      params.append("includeStatus", "REJECTED");
+      params.append("includeStatus", "CANCELLED");
 
-        const response = await fetch(`/api/teams/${teamId}/calendar?${params.toString()}`, {
-          signal: controller.signal,
-        });
+      const response = await fetch(`/api/teams/${teamId}/calendar?${params.toString()}`, {
+        signal: controller.signal,
+      });
 
-        clearTimeout(timeoutId);
+      clearTimeout(timeoutId);
 
-        if (!response.ok) {
-          if (response.status === 404) {
-            throw new Error("Zespół nie został znaleziony");
-          } else if (response.status === 403) {
-            throw new Error("Nie masz uprawnień do wyświetlenia tego kalendarza");
-          } else {
-            throw new Error("Nie udało się pobrać danych kalendarza");
-          }
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error("Zespół nie został znaleziony");
+        } else if (response.status === 403) {
+          throw new Error("Nie masz uprawnień do wyświetlenia tego kalendarza");
+        } else {
+          throw new Error("Nie udało się pobrać danych kalendarza");
         }
+      }
 
-        const data: GetTeamCalendarResponseDTO = await response.json();
+      const data: GetTeamCalendarResponseDTO = await response.json();
 
-        // Transform data to VacationRequestViewModel[]
-        const vacations: VacationRequestViewModel[] = [];
+      // Transform data to VacationRequestViewModel[]
+      const vacations: VacationRequestViewModel[] = [];
 
-        data.members.forEach((member) => {
-          member.vacations.forEach((vacation) => {
-            vacations.push({
-              id: vacation.id,
-              startDate: vacation.startDate,
-              endDate: vacation.endDate,
-              businessDaysCount: vacation.businessDaysCount,
-              status: vacation.status,
-              user: {
-                id: member.id,
-                firstName: member.firstName,
-                lastName: member.lastName,
-              },
-            });
+      data.members.forEach((member) => {
+        member.vacations.forEach((vacation) => {
+          vacations.push({
+            id: vacation.id,
+            startDate: vacation.startDate,
+            endDate: vacation.endDate,
+            businessDaysCount: vacation.businessDaysCount,
+            status: vacation.status,
+            user: {
+              id: member.id,
+              firstName: member.firstName,
+              lastName: member.lastName,
+            },
           });
         });
+      });
 
-        setCalendarData(vacations);
-      } catch (err) {
-        clearTimeout(timeoutId);
-        console.error("[useTeamCalendar] Error fetching calendar data:", err);
+      setCalendarData(vacations);
+    } catch (err) {
+      clearTimeout(timeoutId);
+      console.error("[useTeamCalendar] Error fetching calendar data:", err);
 
-        if (err instanceof Error && err.name === 'AbortError') {
-          setError(new Error("Przekroczono limit czasu ładowania kalendarza (30s). Spróbuj ponownie."));
-        } else {
-          setError(err instanceof Error ? err : new Error("Nieznany błąd"));
-        }
-        setCalendarData([]);
-      } finally {
-        setIsLoading(false);
+      if (err instanceof Error && err.name === "AbortError") {
+        setError(new Error("Przekroczono limit czasu ładowania kalendarza (30s). Spróbuj ponownie."));
+      } else {
+        setError(err instanceof Error ? err : new Error("Nieznany błąd"));
       }
-    },
-    []
-  );
+      setCalendarData([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   // Effect to fetch data when teamId or dateRange changes
   useEffect(() => {
@@ -185,8 +182,7 @@ export function useTeamCalendar(initialTeamId: string): UseTeamCalendarReturn {
     };
 
     fetchCalendarData(selectedTeamId, dateRange);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTeamId, dateRange.start, dateRange.end]);
+  }, [selectedTeamId, dateRange.start, dateRange.end, fetchCalendarData]);
 
   // Action handlers
   const setSelectedTeamId = useCallback((teamId: string) => {

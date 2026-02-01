@@ -4,13 +4,7 @@
  */
 
 import React from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import type { TeamListItemDTO } from "@/types";
 
@@ -32,11 +26,7 @@ export const TeamSelector: React.FC<TeamSelectorProps> = ({
       <Label htmlFor="team-selector" className="mb-2 block text-sm font-medium">
         Wybierz zespół
       </Label>
-      <Select
-        value={selectedTeamId}
-        onValueChange={onTeamChange}
-        disabled={disabled}
-      >
+      <Select value={selectedTeamId} onValueChange={onTeamChange} disabled={disabled}>
         <SelectTrigger id="team-selector">
           <SelectValue placeholder="Wybierz zespół" />
         </SelectTrigger>

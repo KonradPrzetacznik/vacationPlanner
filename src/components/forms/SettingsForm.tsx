@@ -11,25 +11,10 @@ import { useState } from "react";
 import { settingsFormSchema, type SettingsFormValues } from "@/lib/schemas/settings-form.schema";
 import type { SettingDTO } from "@/types";
 
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 /**
  * Props for SettingsForm component
@@ -60,7 +45,7 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
 
     try {
       // Transform form data to API format (array of SettingDTO)
-      const settingsToUpdate: Array<{ key: string; value: number }> = [
+      const settingsToUpdate: { key: string; value: number }[] = [
         { key: "default_vacation_days", value: data.default_vacation_days },
         { key: "team_occupancy_threshold", value: data.team_occupancy_threshold },
       ];
@@ -88,17 +73,18 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
       // Optionally update form with returned data
       if (result.data && Array.isArray(result.data)) {
         const updatedSettings: SettingsFormValues = {
-          default_vacation_days: result.data.find((s: SettingDTO) => s.key === "default_vacation_days")?.value || data.default_vacation_days,
-          team_occupancy_threshold: result.data.find((s: SettingDTO) => s.key === "team_occupancy_threshold")?.value || data.team_occupancy_threshold,
+          default_vacation_days:
+            result.data.find((s: SettingDTO) => s.key === "default_vacation_days")?.value || data.default_vacation_days,
+          team_occupancy_threshold:
+            result.data.find((s: SettingDTO) => s.key === "team_occupancy_threshold")?.value ||
+            data.team_occupancy_threshold,
         };
         form.reset(updatedSettings);
       }
     } catch (error) {
       // Handle errors
       console.error("Failed to save settings:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Wystąpił błąd podczas zapisywania ustawień"
-      );
+      toast.error(error instanceof Error ? error.message : "Wystąpił błąd podczas zapisywania ustawień");
     } finally {
       setIsSubmitting(false);
     }
@@ -108,9 +94,7 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
     <Card className="w-full max-w-2xl">
       <CardHeader>
         <CardTitle>Ustawienia globalne</CardTitle>
-        <CardDescription>
-          Skonfiguruj globalne parametry aplikacji
-        </CardDescription>
+        <CardDescription>Skonfiguruj globalne parametry aplikacji</CardDescription>
       </CardHeader>
 
       <Form {...form}>
@@ -132,9 +116,7 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
                       disabled={isSubmitting}
                     />
                   </FormControl>
-                  <FormDescription>
-                    Domyślna liczba dni urlopowych dla nowych pracowników (1-365)
-                  </FormDescription>
+                  <FormDescription>Domyślna liczba dni urlopowych dla nowych pracowników (1-365)</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

@@ -4,10 +4,7 @@
  */
 import type { APIRoute } from "astro";
 import { DEFAULT_USER_ID } from "@/db/supabase.client";
-import {
-  VacationRequestIdParamSchema,
-  ApproveVacationRequestSchema,
-} from "@/lib/schemas/vacation-requests.schema";
+import { VacationRequestIdParamSchema, ApproveVacationRequestSchema } from "@/lib/schemas/vacation-requests.schema";
 import { approveVacationRequest } from "@/lib/services/vacation-requests.service";
 
 export const prerender = false;
@@ -25,13 +22,10 @@ export const POST: APIRoute = async (context) => {
     });
 
     if (!paramValidation.success) {
-      return new Response(
-        JSON.stringify({ error: "Invalid vacation request ID format" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Invalid vacation request ID format" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const { id } = paramValidation.data;
@@ -60,12 +54,7 @@ export const POST: APIRoute = async (context) => {
     const { acknowledgeThresholdWarning } = bodyValidation.data;
 
     // 4. Call approveVacationRequest service
-    const response = await approveVacationRequest(
-      supabase,
-      currentUserId,
-      id,
-      acknowledgeThresholdWarning
-    );
+    const response = await approveVacationRequest(supabase, currentUserId, id, acknowledgeThresholdWarning);
 
     // 5. Return success response
     return new Response(JSON.stringify(response), {
@@ -75,8 +64,7 @@ export const POST: APIRoute = async (context) => {
   } catch (error) {
     console.error("[ApproveVacationRequestEndpoint] Error:", error);
 
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to approve vacation request";
+    const errorMessage = error instanceof Error ? error.message : "Failed to approve vacation request";
 
     // Determine status code based on error message
     let statusCode = 500;
@@ -105,4 +93,3 @@ export const POST: APIRoute = async (context) => {
     });
   }
 };
-

@@ -34,24 +34,18 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
 
     if (profileError || !currentUserProfile) {
       console.error("[POST /api/teams/:id/members] Failed to fetch current user profile:", profileError);
-      return new Response(
-        JSON.stringify({ error: "Internal server error" }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // 3. Check if user is HR or ADMINISTRATOR
     if (currentUserProfile.role !== "HR" && currentUserProfile.role !== "ADMINISTRATOR") {
-      return new Response(
-        JSON.stringify({ error: "Only HR can add team members" }),
-        {
-          status: 403,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Only HR can add team members" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // 4. Validate path parameter (team ID)
@@ -78,13 +72,10 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     try {
       body = await request.json();
     } catch {
-      return new Response(
-        JSON.stringify({ error: "Invalid JSON in request body" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Invalid JSON in request body" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const bodyValidation = addTeamMembersSchema.safeParse(body);
@@ -143,45 +134,32 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     if (error instanceof Error) {
       // Not found errors (404)
       if (error.message === "Team not found") {
-        return new Response(
-          JSON.stringify({ error: "Team not found" }),
-          {
-            status: 404,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
+        return new Response(JSON.stringify({ error: "Team not found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
       }
 
       if (error.message.startsWith("User") && error.message.includes("not found")) {
-        return new Response(
-          JSON.stringify({ error: error.message }),
-          {
-            status: 404,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
       }
 
       // Bad request errors (400)
       if (error.message.includes("is already a member of this team")) {
-        return new Response(
-          JSON.stringify({ error: error.message }),
-          {
-            status: 400,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
       }
     }
 
     // Generic internal server error (500)
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 };
-

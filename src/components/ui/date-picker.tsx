@@ -25,22 +25,7 @@ interface DatePickerProps {
  * DatePicker component with validation and error display
  */
 export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(
-  (
-    {
-      id,
-      label,
-      value,
-      onChange,
-      onBlur,
-      error,
-      min,
-      max,
-      disabled,
-      required,
-      className,
-    },
-    ref
-  ) => {
+  ({ id, label, value, onChange, onBlur, error, min, max, disabled, required, className }, ref) => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       onChange?.(e.target.value);
     };
@@ -64,9 +49,7 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(
           max={max}
           disabled={disabled}
           required={required}
-          className={cn(
-            error && "border-red-500 focus-visible:ring-red-500"
-          )}
+          className={cn(error && "border-red-500 focus-visible:ring-red-500")}
         />
         {error && (
           <p className="text-sm text-red-600 mt-1" role="alert">

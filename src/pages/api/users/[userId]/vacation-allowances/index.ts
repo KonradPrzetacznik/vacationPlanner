@@ -80,10 +80,7 @@ export const GET: APIRoute = async ({ params, url, locals }) => {
       .single();
 
     if (profileError || !currentUserProfile) {
-      console.error(
-        "[GET /api/users/:userId/vacation-allowances] Failed to fetch current user profile:",
-        profileError
-      );
+      console.error("[GET /api/users/:userId/vacation-allowances] Failed to fetch current user profile:", profileError);
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -93,13 +90,7 @@ export const GET: APIRoute = async ({ params, url, locals }) => {
     const currentUserRole = currentUserProfile.role as "ADMINISTRATOR" | "HR" | "EMPLOYEE";
 
     // 5. Call service to get vacation allowances
-    const result = await getVacationAllowances(
-      locals.supabase,
-      currentUserId,
-      currentUserRole,
-      userId,
-      year
-    );
+    const result = await getVacationAllowances(locals.supabase, currentUserId, currentUserRole, userId, year);
 
     // 6. Return success response
     return new Response(JSON.stringify(result), {
@@ -141,4 +132,3 @@ export const GET: APIRoute = async ({ params, url, locals }) => {
     });
   }
 };
-

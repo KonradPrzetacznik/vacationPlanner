@@ -3,10 +3,7 @@
  * Handles fetching, filtering, creating, and cancelling vacation requests
  */
 import { useState, useCallback, useEffect } from "react";
-import type {
-  VacationRequestListItemDTO,
-  CreateVacationRequestDTO,
-} from "@/types";
+import type { VacationRequestListItemDTO, CreateVacationRequestDTO } from "@/types";
 
 /**
  * Request filters view model
@@ -52,7 +49,7 @@ export function useMyRequests(
   initialAllowance: UserVacationAllowance
 ): UseMyRequestsReturn {
   const [requests, setRequests] = useState<VacationRequestListItemDTO[]>(initialRequests);
-  const [allowance, setAllowance] = useState<UserVacationAllowance>(initialAllowance);
+  const [allowance] = useState<UserVacationAllowance>(initialAllowance);
   const [filters, setFiltersState] = useState<RequestFilters>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -68,7 +65,7 @@ export function useMyRequests(
       const queryParams = new URLSearchParams();
 
       if (filters.status && filters.status.length > 0) {
-        filters.status.forEach(status => {
+        filters.status.forEach((status) => {
           queryParams.append("status", status);
         });
       }
@@ -127,11 +124,9 @@ export function useMyRequests(
       const data = await response.json();
 
       // Update local state with cancelled request
-      setRequests(prevRequests =>
-        prevRequests.map(req =>
-          req.id === id
-            ? { ...req, status: "CANCELLED" as const, updatedAt: data.updatedAt }
-            : req
+      setRequests((prevRequests) =>
+        prevRequests.map((req) =>
+          req.id === id ? { ...req, status: "CANCELLED" as const, updatedAt: data.updatedAt } : req
         )
       );
 
@@ -150,38 +145,41 @@ export function useMyRequests(
   /**
    * Create a new vacation request
    */
-  const createRequest = useCallback(async (data: CreateVacationRequestDTO) => {
-    setIsLoading(true);
-    setError(null);
+  const createRequest = useCallback(
+    async (data: CreateVacationRequestDTO) => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const response = await fetch("/api/vacation-requests", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+      try {
+        const response = await fetch("/api/vacation-requests", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create vacation request");
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to create vacation request");
+        }
+
+        // Refresh requests list to include new request
+        await fetchRequests();
+
+        // Refresh allowance data
+        // TODO: Fetch updated allowance when endpoint is ready
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error("Unknown error");
+        setError(error);
+        console.error("Error creating vacation request:", error);
+        throw error; // Re-throw to allow component to handle it
+      } finally {
+        setIsLoading(false);
       }
-
-      // Refresh requests list to include new request
-      await fetchRequests();
-
-      // Refresh allowance data
-      // TODO: Fetch updated allowance when endpoint is ready
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error("Unknown error");
-      setError(error);
-      console.error("Error creating vacation request:", error);
-      throw error; // Re-throw to allow component to handle it
-    } finally {
-      setIsLoading(false);
-    }
-  }, [fetchRequests]);
+    },
+    [fetchRequests]
+  );
 
   /**
    * Manually refresh requests list

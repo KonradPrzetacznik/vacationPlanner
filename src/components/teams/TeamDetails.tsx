@@ -16,19 +16,10 @@ interface TeamDetailsProps {
   team: TeamDetailsDTO;
   onTeamUpdate: () => void;
   onTeamDelete: () => void;
-  updateTeam: (
-    teamId: string,
-    data: UpdateTeamDTO
-  ) => Promise<UpdateTeamResponseDTO>;
+  updateTeam: (teamId: string, data: UpdateTeamDTO) => Promise<UpdateTeamResponseDTO>;
   deleteTeam: (teamId: string) => Promise<DeleteTeamResponseDTO>;
-  addTeamMembers: (
-    teamId: string,
-    data: AddTeamMembersDTO
-  ) => Promise<AddTeamMembersResponseDTO>;
-  removeTeamMember: (
-    teamId: string,
-    userId: string
-  ) => Promise<RemoveTeamMemberResponseDTO>;
+  addTeamMembers: (teamId: string, data: AddTeamMembersDTO) => Promise<AddTeamMembersResponseDTO>;
+  removeTeamMember: (teamId: string, userId: string) => Promise<RemoveTeamMemberResponseDTO>;
   isLoading?: boolean;
 }
 

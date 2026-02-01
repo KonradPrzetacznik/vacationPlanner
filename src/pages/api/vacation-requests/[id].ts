@@ -25,13 +25,10 @@ export const GET: APIRoute = async ({ params, locals }) => {
     const supabase = locals.supabase;
     if (!supabase) {
       console.error("[GET /api/vacation-requests/:id] Supabase client not available");
-      return new Response(
-        JSON.stringify({ error: "Internal server error" }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // 2. Use DEFAULT_USER_ID for development (auth will be implemented later)
@@ -44,23 +41,16 @@ export const GET: APIRoute = async ({ params, locals }) => {
 
     if (!validationResult.success) {
       const errorMessage = validationResult.error.errors[0]?.message || "Invalid vacation request ID format";
-      return new Response(
-        JSON.stringify({ error: errorMessage }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: errorMessage }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const { id } = validationResult.data;
 
     // 4. Fetch vacation request from service
-    const vacationRequest = await getVacationRequestById(
-      supabase,
-      currentUserId,
-      id
-    );
+    const vacationRequest = await getVacationRequestById(supabase, currentUserId, id);
 
     // 5. Return success response
     const response: GetVacationRequestByIdResponseDTO = {
@@ -76,50 +66,34 @@ export const GET: APIRoute = async ({ params, locals }) => {
 
     if (error instanceof Error) {
       // Authorization errors (403)
-      if (
-        error.message.includes("only view your own") ||
-        error.message.includes("not authorized")
-      ) {
-        return new Response(
-          JSON.stringify({ error: error.message }),
-          {
-            status: 403,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
+      if (error.message.includes("only view your own") || error.message.includes("not authorized")) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
       }
 
       // Not found errors (404)
       if (error.message.includes("not found")) {
-        return new Response(
-          JSON.stringify({ error: error.message }),
-          {
-            status: 404,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
       }
 
       // Permission verification errors (500)
       if (error.message.includes("verify") || error.message.includes("permissions")) {
-        return new Response(
-          JSON.stringify({ error: "Failed to verify user permissions" }),
-          {
-            status: 500,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
+        return new Response(JSON.stringify({ error: "Failed to verify user permissions" }), {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        });
       }
     }
 
     // Generic server error (500)
-    return new Response(
-      JSON.stringify({ error: "Failed to fetch vacation request" }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: "Failed to fetch vacation request" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 };
-

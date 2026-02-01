@@ -25,10 +25,7 @@ const statusColors = {
   CANCELLED: "bg-gray-100 text-gray-800 border-gray-200",
 };
 
-export const VacationDetailsTooltip: React.FC<VacationDetailsTooltipProps> = ({
-  vacation,
-  position,
-}) => {
+export const VacationDetailsTooltip: React.FC<VacationDetailsTooltipProps> = ({ vacation, position }) => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("pl-PL", {

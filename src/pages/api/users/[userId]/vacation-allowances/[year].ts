@@ -66,13 +66,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
     const currentUserRole = currentUserProfile.role as "ADMINISTRATOR" | "HR" | "EMPLOYEE";
 
     // 4. Call service to get vacation allowance by year
-    const result = await getVacationAllowanceByYear(
-      locals.supabase,
-      currentUserId,
-      currentUserRole,
-      userId,
-      year
-    );
+    const result = await getVacationAllowanceByYear(locals.supabase, currentUserId, currentUserRole, userId, year);
 
     // 5. Return success response
     return new Response(JSON.stringify(result), {
@@ -114,4 +108,3 @@ export const GET: APIRoute = async ({ params, locals }) => {
     });
   }
 };
-

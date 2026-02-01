@@ -70,13 +70,10 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     try {
       body = await request.json();
     } catch {
-      return new Response(
-        JSON.stringify({ error: "Invalid JSON in request body" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Invalid JSON in request body" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const validationResult = updateVacationAllowanceSchema.safeParse(body);
@@ -153,4 +150,3 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     });
   }
 };
-

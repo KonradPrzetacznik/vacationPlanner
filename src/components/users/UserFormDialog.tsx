@@ -17,21 +17,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
@@ -90,10 +77,7 @@ interface UserFormDialogProps {
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
   onCreateUser: (data: CreateUserDTO) => Promise<CreateUserResponseDTO>;
-  onUpdateUser: (
-    userId: string,
-    data: UpdateUserDTO
-  ) => Promise<UpdateUserResponseDTO>;
+  onUpdateUser: (userId: string, data: UpdateUserDTO) => Promise<UpdateUserResponseDTO>;
 }
 
 /**
@@ -119,19 +103,20 @@ export function UserFormDialog({
   // Form setup
   const form = useForm<CreateUserFormValues | EditUserFormValues>({
     resolver: zodResolver(isEditMode ? editUserSchema : createUserSchema),
-    defaultValues: isEditMode && user
-      ? {
-          firstName: user.firstName,
-          lastName: user.lastName,
-          role: user.role,
-        }
-      : {
-          firstName: "",
-          lastName: "",
-          email: "",
-          role: "EMPLOYEE" as const,
-          temporaryPassword: "",
-        },
+    defaultValues:
+      isEditMode && user
+        ? {
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+          }
+        : {
+            firstName: "",
+            lastName: "",
+            email: "",
+            role: "EMPLOYEE" as const,
+            temporaryPassword: "",
+          },
   });
 
   // Reset form when mode, user, or dialog open state changes
@@ -154,13 +139,10 @@ export function UserFormDialog({
       });
     }
     setError(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, mode, user?.id]); // Używamy user?.id zamiast całego obiektu
+  }, [isOpen, isEditMode, user, form]);
 
   // Handle form submission
-  const onSubmit = async (
-    data: CreateUserFormValues | EditUserFormValues
-  ) => {
+  const onSubmit = async (data: CreateUserFormValues | EditUserFormValues) => {
     setIsSubmitting(true);
     setError(null);
 
@@ -190,9 +172,7 @@ export function UserFormDialog({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>
-            {isEditMode ? "Edytuj użytkownika" : "Dodaj nowego użytkownika"}
-          </DialogTitle>
+          <DialogTitle>{isEditMode ? "Edytuj użytkownika" : "Dodaj nowego użytkownika"}</DialogTitle>
           <DialogDescription>
             {isEditMode
               ? "Zaktualizuj informacje o użytkowniku. Zmiany zostaną zapisane po kliknięciu Zapisz."
@@ -241,11 +221,7 @@ export function UserFormDialog({
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="jan.kowalski@firma.pl"
-                        {...field}
-                      />
+                      <Input type="email" placeholder="jan.kowalski@firma.pl" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -260,11 +236,7 @@ export function UserFormDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Rola</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    disabled={isEditingSelf}
-                  >
+                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isEditingSelf}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Wybierz rolę" />
@@ -273,16 +245,10 @@ export function UserFormDialog({
                     <SelectContent>
                       <SelectItem value="EMPLOYEE">Pracownik</SelectItem>
                       <SelectItem value="HR">HR</SelectItem>
-                      <SelectItem value="ADMINISTRATOR">
-                        Administrator
-                      </SelectItem>
+                      <SelectItem value="ADMINISTRATOR">Administrator</SelectItem>
                     </SelectContent>
                   </Select>
-                  {isEditingSelf && (
-                    <p className="text-xs text-muted-foreground">
-                      Nie możesz zmienić własnej roli
-                    </p>
-                  )}
+                  {isEditingSelf && <p className="text-xs text-muted-foreground">Nie możesz zmienić własnej roli</p>}
                   <FormMessage />
                 </FormItem>
               )}
@@ -297,11 +263,7 @@ export function UserFormDialog({
                   <FormItem>
                     <FormLabel>Hasło tymczasowe</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Minimum 8 znaków"
-                        {...field}
-                      />
+                      <Input type="password" placeholder="Minimum 8 znaków" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -310,25 +272,14 @@ export function UserFormDialog({
             )}
 
             {/* Error Message */}
-            {error && (
-              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                {error}
-              </div>
-            )}
+            {error && <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
 
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleOpenChange(false)}
-                disabled={isSubmitting}
-              >
+              <Button type="button" variant="outline" onClick={() => handleOpenChange(false)} disabled={isSubmitting}>
                 Anuluj
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isEditMode ? "Zapisz zmiany" : "Utwórz użytkownika"}
               </Button>
             </DialogFooter>

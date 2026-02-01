@@ -36,10 +36,7 @@ function parseCookieHeader(cookieHeader: string): { name: string; value: string 
  * Create Supabase server client for SSR
  * Use this in Astro pages, API routes, and middleware
  */
-export const createSupabaseServerInstance = (context: {
-  headers: Headers;
-  cookies: AstroCookies;
-}) => {
+export const createSupabaseServerInstance = (context: { headers: Headers; cookies: AstroCookies }) => {
   const supabase = createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
     cookieOptions,
     cookies: {
@@ -47,9 +44,7 @@ export const createSupabaseServerInstance = (context: {
         return parseCookieHeader(context.headers.get("Cookie") ?? "");
       },
       setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) =>
-          context.cookies.set(name, value, options)
-        );
+        cookiesToSet.forEach(({ name, value, options }) => context.cookies.set(name, value, options));
       },
     },
   });
@@ -63,9 +58,6 @@ export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKe
 
 // Admin client for privileged operations (uses service_role key, bypasses RLS)
 // Only use this for operations that require admin privileges (e.g., creating users)
-export const supabaseAdminClient = createClient<Database>(
-  supabaseUrl,
-  supabaseServiceRoleKey
-);
+export const supabaseAdminClient = createClient<Database>(supabaseUrl, supabaseServiceRoleKey);
 
 export type SupabaseClient = typeof supabaseClient;

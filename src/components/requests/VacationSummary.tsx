@@ -60,15 +60,11 @@ export function VacationSummary({ allowance }: VacationSummaryProps) {
           <div className="flex items-start gap-2">
             <Clock className="h-5 w-5 text-amber-600 mt-0.5" />
             <div>
-              <p className="font-medium text-amber-900">
-                Dni zaległe z poprzedniego roku
-              </p>
+              <p className="font-medium text-amber-900">Dni zaległe z poprzedniego roku</p>
               <p className="text-sm text-amber-800 mt-1">
-                Masz <span className="font-semibold">{allowance.fromPreviousYear.total} dni</span> z
-                poprzedniego roku do wykorzystania do{" "}
-                <span className="font-semibold">
-                  {formatDate(allowance.fromPreviousYear.utilizationDeadline)}
-                </span>
+                Masz <span className="font-semibold">{allowance.fromPreviousYear.total} dni</span> z poprzedniego roku
+                do wykorzystania do{" "}
+                <span className="font-semibold">{formatDate(allowance.fromPreviousYear.utilizationDeadline)}</span>
               </p>
             </div>
           </div>

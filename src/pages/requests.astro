@@ -17,14 +17,11 @@ const supabase = Astro.locals.supabase;
 const currentUserId = DEFAULT_USER_ID;
 
 // Fetch user's vacation requests
-const requestsResponse = await fetch(
-  `${Astro.url.origin}/api/vacation-requests?userId=${currentUserId}`,
-  {
-    headers: {
-      cookie: Astro.request.headers.get("cookie") || "",
-    },
-  }
-);
+const requestsResponse = await fetch(`${Astro.url.origin}/api/vacation-requests?userId=${currentUserId}`, {
+  headers: {
+    cookie: Astro.request.headers.get("cookie") || "",
+  },
+});
 
 let initialRequests: GetVacationRequestsResponseDTO["data"] = [];
 if (requestsResponse.ok) {
@@ -33,21 +30,29 @@ if (requestsResponse.ok) {
 }
 
 // Fetch user's teams for calendar display
-const { data: userTeams, error: teamsError } = await supabase
+const { data: userTeams } = await supabase
   .from("team_members")
-  .select(`
+  .select(
+    `
     team_id,
     teams:team_id (
       id,
       name
     )
-  `)
+  `
+  )
   .eq("user_id", currentUserId);
 
-const userTeamsList = userTeams?.map(tm => ({
-  id: (tm.teams as any).id,
-  name: (tm.teams as any).name,
-})) || [];
+interface TeamData {
+  id: string;
+  name: string;
+}
+
+const userTeamsList =
+  userTeams?.map((tm) => ({
+    id: (tm.teams as TeamData).id,
+    name: (tm.teams as TeamData).name,
+  })) || [];
 
 // TODO: Fetch user's vacation allowance when endpoint is ready
 // For now, use mock data

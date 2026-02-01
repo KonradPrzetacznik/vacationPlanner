@@ -65,19 +65,12 @@ export function NewRequestView() {
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       {/* Header */}
       <div className="mb-8">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleCancel}
-          className="mb-4 -ml-2"
-        >
+        <Button variant="ghost" size="sm" onClick={handleCancel} className="mb-4 -ml-2">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Powrót do listy
         </Button>
         <h1 className="text-3xl font-bold">Nowy Wniosek Urlopowy</h1>
-        <p className="text-muted-foreground mt-2">
-          Wypełnij formularz, aby złożyć nowy wniosek o urlop
-        </p>
+        <p className="text-muted-foreground mt-2">Wypełnij formularz, aby złożyć nowy wniosek o urlop</p>
       </div>
 
       {/* Error Alert */}
@@ -90,11 +83,7 @@ export function NewRequestView() {
 
       {/* Form Card */}
       <div className="rounded-lg border bg-card p-6 shadow-sm">
-        <RequestForm
-          onSubmit={handleSubmit}
-          onCancel={handleCancel}
-          isSubmitting={isSubmitting}
-        />
+        <RequestForm onSubmit={handleSubmit} onCancel={handleCancel} isSubmitting={isSubmitting} />
       </div>
 
       {/* Info Box */}
@@ -112,4 +101,3 @@ export function NewRequestView() {
 }
 
 export default NewRequestView;
-

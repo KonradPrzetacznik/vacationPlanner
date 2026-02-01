@@ -5,8 +5,6 @@
  * Each DTO is connected to one or more database entities from database.types.ts
  */
 
-import type { Database } from "./db/database.types";
-
 // ============================================================================
 // Database Entity Type Aliases
 // ============================================================================
@@ -15,7 +13,7 @@ import type { Database } from "./db/database.types";
 // type Users = Database["public"]["Tables"]["users"]["Row"];
 // type Vacations = Database["public"]["Tables"]["vacations"]["Row"];
 // type UserVacations = Database["public"]["Tables"]["user_vacations"]["Row"];
-type VacationRequests = Database["public"]["Tables"]["vacation_requests"]["Row"];
+// type VacationRequests = Database["public"]["Tables"]["vacation_requests"]["Row"];
 // type Notifications = Database["public"]["Tables"]["notifications"]["Row"];
 // type AuditLogs = Database["public"]["Tables"]["audit_logs"]["Row"];
 
@@ -23,7 +21,7 @@ type VacationRequests = Database["public"]["Tables"]["vacation_requests"]["Row"]
 // type UsersInsert = Database["public"]["Tables"]["users"]["Insert"];
 // type VacationsInsert = Database["public"]["Tables"]["vacations"]["Insert"];
 // type UserVacationsInsert = Database["public"]["Tables"]["user_vacations"]["Insert"];
-type VacationRequestsInsert = Database["public"]["Tables"]["vacation_requests"]["Insert"];
+// type VacationRequestsInsert = Database["public"]["Tables"]["vacation_requests"]["Insert"];
 // type NotificationsInsert = Database["public"]["Tables"]["notifications"]["Insert"];
 
 // ============================================================================
@@ -201,7 +199,6 @@ export interface SessionDTO {
 //   user_name: string;
 //   vacation_name: string;
 // };
-
 
 // ============================================================================
 // User Vacation DTOs (LEGACY - tables don't exist)
@@ -1114,10 +1111,9 @@ export interface GetAllSettingsResponseDTO {
 }
 
 /**
- * Get setting by key response DTO
- * Response for single setting
+ * Get setting by key response - same as SettingDTO
  */
-export interface GetSettingResponseDTO extends SettingDTO {}
+export type GetSettingResponseDTO = SettingDTO;
 
 /**
  * Update setting command DTO
@@ -1128,10 +1124,9 @@ export interface UpdateSettingDTO {
 }
 
 /**
- * Update setting response DTO
- * Returned after successful setting update
+ * Update setting response - same as SettingDTO
  */
-export interface UpdateSettingResponseDTO extends SettingDTO {}
+export type UpdateSettingResponseDTO = SettingDTO;
 
 // ============================================================================
 // Calendar View Models (Frontend-specific types)
@@ -1179,4 +1174,3 @@ export interface TeamCalendarViewModel {
   endDate: string; // ISO date
   members: TeamMemberViewModel[];
 }
-

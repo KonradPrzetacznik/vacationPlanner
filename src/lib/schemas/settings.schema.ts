@@ -12,9 +12,5 @@ export const settingKeyParamSchema = z.object({
  * Value must be a non-negative integer
  */
 export const updateSettingSchema = z.object({
-  value: z
-    .number()
-    .int("Value must be an integer")
-    .nonnegative("Value must be non-negative"),
+  value: z.number().int("Value must be an integer").nonnegative("Value must be non-negative"),
 });
-

@@ -145,10 +145,7 @@ export async function getUserById(
  *
  * NOTE: Uses Supabase Admin API to invite user by email
  */
-export async function createUser(
-  supabase: SupabaseClient,
-  data: CreateUserDTO
-): Promise<CreateUserResponseDTO> {
+export async function createUser(supabase: SupabaseClient, data: CreateUserDTO): Promise<CreateUserResponseDTO> {
   const { firstName, lastName, email, role = "EMPLOYEE" } = data;
 
   // 1. First create profile in profiles table
@@ -216,10 +213,7 @@ export async function createUser(
   }
 
   // 3. Update profile with actual auth user ID
-  const { error: updateError } = await supabase
-    .from("profiles")
-    .update({ id: authUser.user.id })
-    .eq("id", tempUserId);
+  const { error: updateError } = await supabase.from("profiles").update({ id: authUser.user.id }).eq("id", tempUserId);
 
   if (updateError) {
     console.error("[UsersService] Failed to update profile with auth ID:", updateError);
@@ -336,10 +330,7 @@ export async function updateUser(
  * @returns Promise with deletion summary
  * @throws Error if user not found or deletion fails
  */
-export async function deleteUser(
-  supabase: SupabaseClient,
-  userId: string
-): Promise<DeleteUserResponseDTO> {
+export async function deleteUser(supabase: SupabaseClient, userId: string): Promise<DeleteUserResponseDTO> {
   // 1. Check if user exists and is not already deleted
   const { data: existingUser, error: fetchError } = await supabase
     .from("profiles")
@@ -361,10 +352,7 @@ export async function deleteUser(
 
   // 2a. Soft-delete the user
   const now = new Date().toISOString();
-  const { error: deleteError } = await supabase
-    .from("profiles")
-    .update({ deleted_at: now })
-    .eq("id", userId);
+  const { error: deleteError } = await supabase.from("profiles").update({ deleted_at: now }).eq("id", userId);
 
   if (deleteError) {
     console.error("[UsersService] Failed to delete user:", deleteError);
@@ -409,4 +397,3 @@ export async function deleteUser(
     cancelledVacations: cancelledCount,
   };
 }
-

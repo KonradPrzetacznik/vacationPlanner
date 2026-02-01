@@ -18,12 +18,7 @@ interface RequestListProps {
 /**
  * Component displaying list of vacation requests
  */
-export function RequestList({
-  requests,
-  isLoading,
-  onFilterChange,
-  onCancelRequest,
-}: RequestListProps) {
+export function RequestList({ requests, isLoading, onFilterChange, onCancelRequest }: RequestListProps) {
   const [localFilters, setLocalFilters] = useState<RequestFilters>({});
 
   const handleFilterChange = (filters: RequestFilters) => {
@@ -43,26 +38,17 @@ export function RequestList({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Lista wniosków</h2>
-        <RequestListFilters
-          filters={localFilters}
-          onFilterChange={handleFilterChange}
-        />
+        <RequestListFilters filters={localFilters} onFilterChange={handleFilterChange} />
       </div>
 
       {requests.length === 0 ? (
         <div className="rounded-lg border bg-card p-8 text-center">
-          <p className="text-muted-foreground">
-            Nie masz jeszcze żadnych wniosków urlopowych.
-          </p>
+          <p className="text-muted-foreground">Nie masz jeszcze żadnych wniosków urlopowych.</p>
         </div>
       ) : (
         <div className="space-y-3">
           {requests.map((request) => (
-            <RequestListItem
-              key={request.id}
-              request={request}
-              onCancel={onCancelRequest}
-            />
+            <RequestListItem key={request.id} request={request} onCancel={onCancelRequest} />
           ))}
         </div>
       )}

@@ -4,13 +4,7 @@
  */
 import { useState } from "react";
 import type { RequestFilters } from "../hooks/useMyRequests";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Button } from "../ui/button";
 import { X } from "lucide-react";
 
@@ -22,10 +16,7 @@ interface RequestListFiltersProps {
 /**
  * Component with filter controls for vacation requests
  */
-export function RequestListFilters({
-  filters,
-  onFilterChange,
-}: RequestListFiltersProps) {
+export function RequestListFilters({ filters, onFilterChange }: RequestListFiltersProps) {
   const [selectedStatus, setSelectedStatus] = useState<string>(
     filters.status && filters.status.length > 0 ? filters.status[0] : "all"
   );
@@ -66,12 +57,7 @@ export function RequestListFilters({
       </Select>
 
       {hasActiveFilters && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleClearFilters}
-          className="h-9"
-        >
+        <Button variant="ghost" size="sm" onClick={handleClearFilters} className="h-9">
           <X className="mr-1 h-4 w-4" />
           Wyczyść
         </Button>

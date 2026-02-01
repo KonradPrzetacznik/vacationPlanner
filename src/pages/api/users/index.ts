@@ -156,13 +156,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
     try {
       body = await request.json();
     } catch {
-      return new Response(
-        JSON.stringify({ error: "Invalid JSON in request body" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Invalid JSON in request body" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const validationResult = createUserSchema.safeParse(body);
@@ -235,4 +232,3 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
   }
 };
-

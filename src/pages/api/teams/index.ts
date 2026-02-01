@@ -75,12 +75,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     // 4. Call service to get teams
     const startTime = Date.now();
-    const result = await getTeams(
-      locals.supabase,
-      currentUserId,
-      currentUserProfile.role,
-      validatedQuery
-    );
+    const result = await getTeams(locals.supabase, currentUserId, currentUserProfile.role, validatedQuery);
     const duration = Date.now() - startTime;
 
     // Log slow queries
@@ -139,13 +134,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // 3. Check if user is HR or ADMINISTRATOR
     if (currentUserProfile.role !== "HR" && currentUserProfile.role !== "ADMINISTRATOR") {
-      return new Response(
-        JSON.stringify({ error: "Insufficient permissions" }),
-        {
-          status: 403,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Insufficient permissions" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // 4. Parse and validate request body
@@ -229,4 +221,3 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
   }
 };
-

@@ -4,7 +4,10 @@
  */
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createVacationRequestSchema, type CreateVacationRequestInput } from "@/lib/schemas/vacation-request-detail.schema";
+import {
+  createVacationRequestSchema,
+  type CreateVacationRequestInput,
+} from "@/lib/schemas/vacation-request-detail.schema";
 import { DatePicker } from "../ui/date-picker";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
@@ -26,7 +29,6 @@ export function RequestForm({ onSubmit, onCancel, isSubmitting = false }: Reques
   const [comment, setComment] = useState("");
 
   const {
-    register,
     handleSubmit,
     formState: { errors, isValid },
     setValue,
@@ -74,7 +76,8 @@ export function RequestForm({ onSubmit, onCancel, isSubmitting = false }: Reques
 
     while (current <= endDate) {
       const day = current.getDay();
-      if (day !== 0 && day !== 6) { // Not Sunday (0) or Saturday (6)
+      if (day !== 0 && day !== 6) {
+        // Not Sunday (0) or Saturday (6)
         count++;
       }
       current.setDate(current.getDate() + 1);
@@ -98,11 +101,7 @@ export function RequestForm({ onSubmit, onCancel, isSubmitting = false }: Reques
         error={errors.startDate?.message}
       />
 
-      {startDate && (
-        <p className="text-sm text-muted-foreground -mt-3">
-          {formatDateForDisplay(startDate)}
-        </p>
-      )}
+      {startDate && <p className="text-sm text-muted-foreground -mt-3">{formatDateForDisplay(startDate)}</p>}
 
       {/* End Date */}
       <DatePicker
@@ -115,11 +114,7 @@ export function RequestForm({ onSubmit, onCancel, isSubmitting = false }: Reques
         error={errors.endDate?.message}
       />
 
-      {endDate && (
-        <p className="text-sm text-muted-foreground -mt-3">
-          {formatDateForDisplay(endDate)}
-        </p>
-      )}
+      {endDate && <p className="text-sm text-muted-foreground -mt-3">{formatDateForDisplay(endDate)}</p>}
 
       {/* Business Days Info */}
       {startDate && endDate && businessDays > 0 && (
@@ -127,9 +122,7 @@ export function RequestForm({ onSubmit, onCancel, isSubmitting = false }: Reques
           <p className="text-sm font-medium text-blue-900">
             Liczba dni roboczych: <span className="text-lg font-bold">{businessDays}</span>
           </p>
-          <p className="text-xs text-blue-700 mt-1">
-            Weekendy nie są wliczane do urlopu
-          </p>
+          <p className="text-xs text-blue-700 mt-1">Weekendy nie są wliczane do urlopu</p>
         </div>
       )}
 
@@ -146,27 +139,17 @@ export function RequestForm({ onSubmit, onCancel, isSubmitting = false }: Reques
           rows={3}
           className="resize-none"
         />
-        <p className="text-xs text-muted-foreground">
-          Komentarz będzie widoczny dla osoby rozpatrującej wniosek
-        </p>
+        <p className="text-xs text-muted-foreground">Komentarz będzie widoczny dla osoby rozpatrującej wniosek</p>
       </div>
 
       {/* Form Actions */}
       <div className="flex items-center justify-end gap-3 pt-4 border-t">
         {onCancel && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
             Anuluj
           </Button>
         )}
-        <Button
-          type="submit"
-          disabled={!isValid || isSubmitting}
-        >
+        <Button type="submit" disabled={!isValid || isSubmitting}>
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

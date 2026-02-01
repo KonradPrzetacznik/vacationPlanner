@@ -1,12 +1,5 @@
 import type { UserListItemDTO } from "@/types";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, Loader2 } from "lucide-react";
@@ -23,13 +16,7 @@ interface UsersTableProps {
  * Table component displaying list of users
  * with actions for edit and delete
  */
-export function UsersTable({
-  users,
-  currentUserId,
-  isLoading = false,
-  onEditUser,
-  onDeleteUser,
-}: UsersTableProps) {
+export function UsersTable({ users, currentUserId, isLoading = false, onEditUser, onDeleteUser }: UsersTableProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -41,9 +28,7 @@ export function UsersTable({
   if (users.length === 0) {
     return (
       <div className="rounded-lg border bg-card p-8 text-center">
-        <p className="text-muted-foreground">
-          Nie znaleziono użytkowników spełniających kryteria wyszukiwania.
-        </p>
+        <p className="text-muted-foreground">Nie znaleziono użytkowników spełniających kryteria wyszukiwania.</p>
       </div>
     );
   }
@@ -93,19 +78,12 @@ export function UsersTable({
             const isCurrentUser = user.id === currentUserId;
 
             return (
-              <TableRow
-                key={user.id}
-                className={isDeleted ? "opacity-60" : ""}
-              >
+              <TableRow key={user.id} className={isDeleted ? "opacity-60" : ""}>
                 <TableCell className="font-medium">{user.firstName}</TableCell>
                 <TableCell>{user.lastName}</TableCell>
-                <TableCell className="text-muted-foreground">
-                  {user.email}
-                </TableCell>
+                <TableCell className="text-muted-foreground">{user.email}</TableCell>
                 <TableCell>
-                  <Badge variant={getRoleBadgeVariant(user.role)}>
-                    {getRoleLabel(user.role)}
-                  </Badge>
+                  <Badge variant={getRoleBadgeVariant(user.role)}>{getRoleLabel(user.role)}</Badge>
                 </TableCell>
                 <TableCell>
                   {isDeleted ? (
@@ -133,12 +111,7 @@ export function UsersTable({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() =>
-                        onDeleteUser(
-                          user.id,
-                          `${user.firstName} ${user.lastName}`
-                        )
-                      }
+                      onClick={() => onDeleteUser(user.id, `${user.firstName} ${user.lastName}`)}
                       disabled={isDeleted || isCurrentUser}
                       title={
                         isDeleted

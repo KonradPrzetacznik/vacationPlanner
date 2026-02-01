@@ -188,13 +188,10 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     try {
       body = await request.json();
     } catch {
-      return new Response(
-        JSON.stringify({ error: "Invalid JSON in request body" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Invalid JSON in request body" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const validationResult = updateUserSchema.safeParse(body);
@@ -216,13 +213,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
 
     // 5. Call service to update user
     const startTime = Date.now();
-    const result = await updateUser(
-      locals.supabase,
-      userId,
-      validatedData,
-      currentUserId,
-      currentUserRole
-    );
+    const result = await updateUser(locals.supabase, userId, validatedData, currentUserId, currentUserRole);
     const duration = Date.now() - startTime;
 
     // Log slow operations
@@ -404,4 +395,3 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     });
   }
 };
-

@@ -5,6 +5,10 @@
  * Use it to configure testing environment.
  */
 
+/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable @typescript-eslint/no-useless-constructor */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import "@testing-library/jest-dom";
 
 // Mock window.matchMedia

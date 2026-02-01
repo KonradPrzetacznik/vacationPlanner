@@ -42,10 +42,7 @@ export const createVacationRequestSchema = z
         required_error: "Start date is required",
         invalid_type_error: "Start date must be a string",
       })
-      .regex(
-        /^\d{4}-\d{2}-\d{2}$/,
-        "Start date must be in YYYY-MM-DD format"
-      )
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Start date must be in YYYY-MM-DD format")
       .refine((date) => !isNaN(Date.parse(date)), {
         message: "Start date must be a valid date",
       })
@@ -60,10 +57,7 @@ export const createVacationRequestSchema = z
         required_error: "End date is required",
         invalid_type_error: "End date must be a string",
       })
-      .regex(
-        /^\d{4}-\d{2}-\d{2}$/,
-        "End date must be in YYYY-MM-DD format"
-      )
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "End date must be in YYYY-MM-DD format")
       .refine((date) => !isNaN(Date.parse(date)), {
         message: "End date must be a valid date",
       })
@@ -85,4 +79,3 @@ export type CreateVacationRequestInput = z.infer<typeof createVacationRequestSch
  * Type inference for validated vacation request ID param
  */
 export type GetVacationRequestByIdParams = z.infer<typeof getVacationRequestByIdParamsSchema>;
-

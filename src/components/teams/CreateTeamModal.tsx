@@ -11,14 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
@@ -46,12 +39,7 @@ interface CreateTeamModalProps {
  * Modal for creating a new team
  * Handles form validation and submission
  */
-export function CreateTeamModal({
-  isOpen,
-  onClose,
-  onTeamCreate,
-  createTeam,
-}: CreateTeamModalProps) {
+export function CreateTeamModal({ isOpen, onClose, onTeamCreate, createTeam }: CreateTeamModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -82,8 +70,7 @@ export function CreateTeamModal({
       onTeamCreate();
       form.reset();
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Nie udało się utworzyć zespołu";
+      const errorMessage = err instanceof Error ? err.message : "Nie udało się utworzyć zespołu";
       setError(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -101,19 +88,13 @@ export function CreateTeamModal({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Utwórz nowy zespół</DialogTitle>
-          <DialogDescription>
-            Podaj nazwę zespołu. Będziesz mógł dodać członków po utworzeniu.
-          </DialogDescription>
+          <DialogDescription>Podaj nazwę zespołu. Będziesz mógł dodać członków po utworzeniu.</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             {/* Error Message */}
-            {error && (
-              <div className="rounded-lg bg-destructive/15 p-3 text-sm text-destructive">
-                {error}
-              </div>
-            )}
+            {error && <div className="rounded-lg bg-destructive/15 p-3 text-sm text-destructive">{error}</div>}
 
             {/* Team Name Field */}
             <FormField
@@ -123,11 +104,7 @@ export function CreateTeamModal({
                 <FormItem>
                   <FormLabel>Nazwa zespołu</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="np. Zespół Backend"
-                      {...field}
-                      disabled={isSubmitting}
-                    />
+                    <Input placeholder="np. Zespół Backend" {...field} disabled={isSubmitting} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -136,18 +113,11 @@ export function CreateTeamModal({
 
             {/* Footer Buttons */}
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                disabled={isSubmitting}
-              >
+              <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
                 Anuluj
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Utwórz zespół
               </Button>
             </DialogFooter>

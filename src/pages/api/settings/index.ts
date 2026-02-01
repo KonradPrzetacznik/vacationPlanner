@@ -142,13 +142,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
             });
           }
           if (error.message === "Setting not found") {
-            return new Response(
-              JSON.stringify({ error: `Setting ${setting.key} not found` }),
-              {
-                status: 404,
-                headers: { "Content-Type": "application/json" },
-              }
-            );
+            return new Response(JSON.stringify({ error: `Setting ${setting.key} not found` }), {
+              status: 404,
+              headers: { "Content-Type": "application/json" },
+            });
           }
           if (error.message.includes("Invalid value")) {
             return new Response(JSON.stringify({ error: error.message }), {

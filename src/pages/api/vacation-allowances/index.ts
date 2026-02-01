@@ -49,13 +49,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
     try {
       body = await request.json();
     } catch {
-      return new Response(
-        JSON.stringify({ error: "Invalid JSON in request body" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Invalid JSON in request body" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const validationResult = createVacationAllowanceSchema.safeParse(body);
@@ -77,12 +74,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // 4. Call service to create vacation allowance
     const startTime = Date.now();
-    const result = await createVacationAllowance(
-      locals.supabase,
-      currentUserId,
-      currentUserRole,
-      validatedData
-    );
+    const result = await createVacationAllowance(locals.supabase, currentUserId, currentUserRole, validatedData);
     const duration = Date.now() - startTime;
 
     // Log slow operations
@@ -125,10 +117,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
 
       // Bad request errors (400)
-      if (
-        error.message.includes("already exists") ||
-        error.message.includes("deleted user")
-      ) {
+      if (error.message.includes("already exists") || error.message.includes("deleted user")) {
         return new Response(JSON.stringify({ error: error.message }), {
           status: 400,
           headers: { "Content-Type": "application/json" },
@@ -143,4 +132,3 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
   }
 };
-

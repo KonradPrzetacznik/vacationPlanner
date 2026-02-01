@@ -37,8 +37,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   // Synchronize URL with selected team and month
   useEffect(() => {
     const url = new URL(window.location.href);
-    const currentTeamParam = url.searchParams.get('teamId');
-    const currentMonthParam = url.searchParams.get('month');
+    const currentTeamParam = url.searchParams.get("teamId");
+    const currentMonthParam = url.searchParams.get("month");
 
     // Extract month from dateRange (YYYY-MM format)
     const currentMonth = state.dateRange.start.substring(0, 7);
@@ -46,17 +46,17 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     let needsUpdate = false;
 
     if (currentTeamParam !== state.selectedTeamId) {
-      url.searchParams.set('teamId', state.selectedTeamId);
+      url.searchParams.set("teamId", state.selectedTeamId);
       needsUpdate = true;
     }
 
     if (currentMonthParam !== currentMonth) {
-      url.searchParams.set('month', currentMonth);
+      url.searchParams.set("month", currentMonth);
       needsUpdate = true;
     }
 
     if (needsUpdate) {
-      window.history.replaceState({}, '', url.toString());
+      window.history.replaceState({}, "", url.toString());
     }
   }, [state.selectedTeamId, state.dateRange.start]);
 
@@ -81,9 +81,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     const url = new URL(window.location.href);
 
     // Ensure current team and month are in URL
-    url.searchParams.set('teamId', state.selectedTeamId);
+    url.searchParams.set("teamId", state.selectedTeamId);
     const currentMonth = state.dateRange.start.substring(0, 7);
-    url.searchParams.set('month', currentMonth);
+    url.searchParams.set("month", currentMonth);
 
     // Reload with preserved params
     window.location.href = url.toString();
@@ -95,9 +95,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Kalendarz zespołu</h1>
-          <p className="text-muted-foreground mt-1">
-            Przegląd urlopów członków zespołu
-          </p>
+          <p className="text-muted-foreground mt-1">Przegląd urlopów członków zespołu</p>
         </div>
       </div>
 
@@ -123,9 +121,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       {state.isLoading && (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          <span className="ml-3 text-muted-foreground">
-            Ładowanie kalendarza...
-          </span>
+          <span className="ml-3 text-muted-foreground">Ładowanie kalendarza...</span>
         </div>
       )}
 
@@ -147,15 +143,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       {!state.isLoading && !state.error && (
         <>
           {state.calendarData.length > 0 ? (
-            <VacationsList
-              vacations={state.calendarData}
-              onVacationClick={handleEventClick}
-            />
+            <VacationsList vacations={state.calendarData} onVacationClick={handleEventClick} />
           ) : (
             <div className="rounded-lg border bg-card p-8 text-center">
-              <p className="text-muted-foreground">
-                Brak urlopów w wybranym okresie
-              </p>
+              <p className="text-muted-foreground">Brak urlopów w wybranym okresie</p>
             </div>
           )}
         </>

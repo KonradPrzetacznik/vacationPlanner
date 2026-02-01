@@ -50,7 +50,7 @@ let errorMessage: string | null = null;
 let initialTeamId: string | null = null;
 
 // Read URL parameter for team selection
-const urlTeamId = Astro.url.searchParams.get('teamId');
+const urlTeamId = Astro.url.searchParams.get("teamId");
 
 try {
   const apiUrl = new URL("/api/teams", Astro.url.origin);
@@ -66,7 +66,7 @@ try {
 
     // Set initial team ID from URL or first team in the list
     if (teams && teams.data && teams.data.length > 0) {
-      if (urlTeamId && teams.data.some(team => team.id === urlTeamId)) {
+      if (urlTeamId && teams.data.some((team) => team.id === urlTeamId)) {
         // Use team from URL if it exists in the list
         initialTeamId = urlTeamId;
       } else {
@@ -86,30 +86,30 @@ try {
 ---
 
 <Layout title="Kalendarz zespołu">
-  {errorMessage ? (
-    <div class="container mx-auto p-6">
-      <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
-        {errorMessage}
+  {
+    errorMessage ? (
+      <div class="container mx-auto p-6">
+        <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">{errorMessage}</div>
       </div>
-    </div>
-  ) : teams && teams.data && teams.data.length > 0 && initialTeamId ? (
-    <CalendarView
-      client:load
-      teams={teams.data}
-      initialTeamId={initialTeamId}
-      currentUser={{
-        id: currentUserProfile.id,
-        firstName: currentUserProfile.first_name,
-        lastName: currentUserProfile.last_name,
-        role: currentUserProfile.role
-      }}
-    />
-  ) : (
-    <div class="container mx-auto p-6">
-      <div class="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-yellow-800">
-        Nie zarządzasz żadnym zespołem
+    ) : teams && teams.data && teams.data.length > 0 && initialTeamId ? (
+      <CalendarView
+        client:load
+        teams={teams.data}
+        initialTeamId={initialTeamId}
+        currentUser={{
+          id: currentUserProfile.id,
+          firstName: currentUserProfile.first_name,
+          lastName: currentUserProfile.last_name,
+          role: currentUserProfile.role,
+        }}
+      />
+    ) : (
+      <div class="container mx-auto p-6">
+        <div class="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-yellow-800">
+          Nie zarządzasz żadnym zespołem
+        </div>
       </div>
-    </div>
-  )}
+    )
+  }
   <Toaster client:load />
 </Layout>

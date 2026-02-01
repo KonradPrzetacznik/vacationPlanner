@@ -166,10 +166,7 @@ export function useTeamsManagement() {
   /**
    * Add members to a team
    */
-  const addTeamMembers = async (
-    teamId: string,
-    data: AddTeamMembersDTO
-  ): Promise<AddTeamMembersResponseDTO> => {
+  const addTeamMembers = async (teamId: string, data: AddTeamMembersDTO): Promise<AddTeamMembersResponseDTO> => {
     const response = await fetch(`/api/teams/${teamId}/members`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -196,10 +193,7 @@ export function useTeamsManagement() {
   /**
    * Remove a member from a team
    */
-  const removeTeamMember = async (
-    teamId: string,
-    userId: string
-  ): Promise<RemoveTeamMemberResponseDTO> => {
+  const removeTeamMember = async (teamId: string, userId: string): Promise<RemoveTeamMemberResponseDTO> => {
     const response = await fetch(`/api/teams/${teamId}/members/${userId}`, {
       method: "DELETE",
     });

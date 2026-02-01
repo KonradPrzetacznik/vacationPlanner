@@ -35,15 +35,7 @@ export async function getVacationRequests(
   currentUserId: string,
   query: GetVacationRequestsQueryDTO
 ): Promise<GetVacationRequestsResponseDTO> {
-  const {
-    limit = 50,
-    offset = 0,
-    status,
-    userId,
-    teamId,
-    startDate,
-    endDate,
-  } = query;
+  const { limit = 50, offset = 0, status, userId, teamId, startDate, endDate } = query;
 
   // 1. Get current user's role for RBAC
   const { data: currentUser, error: userError } = await supabase
@@ -110,11 +102,7 @@ export async function getVacationRequests(
     // ADMINISTRATOR has no restrictions
     if (teamId) {
       // Validate team exists
-      const { data: team, error: teamError } = await supabase
-        .from("teams")
-        .select("id")
-        .eq("id", teamId)
-        .single();
+      const { data: team, error: teamError } = await supabase.from("teams").select("id").eq("id", teamId).single();
 
       if (teamError || !team) {
         throw new Error("Team not found");
@@ -124,10 +112,8 @@ export async function getVacationRequests(
   }
 
   // 3. Build the query
-  let queryBuilder = supabase
-    .from("vacation_requests")
-    .select(
-      `
+  let queryBuilder = supabase.from("vacation_requests").select(
+    `
       id,
       user_id,
       start_date,
@@ -144,8 +130,8 @@ export async function getVacationRequests(
         last_name
       )
     `,
-      { count: "exact" }
-    );
+    { count: "exact" }
+  );
 
   // Apply filters
   if (effectiveUserId) {
@@ -194,9 +180,7 @@ export async function getVacationRequests(
   }
 
   // Apply sorting, pagination
-  queryBuilder = queryBuilder
-    .order("created_at", { ascending: false })
-    .range(offset, offset + limit - 1);
+  queryBuilder = queryBuilder.order("created_at", { ascending: false }).range(offset, offset + limit - 1);
 
   // 4. Execute query
   const { data: vacationRequests, error: queryError, count } = await queryBuilder;
@@ -312,10 +296,9 @@ export async function getVacationRequestById(
   }
 
   // 2.1. Get user email from auth.users via RPC
-  const { data: emailsData, error: emailsError } = await supabase.rpc(
-    "get_user_emails",
-    { user_ids: [vacationRequest.user_id] }
-  );
+  const { data: emailsData, error: emailsError } = await supabase.rpc("get_user_emails", {
+    user_ids: [vacationRequest.user_id],
+  });
 
   if (emailsError) {
     console.error("[VacationRequestsService] Failed to fetch user email:", emailsError);
@@ -332,13 +315,10 @@ export async function getVacationRequestById(
   } else if (userRole === "HR") {
     // HR can view requests from their team members
     // Check if the request user and current user share a common team
-    const { data: hasCommonTeam, error: teamCheckError } = await supabase.rpc(
-      "check_common_team",
-      {
-        user1_id: currentUserId,
-        user2_id: vacationRequest.user_id,
-      }
-    );
+    const { data: hasCommonTeam, error: teamCheckError } = await supabase.rpc("check_common_team", {
+      user1_id: currentUserId,
+      user2_id: vacationRequest.user_id,
+    });
 
     if (teamCheckError) {
       console.error("[VacationRequestsService] Failed to check team membership:", teamCheckError);
@@ -352,9 +332,7 @@ export async function getVacationRequestById(
   // ADMINISTRATOR has no restrictions
 
   // 4. Map result to DTO (snake_case to camelCase)
-  const user = Array.isArray(vacationRequest.user)
-    ? vacationRequest.user[0]
-    : vacationRequest.user;
+  const user = Array.isArray(vacationRequest.user) ? vacationRequest.user[0] : vacationRequest.user;
 
   const processedBy = vacationRequest.processedBy
     ? Array.isArray(vacationRequest.processedBy)
@@ -424,13 +402,10 @@ export async function createVacationRequest(
   }
 
   // 2. Calculate business days count using database function
-  const { data: businessDaysData, error: businessDaysError } = await supabase.rpc(
-    "calculate_business_days",
-    {
-      p_start_date: startDate,
-      p_end_date: endDate,
-    }
-  );
+  const { data: businessDaysData, error: businessDaysError } = await supabase.rpc("calculate_business_days", {
+    p_start_date: startDate,
+    p_end_date: endDate,
+  });
 
   if (businessDaysError || businessDaysData === null) {
     console.error("[VacationRequestsService] Failed to calculate business days:", businessDaysError);
@@ -488,9 +463,7 @@ export async function createVacationRequest(
     .select("id, start_date, end_date")
     .eq("user_id", currentUserId)
     .in("status", ["SUBMITTED", "APPROVED"])
-    .or(
-      `and(start_date.lte.${endDate},end_date.gte.${startDate})`
-    );
+    .or(`and(start_date.lte.${endDate},end_date.gte.${startDate})`);
 
   if (overlapError) {
     console.error("[VacationRequestsService] Failed to check overlapping requests:", overlapError);
@@ -498,9 +471,7 @@ export async function createVacationRequest(
   }
 
   if (overlappingRequests && overlappingRequests.length > 0) {
-    throw new Error(
-      "You already have a vacation request for overlapping dates"
-    );
+    throw new Error("You already have a vacation request for overlapping dates");
   }
 
   // 5. Create vacation request
@@ -556,7 +527,7 @@ export async function approveVacationRequest(
   supabase: SupabaseClient,
   currentUserId: string,
   requestId: string,
-  acknowledgeThresholdWarning: boolean = false
+  acknowledgeThresholdWarning = false
 ): Promise<ApproveVacationRequestResponseDTO> {
   // 1. Fetch current user's role
   const { data: currentUser, error: userError } = await supabase
@@ -597,13 +568,10 @@ export async function approveVacationRequest(
   }
 
   // 5. Verify HR is member of at least one team with request owner
-  const { data: hasCommonTeam, error: teamCheckError } = await supabase.rpc(
-    "check_common_team",
-    {
-      user1_id: currentUserId,
-      user2_id: vacationRequest.user_id,
-    }
-  );
+  const { data: hasCommonTeam, error: teamCheckError } = await supabase.rpc("check_common_team", {
+    user1_id: currentUserId,
+    user2_id: vacationRequest.user_id,
+  });
 
   if (teamCheckError) {
     console.error("[VacationRequestsService] Failed to check team membership:", teamCheckError);
@@ -645,25 +613,23 @@ export async function approveVacationRequest(
   }
 
   // Extract threshold value from JSONB (stored as string, convert to number)
-  const threshold = typeof settings.value === 'string'
-    ? parseInt(settings.value, 10)
-    : typeof settings.value === 'number'
-    ? settings.value
-    : parseInt(String(settings.value), 10);
+  const threshold =
+    typeof settings.value === "string"
+      ? parseInt(settings.value, 10)
+      : typeof settings.value === "number"
+        ? settings.value
+        : parseInt(String(settings.value), 10);
 
   // 9. Calculate occupancy for each team
   let maxOccupancy = 0;
   let thresholdExceeded = false;
 
   for (const teamId of teamIds) {
-    const { data: occupancy, error: occupancyError } = await supabase.rpc(
-      "get_team_occupancy",
-      {
-        p_team_id: teamId,
-        p_start_date: vacationRequest.start_date,
-        p_end_date: vacationRequest.end_date,
-      }
-    );
+    const { data: occupancy, error: occupancyError } = await supabase.rpc("get_team_occupancy", {
+      p_team_id: teamId,
+      p_start_date: vacationRequest.start_date,
+      p_end_date: vacationRequest.end_date,
+    });
 
     if (occupancyError) {
       console.error("[VacationRequestsService] Failed to calculate team occupancy:", occupancyError);
@@ -719,8 +685,8 @@ export async function approveVacationRequest(
   const response: ApproveVacationRequestResponseDTO = {
     id: updatedRequest.id,
     status: "APPROVED",
-    processedByUserId: updatedRequest.processed_by_user_id!,
-    processedAt: updatedRequest.processed_at!,
+    processedByUserId: updatedRequest.processed_by_user_id ?? "",
+    processedAt: updatedRequest.processed_at ?? new Date().toISOString(),
     thresholdWarning: thresholdWarning,
   };
 
@@ -739,7 +705,7 @@ export async function approveVacationRequest(
  * @param supabase - Supabase client from context.locals
  * @param currentUserId - ID of the current user (must be HR)
  * @param requestId - ID of the vacation request to reject
- * @param reason - Reason for rejection (1-500 characters)
+ * @param _reason - Reason for rejection (1-500 characters) - not currently stored in DB
  * @returns Promise with rejection response
  * @throws Error if validation fails, user lacks permissions, or business rules violated
  */
@@ -747,7 +713,8 @@ export async function rejectVacationRequest(
   supabase: SupabaseClient,
   currentUserId: string,
   requestId: string,
-  reason: string
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _reason: string
 ): Promise<RejectVacationRequestResponseDTO> {
   // 1. Fetch current user's role
   const { data: currentUser, error: userError } = await supabase
@@ -788,13 +755,10 @@ export async function rejectVacationRequest(
   }
 
   // 5. Verify HR is member of at least one team with request owner
-  const { data: hasCommonTeam, error: teamCheckError } = await supabase.rpc(
-    "check_common_team",
-    {
-      user1_id: currentUserId,
-      user2_id: vacationRequest.user_id,
-    }
-  );
+  const { data: hasCommonTeam, error: teamCheckError } = await supabase.rpc("check_common_team", {
+    user1_id: currentUserId,
+    user2_id: vacationRequest.user_id,
+  });
 
   if (teamCheckError) {
     console.error("[VacationRequestsService] Failed to check team membership:", teamCheckError);
@@ -833,8 +797,8 @@ export async function rejectVacationRequest(
   const response: RejectVacationRequestResponseDTO = {
     id: updatedRequest.id,
     status: "REJECTED",
-    processedByUserId: updatedRequest.processed_by_user_id!,
-    processedAt: updatedRequest.processed_at!,
+    processedByUserId: updatedRequest.processed_by_user_id ?? "",
+    processedAt: updatedRequest.processed_at ?? new Date().toISOString(),
   };
 
   return response;
@@ -928,4 +892,3 @@ export async function cancelVacationRequest(
 
   return response;
 }
-

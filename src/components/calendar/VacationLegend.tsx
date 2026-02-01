@@ -26,9 +26,7 @@ export const VacationLegend: React.FC = () => {
           </li>
         ))}
       </ul>
-      <p className="text-xs text-muted-foreground mt-2">
-        Urlopy odrzucone i anulowane są widoczne w liście poniżej
-      </p>
+      <p className="text-xs text-muted-foreground mt-2">Urlopy odrzucone i anulowane są widoczne w liście poniżej</p>
     </div>
   );
 };
