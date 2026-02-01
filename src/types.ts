@@ -521,6 +521,7 @@ export interface GetUserByIdResponseDTO {
 /**
  * Create user command DTO
  * Used by administrators to create new users
+ * Note: No password field - users are invited via email and set their own password
  * Connected to: Database['public']['Tables']['profiles']['Insert']
  */
 export interface CreateUserDTO {
@@ -528,7 +529,6 @@ export interface CreateUserDTO {
   lastName: string;
   email: string;
   role?: "ADMINISTRATOR" | "HR" | "EMPLOYEE";
-  temporaryPassword: string;
 }
 
 /**

@@ -53,26 +53,26 @@ insert into auth.users (
 -- Surnames contain role abbreviations: ADM (Administrator), HR (HR), EMP (Employee)
 
 -- Administrator profile
-insert into profiles (id, first_name, last_name, role) values
-  ('00000000-0000-0000-0000-000000000001', 'Admin', 'User-ADM', 'ADMINISTRATOR');
+insert into profiles (id, first_name, last_name, email, role) values
+  ('00000000-0000-0000-0000-000000000001', 'Admin', 'User-ADM', 'admin.user@vacationplanner.pl', 'ADMINISTRATOR');
 
 -- HR profiles
-insert into profiles (id, first_name, last_name, role) values
-  ('00000000-0000-0000-0000-000000000002', 'Ferdynand', 'Kiepski-HR', 'HR'),
-  ('00000000-0000-0000-0000-000000000003', 'Halina', 'Kiepska-HR', 'HR');
+insert into profiles (id, first_name, last_name, email, role) values
+  ('00000000-0000-0000-0000-000000000002', 'Ferdynand', 'Kiepski-HR', 'ferdynand.kiepski@vacationplanner.pl', 'HR'),
+  ('00000000-0000-0000-0000-000000000003', 'Halina', 'Kiepska-HR', 'halina.kiepska@vacationplanner.pl', 'HR');
 
 -- Employee profiles
-insert into profiles (id, first_name, last_name, role) values
-  ('00000000-0000-0000-0000-000000000010', 'Kazimierz', 'Pawlak-EMP', 'EMPLOYEE'),
-  ('00000000-0000-0000-0000-000000000011', 'Jacek', 'Kwiatkowski-EMP', 'EMPLOYEE'),
-  ('00000000-0000-0000-0000-000000000012', 'Władysław', 'Kargul-EMP', 'EMPLOYEE'),
-  ('00000000-0000-0000-0000-000000000013', 'Marian', 'Paździoch-EMP', 'EMPLOYEE'),
-  ('00000000-0000-0000-0000-000000000014', 'Grzegorz', 'Brzęczyszczykiewicz-EMP', 'EMPLOYEE'),
-  ('00000000-0000-0000-0000-000000000015', 'Adaś', 'Miauczyński-EMP', 'EMPLOYEE'),
-  ('00000000-0000-0000-0000-000000000016', 'Walduś', 'Kiepski-EMP', 'EMPLOYEE'),
-  ('00000000-0000-0000-0000-000000000017', 'Siara', 'Siarzewski-EMP', 'EMPLOYEE'),
-  ('00000000-0000-0000-0000-000000000018', 'Arnold', 'Boczek-EMP', 'EMPLOYEE'),
-  ('00000000-0000-0000-0000-000000000019', 'Jurek', 'Kiler-EMP', 'EMPLOYEE');
+insert into profiles (id, first_name, last_name, email, role) values
+  ('00000000-0000-0000-0000-000000000010', 'Kazimierz', 'Pawlak-EMP', 'kazimierz.pawlak@vacationplanner.pl', 'EMPLOYEE'),
+  ('00000000-0000-0000-0000-000000000011', 'Jacek', 'Kwiatkowski-EMP', 'jacek.kwiatkowski@vacationplanner.pl', 'EMPLOYEE'),
+  ('00000000-0000-0000-0000-000000000012', 'Władysław', 'Kargul-EMP', 'wladyslaw.kargul@vacationplanner.pl', 'EMPLOYEE'),
+  ('00000000-0000-0000-0000-000000000013', 'Marian', 'Paździoch-EMP', 'marian.pazdzioch@vacationplanner.pl', 'EMPLOYEE'),
+  ('00000000-0000-0000-0000-000000000014', 'Grzegorz', 'Brzęczyszczykiewicz-EMP', 'grzegorz.brzeczyszczykiewicz@vacationplanner.pl', 'EMPLOYEE'),
+  ('00000000-0000-0000-0000-000000000015', 'Adaś', 'Miauczyński-EMP', 'adas.miauczynski@vacationplanner.pl', 'EMPLOYEE'),
+  ('00000000-0000-0000-0000-000000000016', 'Walduś', 'Kiepski-EMP', 'waldus.kiepski@vacationplanner.pl', 'EMPLOYEE'),
+  ('00000000-0000-0000-0000-000000000017', 'Siara', 'Siarzewski-EMP', 'siara.siarzewski@vacationplanner.pl', 'EMPLOYEE'),
+  ('00000000-0000-0000-0000-000000000018', 'Arnold', 'Boczek-EMP', 'arnold.boczek@vacationplanner.pl', 'EMPLOYEE'),
+  ('00000000-0000-0000-0000-000000000019', 'Jurek', 'Kiler-EMP', 'jurek.kiler@vacationplanner.pl', 'EMPLOYEE');
 
 -- =====================================================
 -- 3. CREATE TEAMS

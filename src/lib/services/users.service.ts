@@ -143,72 +143,95 @@ export async function getUserById(
  * @returns Promise with created user details
  * @throws Error if email already exists or creation fails
  *
- * NOTE: Uses Supabase Admin API to create user with temporary password
+ * NOTE: Uses Supabase Admin API to invite user by email
  */
 export async function createUser(
   supabase: SupabaseClient,
   data: CreateUserDTO
 ): Promise<CreateUserResponseDTO> {
-  const { firstName, lastName, email, role = "EMPLOYEE", temporaryPassword } = data;
+  const { firstName, lastName, email, role = "EMPLOYEE" } = data;
 
-  // 1. Create user in Supabase Auth using admin API
-  // Supabase will automatically reject duplicate emails
-  const { data: authUser, error: authError } = await supabaseAdminClient.auth.admin.createUser({
-    email: email.toLowerCase(),
-    password: temporaryPassword,
-    email_confirm: true,
-    user_metadata: {
-      requiresPasswordReset: true,
-    },
-  });
+  // 1. First create profile in profiles table
+  // Generate a temporary UUID for the profile
+  const tempUserId = crypto.randomUUID();
 
-  if (authError || !authUser.user) {
-    console.error("[UsersService] Failed to create auth user:", {
-      message: authError?.message,
-      code: authError?.code,
-      status: authError?.status,
-      fullError: JSON.stringify(authError),
-    });
-
-    // Check if error is due to duplicate email
-    // Supabase may return different error formats, so check multiple conditions
-    const errorMsg = authError?.message?.toLowerCase() || "";
-    const errorCode = authError?.code?.toLowerCase() || "";
-
-    if (errorMsg.includes("already registered") ||
-        errorMsg.includes("email already exists") ||
-        errorMsg.includes("user already exists") ||
-        errorMsg.includes("duplicate") ||
-        errorCode === "user_already_exists" ||
-        errorCode === "email_exists") {
-      throw new Error("User with this email already exists");
-    }
-
-    throw new Error("Failed to create user account");
-  }
-
-  // 2. Create profile in profiles table
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .insert({
-      id: authUser.user.id,
+      id: tempUserId,
       first_name: firstName.trim(),
       last_name: lastName.trim(),
+      email: email.toLowerCase(),
       role: role,
     })
     .select()
     .single();
 
-  if (profileError || !profile) {
+  if (profileError) {
     console.error("[UsersService] Failed to create profile:", profileError);
-    // Try to clean up auth user if profile creation failed
-    await supabaseAdminClient.auth.admin.deleteUser(authUser.user.id);
+
+    // Check if error is due to duplicate email
+    if (profileError.code === "23505" || profileError.message.includes("duplicate")) {
+      throw new Error("User with this email already exists");
+    }
+
     throw new Error("Failed to create user profile");
+  }
+
+  // 2. Invite user via Supabase Auth using admin API
+  // This will send an email with a link to set their password
+  const { data: authUser, error: authError } = await supabaseAdminClient.auth.admin.inviteUserByEmail(
+    email.toLowerCase(),
+    {
+      redirectTo: `${import.meta.env.PROD ? "https://vacationplanner.com" : "http://localhost:3000"}/set-password`,
+    }
+  );
+
+  if (authError || !authUser.user) {
+    console.error("[UsersService] Failed to invite user:", {
+      message: authError?.message,
+      code: authError?.code,
+      status: authError?.status,
+    });
+
+    // Clean up profile if auth invite failed
+    await supabase.from("profiles").delete().eq("id", tempUserId);
+
+    // Check if error is due to duplicate email
+    const errorMsg = authError?.message?.toLowerCase() || "";
+    const errorCode = authError?.code?.toLowerCase() || "";
+
+    if (
+      errorMsg.includes("already registered") ||
+      errorMsg.includes("email already exists") ||
+      errorMsg.includes("user already exists") ||
+      errorMsg.includes("duplicate") ||
+      errorCode === "user_already_exists" ||
+      errorCode === "email_exists"
+    ) {
+      throw new Error("User with this email already exists");
+    }
+
+    throw new Error("Failed to send invitation email");
+  }
+
+  // 3. Update profile with actual auth user ID
+  const { error: updateError } = await supabase
+    .from("profiles")
+    .update({ id: authUser.user.id })
+    .eq("id", tempUserId);
+
+  if (updateError) {
+    console.error("[UsersService] Failed to update profile with auth ID:", updateError);
+    // Try to clean up
+    await supabaseAdminClient.auth.admin.deleteUser(authUser.user.id);
+    await supabase.from("profiles").delete().eq("id", tempUserId);
+    throw new Error("Failed to complete user creation");
   }
 
   // 4. Return formatted response
   return {
-    id: profile.id,
+    id: authUser.user.id,
     firstName: profile.first_name,
     lastName: profile.last_name,
     email: email.toLowerCase(),

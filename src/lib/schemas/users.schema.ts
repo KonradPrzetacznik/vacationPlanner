@@ -10,6 +10,7 @@ import { z } from "zod";
 /**
  * Schema for creating a new user
  * Validates all required fields for user creation
+ * Note: No password field - users are invited via email and set their own password
  */
 export const createUserSchema = z.object({
   firstName: z
@@ -34,11 +35,6 @@ export const createUserSchema = z.object({
     .enum(["ADMINISTRATOR", "HR", "EMPLOYEE"])
     .optional()
     .default("EMPLOYEE"),
-
-  temporaryPassword: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .max(100, "Password must be at most 100 characters"),
 });
 
 /**

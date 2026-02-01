@@ -8,7 +8,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { setPasswordFormSchema, type SetPasswordFormValues } from "@/lib/schemas/auth-form.schema";
 
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -17,18 +17,35 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 /**
- * Props for SetPasswordForm component
- */
-interface SetPasswordFormProps {
-  token: string | null;
-}
-
-/**
  * SetPasswordForm component
  * Renders a form for setting a new password
+ * Extracts token from URL hash fragment (#access_token=...)
  */
-export function SetPasswordForm({ token }: SetPasswordFormProps) {
+export function SetPasswordForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+  const [tokenType, setTokenType] = useState<"recovery" | "invite">("recovery");
+
+  // Extract token from URL hash fragment on mount
+  useEffect(() => {
+    // Parse hash fragment for access_token
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get("access_token");
+    const type = hashParams.get("type") as "recovery" | "invite" | null;
+
+    if (accessToken) {
+      setToken(accessToken);
+      setTokenType(type || "recovery");
+    } else {
+      // Fallback: try query parameter for backward compatibility
+      const searchParams = new URLSearchParams(window.location.search);
+      const queryToken = searchParams.get("token");
+      if (queryToken) {
+        setToken(queryToken);
+        setTokenType("recovery");
+      }
+    }
+  }, []);
 
   // Initialize form with react-hook-form and zod validation
   const form = useForm<SetPasswordFormValues>({
@@ -62,6 +79,7 @@ export function SetPasswordForm({ token }: SetPasswordFormProps) {
         body: JSON.stringify({
           password: data.password,
           token,
+          type: tokenType,
         }),
       });
 
@@ -88,7 +106,19 @@ export function SetPasswordForm({ token }: SetPasswordFormProps) {
   };
 
   // If no token, show error message
-  if (!token) {
+  if (token === null) {
+    // Still loading or no token
+    return (
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Ładowanie...</CardTitle>
+          <CardDescription>Sprawdzanie linku do ustawienia hasła</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  if (token === "") {
     return (
       <Card className="w-full max-w-md">
         <CardHeader>

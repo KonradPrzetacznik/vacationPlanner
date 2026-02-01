@@ -5,6 +5,7 @@
 - [Project Description](#project-description)
 - [Tech Stack](#tech-stack)
 - [Getting Started Locally](#getting-started-locally)
+- [Authentication](#authentication)
 - [Available Scripts](#available-scripts)
 - [API Endpoints](#api-endpoints)
 - [Testing](#testing)
@@ -26,6 +27,7 @@ Vacation Planner is an application designed to simplify the process of managing 
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **UI Components**: [Shadcn/ui](https://ui.shadcn.com/)
 - **Backend**: [Supabase](https://supabase.com/) (for authentication and database)
+- **Authentication**: Supabase Auth with SSR support
 
 ## Getting Started Locally
 
@@ -47,6 +49,35 @@ To get a local copy up and running, follow these simple steps.
     ```sh
     npm install
     ```
+
+## Authentication
+
+The application uses Supabase Auth for user authentication with full SSR support.
+
+### Quick Start
+
+See [QUICK_START_AUTH.md](./QUICK_START_AUTH.md) for detailed authentication setup and testing.
+
+### Test Accounts
+
+After running database seed (`npx supabase db reset`), you can use:
+
+- **Administrator**: `admin.user@vacationplanner.pl` / `test123`
+- **HR**: `ferdynand.kiepski@vacationplanner.pl` / `test123`
+- **Employee**: `kazimierz.pawlak@vacationplanner.pl` / `test123`
+
+### Authentication Flow
+
+1. **Login**: Users log in with email/password at `/login`
+2. **Registration**: Admins invite users via email (users set their own password)
+3. **Password Reset**: Users can request password reset at `/forgot-password`
+4. **Session Management**: Automatic session handling with Supabase cookies
+
+### Documentation
+
+- [Full Authentication Integration Report](./AUTH_INTEGRATION_COMPLETE.md)
+- [Supabase Configuration Guide](./SUPABASE_AUTH_CONFIGURATION.md)
+- [Architecture Specification](./.ai/auth-spec.md)
 
 ### Running the Application
 

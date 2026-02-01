@@ -11,7 +11,11 @@ import { LoginForm } from "@/components/forms/LoginForm";
 // Disable prerendering for this page
 export const prerender = false;
 
-// TODO: Add middleware check - if user is already logged in, redirect to home page
+// If user is already logged in, redirect to home page
+// This is handled by middleware, but we add extra check here
+if (Astro.locals.user) {
+  return Astro.redirect("/");
+}
 ---
 
 <Layout title="Logowanie - VacationPlanner" showNavigation={false}>

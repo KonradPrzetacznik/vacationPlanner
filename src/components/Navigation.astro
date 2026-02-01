@@ -1,5 +1,6 @@
 ---
 const currentPath = Astro.url.pathname;
+const user = Astro.locals.user;
 
 const navItems = [
   { href: "/", label: "Strona główna" },
@@ -32,6 +33,47 @@ const navItems = [
           ))}
         </div>
       </div>
+      <div class="flex items-center space-x-4">
+        {user ? (
+          <>
+            <span class="text-sm text-slate-300">{user.email}</span>
+            <button
+              id="logout-button"
+              class="px-4 py-2 rounded-md text-sm font-medium text-white bg-slate-700 hover:bg-slate-600 transition-colors"
+            >
+              Wyloguj się
+            </button>
+          </>
+        ) : (
+          <a
+            href="/login"
+            class="px-4 py-2 rounded-md text-sm font-medium text-white bg-slate-700 hover:bg-slate-600 transition-colors"
+          >
+            Zaloguj się
+          </a>
+        )}
+      </div>
     </div>
   </div>
 </nav>
+
+<script>
+  // Handle logout button click
+  const logoutButton = document.getElementById("logout-button");
+  if (logoutButton) {
+    logoutButton.addEventListener("click", async () => {
+      try {
+        const response = await fetch("/api/auth/logout", {
+          method: "POST",
+        });
+
+        if (response.ok) {
+          window.location.href = "/login";
+        }
+      } catch (error) {
+        console.error("Logout error:", error);
+      }
+    });
+  }
+</script>
+
