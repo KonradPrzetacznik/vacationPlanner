@@ -86,16 +86,16 @@ npx playwright test --update-snapshots
 ### Basic test structure
 
 ```typescript
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test.describe('Feature name', () => {
+test.describe("Feature name", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/your-page');
+    await page.goto("/your-page");
   });
 
-  test('should do something', async ({ page }) => {
+  test("should do something", async ({ page }) => {
     // Your test code
-    await expect(page.getByRole('button')).toBeVisible();
+    await expect(page.getByRole("button")).toBeVisible();
   });
 });
 ```
@@ -107,11 +107,11 @@ test.describe('Feature name', () => {
 ```typescript
 test.beforeEach(async ({ page }) => {
   // Login before each test
-  await page.goto('/login');
-  await page.getByLabel('Email').fill('test@example.com');
-  await page.getByLabel('Password').fill('password');
-  await page.getByRole('button', { name: 'Log in' }).click();
-  await page.waitForURL('/');
+  await page.goto("/login");
+  await page.getByLabel("Email").fill("test@example.com");
+  await page.getByLabel("Password").fill("password");
+  await page.getByRole("button", { name: "Log in" }).click();
+  await page.waitForURL("/");
 });
 ```
 
@@ -119,21 +119,21 @@ test.beforeEach(async ({ page }) => {
 
 ```typescript
 // Wait for selector
-await page.waitForSelector('.my-element');
+await page.waitForSelector(".my-element");
 
 // Wait for URL
-await page.waitForURL('/dashboard');
+await page.waitForURL("/dashboard");
 
 // Wait for network
-await page.waitForResponse(resp => resp.url().includes('/api/'));
+await page.waitForResponse((resp) => resp.url().includes("/api/"));
 ```
 
 #### Form interactions
 
 ```typescript
-await page.getByLabel('Email').fill('test@example.com');
-await page.getByRole('button', { name: 'Submit' }).click();
-await expect(page.getByText('Success')).toBeVisible();
+await page.getByLabel("Email").fill("test@example.com");
+await page.getByRole("button", { name: "Submit" }).click();
+await expect(page.getByText("Success")).toBeVisible();
 ```
 
 ## Test Organization
@@ -161,6 +161,7 @@ tests/e2e/
 ## CI/CD Integration
 
 E2E tests run automatically in GitHub Actions:
+
 - On every pull request
 - After linting passes
 - In parallel with unit and API tests
@@ -182,7 +183,7 @@ E2E tests run automatically in GitHub Actions:
 
 ```typescript
 // Add explicit waits
-await page.waitForLoadState('networkidle');
+await page.waitForLoadState("networkidle");
 
 // Use retry
 test.describe.configure({ retries: 2 });

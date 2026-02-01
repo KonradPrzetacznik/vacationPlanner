@@ -2,84 +2,106 @@
 
 ## Status
 
-⚠️ **Unit tests are not yet configured in this project.**
+✅ **Unit tests are now configured and running!**
 
-This directory is prepared for future Vitest unit tests.
+This directory contains Vitest unit tests for the Vacation Planner application.
 
-## Setup
+## Quick Start
 
-To enable unit tests:
+```bash
+# Run all unit tests
+npm run test:unit
 
-### 1. Install Vitest
+# Run tests in watch mode
+npm run test:unit:watch
+
+# Run tests with UI
+npm run test:unit:ui
+
+# Run tests with coverage
+npm run test:unit:coverage
+```
+
+## Current Tests
+
+- **example.test.ts** - Example tests demonstrating testing patterns
+- **settings.service.test.ts** - Tests for Settings Service
+  - getAllSettings()
+  - getSettingByKey()
+  - updateSetting()
+
+## Test Coverage
+
+Current coverage: ~70% (statements), ~64% (branches), 100% (functions)
+
+Coverage thresholds configured in `vitest.config.ts`:
+
+- Statements: 70%
+- Branches: 60%
+- Functions: 70%
+- Lines: 70%
+
+## Documentation
+
+See [UNIT_TESTS_DOCUMENTATION.md](./UNIT_TESTS_DOCUMENTATION.md) for detailed documentation on:
+
+- Test structure and patterns
+- Mocking strategies
+- Best practices
+- Debugging tips
+- CI/CD integration
+
+## Setup (Already Completed)
+
+The following setup has been completed:
+
+### 1. Installed Vitest
 
 ```bash
 npm install -D vitest @vitest/ui @vitest/coverage-v8
 ```
 
-### 2. Create Vitest configuration
+### 2. Created Vitest configuration
 
-Create `vitest.config.ts`:
+Created `vitest.config.ts` with:
 
-```typescript
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
-import { resolve } from 'path';
+- React plugin integration
+- jsdom environment
+- Path aliases (@, @components, @lib, @db)
+- Coverage configuration with v8 provider
+- Test patterns and exclusions
 
-export default defineConfig({
-  plugins: [react()],
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: './tests/unit/setup.ts',
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html', 'lcov'],
-      exclude: [
-        'node_modules/',
-        'tests/',
-        '*.config.{js,ts}',
-        'dist/',
-      ],
-    },
-  },
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, './src'),
-    },
-  },
-});
-```
-
-### 3. Install testing libraries
+### 3. Installed testing libraries
 
 ```bash
-npm install -D @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom
+npm install -D @testing-library/react @testing-library/jest-dom jsdom
 ```
 
-### 4. Create setup file
+### 4. Created setup file
 
-Create `tests/unit/setup.ts`:
+Created `tests/unit/setup.ts` with:
 
-```typescript
-import '@testing-library/jest-dom';
-```
+- @testing-library/jest-dom matchers
+- window.matchMedia mock
+- IntersectionObserver mock
+- ResizeObserver mock
 
-### 5. Update package.json
+### 5. Updated package.json
 
 ```json
 {
   "scripts": {
     "test:unit": "vitest run",
-    "test:unit:watch": "vitest watch",
+    "test:unit:watch": "vitest",
     "test:unit:ui": "vitest --ui",
     "test:unit:coverage": "vitest run --coverage"
   }
 }
 ```
 
-### 6. Update GitHub Actions
+### 6. Updated GitHub Actions
 
-Edit `.github/workflows/pull-request.yml` and uncomment the unit test sections in the `unit-tests` job.
+Updated `.github/workflows/pull-request.yml` to run unit tests in CI/CD pipeline.
 
 ## Running Tests
 
@@ -122,10 +144,10 @@ describe('MyComponent', () => {
   it('should handle user interaction', async () => {
     const user = userEvent.setup();
     render(<MyComponent />);
-    
+
     const button = screen.getByRole('button');
     await user.click(button);
-    
+
     expect(screen.getByText('Clicked')).toBeInTheDocument();
   });
 });
@@ -146,7 +168,7 @@ describe('Button', () => {
   it('calls onClick handler', async () => {
     const handleClick = vi.fn();
     render(<Button onClick={handleClick}>Click</Button>);
-    
+
     await userEvent.click(screen.getByRole('button'));
     expect(handleClick).toHaveBeenCalledOnce();
   });
@@ -156,24 +178,24 @@ describe('Button', () => {
 ### Testing hooks
 
 ```typescript
-import { renderHook, waitFor } from '@testing-library/react';
-import { useMyHook } from '@/components/hooks/useMyHook';
+import { renderHook, waitFor } from "@testing-library/react";
+import { useMyHook } from "@/components/hooks/useMyHook";
 
-describe('useMyHook', () => {
-  it('returns initial value', () => {
+describe("useMyHook", () => {
+  it("returns initial value", () => {
     const { result } = renderHook(() => useMyHook());
     expect(result.current.value).toBe(initialValue);
   });
 
-  it('updates value', async () => {
+  it("updates value", async () => {
     const { result } = renderHook(() => useMyHook());
-    
+
     act(() => {
-      result.current.setValue('new value');
+      result.current.setValue("new value");
     });
-    
+
     await waitFor(() => {
-      expect(result.current.value).toBe('new value');
+      expect(result.current.value).toBe("new value");
     });
   });
 });
@@ -182,21 +204,19 @@ describe('useMyHook', () => {
 ### Testing services
 
 ```typescript
-import { describe, it, expect, vi } from 'vitest';
-import { myService } from '@/lib/services/myService';
+import { describe, it, expect, vi } from "vitest";
+import { myService } from "@/lib/services/myService";
 
-describe('myService', () => {
-  it('processes data correctly', async () => {
-    const input = { foo: 'bar' };
+describe("myService", () => {
+  it("processes data correctly", async () => {
+    const input = { foo: "bar" };
     const result = await myService.process(input);
-    
+
     expect(result).toEqual({ processed: true });
   });
 
-  it('handles errors', async () => {
-    await expect(
-      myService.process(null)
-    ).rejects.toThrow('Invalid input');
+  it("handles errors", async () => {
+    await expect(myService.process(null)).rejects.toThrow("Invalid input");
   });
 });
 ```
@@ -204,15 +224,15 @@ describe('myService', () => {
 ### Mocking
 
 ```typescript
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 // Mock a module
-vi.mock('@/lib/api', () => ({
-  fetchData: vi.fn(() => Promise.resolve({ data: 'mocked' })),
+vi.mock("@/lib/api", () => ({
+  fetchData: vi.fn(() => Promise.resolve({ data: "mocked" })),
 }));
 
 // Mock Supabase
-vi.mock('@/db/supabase.client', () => ({
+vi.mock("@/db/supabase.client", () => ({
   supabase: {
     from: vi.fn(() => ({
       select: vi.fn(() => Promise.resolve({ data: [], error: null })),
@@ -254,6 +274,7 @@ npm run test:unit:coverage
 Coverage reports are generated in `coverage/` directory.
 
 Aim for:
+
 - **Statements**: > 80%
 - **Branches**: > 80%
 - **Functions**: > 80%
@@ -262,6 +283,7 @@ Aim for:
 ## CI/CD Integration
 
 Unit tests run automatically in GitHub Actions:
+
 - On every pull request
 - After linting passes
 - In parallel with API and E2E tests
@@ -281,25 +303,25 @@ Unit tests run automatically in GitHub Actions:
 
 ```typescript
 // Prefer these (semantic)
-screen.getByRole('button', { name: /submit/i })
-screen.getByLabelText('Email')
-screen.getByText('Welcome')
-screen.getByPlaceholderText('Enter email')
+screen.getByRole("button", { name: /submit/i });
+screen.getByLabelText("Email");
+screen.getByText("Welcome");
+screen.getByPlaceholderText("Enter email");
 
 // Use when semantic queries don't work
-screen.getByTestId('custom-element')
+screen.getByTestId("custom-element");
 ```
 
 ## Debugging Tests
 
 ```typescript
 // Print DOM
-import { screen } from '@testing-library/react';
+import { screen } from "@testing-library/react";
 screen.debug(); // Prints entire DOM
-screen.debug(screen.getByRole('button')); // Prints specific element
+screen.debug(screen.getByRole("button")); // Prints specific element
 
 // Pause test execution
-await screen.findByText('text', {}, { timeout: 50000 }); // Long timeout to inspect
+await screen.findByText("text", {}, { timeout: 50000 }); // Long timeout to inspect
 ```
 
 ## Resources

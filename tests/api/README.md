@@ -43,6 +43,7 @@ tests/api/
 ```
 
 This script will:
+
 1. **Automatically kill any existing processes on port 3000**
 2. **Start a fresh dev server on port 3000**
 3. Wait for the server to be ready
@@ -63,6 +64,7 @@ Individual tests also handle server management automatically:
 ```
 
 **Team Tests:**
+
 ```bash
 # Test teams list endpoint
 ./tests/api/teams-list.test.sh
@@ -81,6 +83,7 @@ Individual tests also handle server management automatically:
 ```
 
 **Vacation Requests Tests:**
+
 ```bash
 # Test vacation requests list endpoint (with filtering and RBAC)
 ./tests/api/vacation-requests-list.test.sh
@@ -93,6 +96,7 @@ Individual tests also handle server management automatically:
 ```
 
 **Vacation Allowances Tests:**
+
 ```bash
 # Test vacation allowances GET endpoints (with computed fields and carry-over logic)
 ./tests/api/vacation-allowances.test.sh
@@ -115,6 +119,7 @@ All test scripts use the shared `test-helpers.sh` file which provides:
 5. **Automatic Cleanup**: Uses bash `trap` to ensure server is stopped on script exit
 
 **Key Features:**
+
 - Individual tests can be run independently (each manages its own server)
 - `run-all.sh` prevents repeated server restarts by setting `SERVER_MANAGED=true`
 - Logs are saved to `/tmp/astro-dev-server.log` for debugging
@@ -131,7 +136,9 @@ All test scripts use the shared `test-helpers.sh` file which provides:
 ## Test Coverage
 
 ### users-list.test.sh
+
 Tests for `GET /api/users`:
+
 - ✅ Basic listing (default parameters)
 - ✅ Pagination (limit & offset)
 - ✅ Role filtering (ADMINISTRATOR, HR, EMPLOYEE)
@@ -141,7 +148,9 @@ Tests for `GET /api/users`:
 - ✅ Edge cases (empty results, max limits)
 
 ### user-by-id.test.sh
+
 Tests for `GET /api/users/:id`:
+
 - ✅ Get existing user with teams
 - ✅ Get user without teams
 - ✅ Invalid UUID format (400 error)
@@ -150,7 +159,9 @@ Tests for `GET /api/users/:id`:
 - ✅ Authorization checks (RBAC)
 
 ### users-create.test.sh
+
 Tests for `POST /api/users`:
+
 - ✅ Create employee with default role
 - ✅ Create user with ADMINISTRATOR role
 - ✅ Create user with HR role
@@ -163,7 +174,9 @@ Tests for `POST /api/users`:
 - ✅ Authorization check (admin only)
 
 ### users-update.test.sh
+
 Tests for `PATCH /api/users/:id`:
+
 - ✅ Update firstName only
 - ✅ Update lastName only
 - ✅ Update both names at once
@@ -180,7 +193,9 @@ Tests for `PATCH /api/users/:id`:
 - ✅ Authorization checks (RBAC)
 
 ### users-delete.test.sh
+
 Tests for `DELETE /api/users/:id`:
+
 - ✅ Soft-delete user successfully
 - ✅ Prevent duplicate deletion (404 error)
 - ✅ Non-existent user (404 error)
@@ -192,7 +207,9 @@ Tests for `DELETE /api/users/:id`:
 - ✅ Authorization check (admin only)
 
 ### teams-list.test.sh
+
 Tests for `GET /api/teams`:
+
 - ✅ Basic GET request with default pagination
 - ✅ Pagination with limit and offset
 - ✅ Include member count parameter
@@ -202,7 +219,9 @@ Tests for `GET /api/teams`:
 - ✅ Edge case: limit = 100 (max allowed)
 
 ### teams-by-id.test.sh
+
 Tests for `GET /api/teams/:id`:
+
 - ✅ Get team details with members list
 - ✅ Invalid UUID format (400 error)
 - ✅ Non-existent team (404 error)
@@ -211,7 +230,9 @@ Tests for `GET /api/teams/:id`:
 - ✅ Authorization check (EMPLOYEE can only see own teams)
 
 ### teams-create.test.sh
+
 Tests for `POST /api/teams`:
+
 - ✅ Create team successfully (201)
 - ✅ Duplicate team name (400 error)
 - ✅ Missing team name (400 error)
@@ -222,7 +243,9 @@ Tests for `POST /api/teams`:
 - ✅ Auto-cleanup created test teams
 
 ### teams-update.test.sh
+
 Tests for `PATCH /api/teams/:id`:
+
 - ✅ Update team name successfully
 - ✅ Empty name validation (400 error)
 - ✅ Name too long validation (400 error)
@@ -234,7 +257,9 @@ Tests for `PATCH /api/teams/:id`:
 - ✅ Auto-cleanup test teams
 
 ### teams-delete.test.sh
+
 Tests for `DELETE /api/teams/:id`:
+
 - ✅ Delete team successfully
 - ✅ Verify deletion (404 on GET after DELETE)
 - ✅ Non-existent team (404 error)
@@ -244,7 +269,9 @@ Tests for `DELETE /api/teams/:id`:
 - ✅ CASCADE deletion of team members
 
 ### vacation-allowances.test.sh
+
 Tests for `GET /api/users/:userId/vacation-allowances` and `GET /api/users/:userId/vacation-allowances/:year`:
+
 - ✅ Get all vacation allowances for user
 - ✅ Filter allowances by year (query parameter)
 - ✅ Get allowance for specific year (path parameter)
@@ -265,6 +292,7 @@ Tests for `GET /api/users/:userId/vacation-allowances` and `GET /api/users/:user
 Use the pattern: `<endpoint-name>.test.sh`
 
 Examples:
+
 - `users-list.test.sh` - for GET /api/users
 - `user-by-id.test.sh` - for GET /api/users/:id
 - `users-create.test.sh` - for POST /api/users
@@ -323,19 +351,23 @@ echo "✅ Tests completed!"
 After running `./reset-db.sh`, the following test accounts are available:
 
 **Administrator:**
+
 - ID: `00000000-0000-0000-0000-000000000001`
 - Email: `admin.user@vacationplanner.pl`
 
 **HR:**
+
 - ID: `00000000-0000-0000-0000-000000000002`
 - Email: `ferdynand.kiepski@vacationplanner.pl`
 
 **Employees:**
+
 - ID: `00000000-0000-0000-0000-000000000010` (Kazimierz - in 2 teams)
 - ID: `00000000-0000-0000-0000-000000000011` (Jacek - in 1 team)
 - ... more employees in seed.sql
 
 **Teams:**
+
 - ID: `10000000-0000-0000-0000-000000000001` (Green Team)
 - ID: `10000000-0000-0000-0000-000000000002` (Red Team)
 
@@ -432,4 +464,3 @@ When adding new API endpoints:
 - **API Examples:** [docs/API_EXAMPLES.md](../../docs/API_EXAMPLES.md)
 - **Main README:** [README.md](../../README.md)
 - **Testing Guide:** [TESTING.md](../../TESTING.md)
-

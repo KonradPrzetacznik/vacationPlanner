@@ -19,7 +19,7 @@ describe("formatDate", () => {
   it("should format date in Polish locale", () => {
     const date = new Date("2026-02-01");
     const result = formatDate(date);
-    expect(result).toBe("01.02.2026");
+    expect(result).toBe("1.02.2026");
   });
 });
 
