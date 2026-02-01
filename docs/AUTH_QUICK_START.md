@@ -3,6 +3,7 @@
 ## 🚀 Co zostało zaimplementowane?
 
 Pełny interfejs użytkownika dla procesu uwierzytelniania:
+
 - ✅ Strona logowania (`/login`)
 - ✅ Strona odzyskiwania hasła (`/forgot-password`)
 - ✅ Strona ustawiania hasła (`/set-password`)
@@ -101,6 +102,7 @@ npx tsc --noEmit
 ## 🐛 Troubleshooting
 
 **Port zajęty?**
+
 ```bash
 # Zabij procesy node i uruchom ponownie
 pkill -f "astro dev"
@@ -108,6 +110,7 @@ npm run dev
 ```
 
 **Błędy TypeScript?**
+
 ```bash
 # Sprawdź pliki
 npx tsc --noEmit
@@ -117,6 +120,7 @@ npm run build
 ```
 
 **Problemy z formatowaniem?**
+
 ```bash
 # Auto-fix
 npx prettier --write src/**/*.{ts,tsx,astro}
@@ -125,6 +129,7 @@ npx prettier --write src/**/*.{ts,tsx,astro}
 ## 📞 Support
 
 Jeśli znajdziesz problemy:
+
 1. Sprawdź console w przeglądarce
 2. Sprawdź output terminala (`npm run dev`)
 3. Zobacz dokumentację w `docs/`

@@ -5,22 +5,22 @@
 ```mermaid
 graph TD
     A[Pull Request utworzony/zaktualizowany] --> B[Job: Lint]
-    
+
     B --> C{Linting OK?}
     C -->|Tak| D[Job: Unit Tests]
     C -->|Tak| E[Job: API Tests]
     C -->|Tak| F[Job: E2E Tests]
     C -->|Nie| G[Workflow Failed]
-    
+
     D --> H{Wszystkie testy OK?}
     E --> H
     F --> H
-    
+
     H -->|Tak| I[Job: Status Comment]
     H -->|Nie| I
-    
+
     I --> J[Komentarz na PR z wynikami]
-    
+
     style B fill:#e1f5ff
     style D fill:#fff4e6
     style E fill:#fff4e6
@@ -32,6 +32,7 @@ graph TD
 ## Szczegóły jobów
 
 ### 1. Lint (Sekwencyjny)
+
 ```
 ┌─────────────────────────────────┐
 │         Job: Lint               │
@@ -45,6 +46,7 @@ graph TD
 ```
 
 ### 2-4. Testy (Równolegle po Lint)
+
 ```
 ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
 │  Unit Tests      │  │   API Tests      │  │   E2E Tests      │
@@ -56,6 +58,7 @@ graph TD
 ```
 
 ### 5. Status Comment (Po wszystkich testach)
+
 ```
 ┌─────────────────────────────────┐
 │    Job: Status Comment          │
@@ -88,7 +91,7 @@ graph TD
 70s
 ```
 
-*Czasy są przykładowe i mogą się różnić w zależności od ilości testów*
+_Czasy są przykładowe i mogą się różnić w zależności od ilości testów_
 
 ## Przykładowy komentarz na PR
 
@@ -99,12 +102,12 @@ graph TD
 
 ### Test Results:
 
-| Job | Status | Result |
-|-----|--------|--------|
-| Linting | ✅ | `success` |
-| Unit Tests | ✅ | `success` |
-| API Tests | ✅ | `success` |
-| E2E Tests | ✅ | `success` |
+| Job        | Status | Result    |
+| ---------- | ------ | --------- |
+| Linting    | ✅     | `success` |
+| Unit Tests | ✅     | `success` |
+| API Tests  | ✅     | `success` |
+| E2E Tests  | ✅     | `success` |
 
 ---
 
@@ -147,11 +150,13 @@ Environment: integration
 ## Triggery workflow
 
 Workflow uruchamia się automatycznie gdy:
+
 - ✅ Utworzysz nowy Pull Request
 - ✅ Zaktualizujesz (push) istniejący Pull Request
 - ✅ Ponownie otworzysz zamknięty Pull Request
 
 Branches:
+
 - `master`
 - `main`
 - `develop`
@@ -176,14 +181,14 @@ Workflow nie działa?
     ├─→ Sprawdź czy plik jest w .github/workflows/
     ├─→ Sprawdź składnię YAML
     └─→ Sprawdź logi w Actions tab
-    
+
 Testy nie przechodzą?
     │
     ├─→ Sprawdź czy sekrety są skonfigurowane
     ├─→ Sprawdź environment: integration
     ├─→ Uruchom testy lokalnie: npm test
     └─→ Sprawdź logi konkretnego joba
-    
+
 Komentarz się nie dodaje?
     │
     ├─→ Sprawdź permissions

@@ -13,9 +13,11 @@ Endpoint zwraca paginowaną listę wniosków urlopowych z podstawowymi informacj
 ## 2. Szczegóły żądania
 
 ### Metoda HTTP
+
 `GET`
 
 ### Struktura URL
+
 ```
 /api/vacation-requests
 ```
@@ -23,19 +25,20 @@ Endpoint zwraca paginowaną listę wniosków urlopowych z podstawowymi informacj
 ### Parametry zapytania (Query Parameters)
 
 #### Wymagane
+
 Brak wymaganych parametrów.
 
 #### Opcjonalne
 
-| Parametr | Typ | Domyślna wartość | Walidacja | Opis |
-|----------|-----|------------------|-----------|------|
-| `limit` | number | 50 | 1-100 | Liczba wyników na stronę |
-| `offset` | number | 0 | >= 0 | Przesunięcie paginacji |
-| `status` | string[] | - | SUBMITTED, APPROVED, REJECTED, CANCELLED | Filtrowanie po statusie (może być wielokrotne) |
-| `userId` | UUID | - | Format UUID | Filtrowanie po ID użytkownika (EMPLOYEE może używać tylko własnego ID) |
-| `teamId` | UUID | - | Format UUID | Filtrowanie po ID zespołu |
-| `startDate` | date | - | Format YYYY-MM-DD | Wnioski rozpoczynające się po tej dacie |
-| `endDate` | date | - | Format YYYY-MM-DD | Wnioski kończące się przed tą datą |
+| Parametr    | Typ      | Domyślna wartość | Walidacja                                | Opis                                                                   |
+| ----------- | -------- | ---------------- | ---------------------------------------- | ---------------------------------------------------------------------- |
+| `limit`     | number   | 50               | 1-100                                    | Liczba wyników na stronę                                               |
+| `offset`    | number   | 0                | >= 0                                     | Przesunięcie paginacji                                                 |
+| `status`    | string[] | -                | SUBMITTED, APPROVED, REJECTED, CANCELLED | Filtrowanie po statusie (może być wielokrotne)                         |
+| `userId`    | UUID     | -                | Format UUID                              | Filtrowanie po ID użytkownika (EMPLOYEE może używać tylko własnego ID) |
+| `teamId`    | UUID     | -                | Format UUID                              | Filtrowanie po ID zespołu                                              |
+| `startDate` | date     | -                | Format YYYY-MM-DD                        | Wnioski rozpoczynające się po tej dacie                                |
+| `endDate`   | date     | -                | Format YYYY-MM-DD                        | Wnioski kończące się przed tą datą                                     |
 
 #### Przykładowe żądania
 
@@ -47,9 +50,11 @@ GET /api/vacation-requests?teamId=123e4567-e89b-12d3-a456-426614174001&startDate
 ```
 
 ### Request Body
+
 Brak (metoda GET).
 
 ### Headers
+
 ```
 Authorization: Bearer <token>  # Będzie zaimplementowane wraz z pełną autentykacją
 ```
@@ -228,12 +233,10 @@ Request → API Endpoint → Validation Layer → Service Layer → Database →
    - Odbiera żądanie HTTP GET
    - Pobiera supabase client z `context.locals.supabase`
    - Ekstrahuje parametry zapytania z URL
-   
 2. **Validation Layer** (Zod schemas)
    - Waliduje wszystkie parametry zapytania
    - Konwertuje typy (coerce) gdzie potrzebne
    - Zwraca błędy walidacji lub zwalidowane dane
-   
 3. **Service Layer** (`src/lib/services/vacation-requests.service.ts`)
    - **Krok 1**: Pobiera rolę bieżącego użytkownika z tabeli `profiles`
    - **Krok 2**: Implementuje logikę RBAC:
@@ -250,7 +253,6 @@ Request → API Endpoint → Validation Layer → Service Layer → Database →
    - **Krok 4**: Wykonuje zapytanie z użyciem `COUNT(*) OVER()` dla total count
    - **Krok 5**: Mapuje wyniki do DTOs (snake_case → camelCase)
    - **Krok 6**: Zwraca sformatowaną odpowiedź z danymi i metadanymi paginacji
-   
 4. **Database Layer** (Supabase PostgreSQL)
    - Wykonuje zoptymalizowane zapytanie SQL
    - Wykorzystuje istniejące indeksy dla wydajności
@@ -266,7 +268,7 @@ Request → API Endpoint → Validation Layer → Service Layer → Database →
 **Główne zapytanie** (przykładowa struktura):
 
 ```sql
-SELECT 
+SELECT
   vr.id,
   vr.user_id,
   vr.start_date,
@@ -283,7 +285,7 @@ SELECT
   COUNT(*) OVER() as total_count
 FROM vacation_requests vr
 INNER JOIN profiles p ON vr.user_id = p.id
-WHERE 
+WHERE
   -- Filtry RBAC
   (dla EMPLOYEE: vr.user_id = $currentUserId)
   (dla HR z teamId: vr.user_id IN (SELECT user_id FROM team_members WHERE team_id = $teamId))
@@ -307,6 +309,7 @@ LIMIT $limit OFFSET $offset
 ### Autoryzacja (RBAC)
 
 #### EMPLOYEE
+
 - **Ograniczenia**:
   - Może widzieć TYLKO swoje wnioski urlopowe
   - Parametr `userId` jest ignorowany lub wymuszany na `currentUserId`
@@ -323,16 +326,18 @@ LIMIT $limit OFFSET $offset
   ```
 
 #### HR
+
 - **Ograniczenia**:
   - Może widzieć wnioski członków zespołów, do których należy
   - Przy filtrowaniu po `teamId` - musi być członkiem tego zespołu
   - Przy braku `teamId` - widzi wnioski wszystkich członków swoich zespołów
 - **Implementacja**:
+
   ```typescript
   if (userRole === "HR") {
     // Get teams where user is a member
     const userTeams = await getUserTeams(supabase, currentUserId);
-    
+
     if (teamId) {
       // Check if user is member of requested team
       if (!userTeams.includes(teamId)) {
@@ -346,13 +351,14 @@ LIMIT $limit OFFSET $offset
   ```
 
 #### ADMINISTRATOR
+
 - **Ograniczenia**: Brak
 - **Uprawnienia**: Pełny dostęp do wszystkich wniosków urlopowych
 
 ### Walidacja danych wejściowych
 
 1. **Walidacja typów**: Zod schemas zapewniają walidację typów i formatów
-2. **Walidacja zakresów**: 
+2. **Walidacja zakresów**:
    - `limit`: 1-100
    - `offset`: >= 0
    - `status`: tylko dozwolone wartości enum
@@ -365,13 +371,13 @@ LIMIT $limit OFFSET $offset
 ### Zapobieganie atakom
 
 1. **SQL Injection**: Supabase używa parameterized queries (automatyczna ochrona)
-2. **IDOR (Insecure Direct Object Reference)**: 
+2. **IDOR (Insecure Direct Object Reference)**:
    - Walidacja właściciela zasobu
    - Wymuszanie ograniczeń RBAC
-3. **Information Disclosure**: 
+3. **Information Disclosure**:
    - Generyczne komunikaty błędów dla użytkownika
    - Szczegółowe logi tylko w console (server-side)
-4. **Enumeration Attacks**: 
+4. **Enumeration Attacks**:
    - Zwracanie 404 dla nieistniejących zasobów (team, user)
    - Nie ujawnianie informacji o istnieniu zasobów bez uprawnień
 
@@ -419,6 +425,7 @@ if (duration > 1000) {
 #### 400 Bad Request
 
 **Przyczyny**:
+
 - Nieprawidłowy format UUID dla `userId` lub `teamId`
 - Nieprawidłowy format daty (nie YYYY-MM-DD)
 - `limit` poza zakresem (< 1 lub > 100)
@@ -427,6 +434,7 @@ if (duration > 1000) {
 - `startDate > endDate`
 
 **Odpowiedź**:
+
 ```json
 {
   "error": "Invalid query parameters",
@@ -437,6 +445,7 @@ if (duration > 1000) {
 ```
 
 **Implementacja**:
+
 ```typescript
 const validationResult = getVacationRequestsQuerySchema.safeParse(queryParams);
 
@@ -457,11 +466,13 @@ if (!validationResult.success) {
 #### 401 Unauthorized
 
 **Przyczyny**:
+
 - Brak tokenu autentykacji
 - Nieprawidłowy token
 - Wygasły token
 
 **Odpowiedź**:
+
 ```json
 {
   "error": "Not authenticated"
@@ -473,11 +484,13 @@ if (!validationResult.success) {
 #### 403 Forbidden
 
 **Przyczyny**:
+
 - EMPLOYEE próbuje zobaczyć wnioski innego użytkownika
 - HR próbuje zobaczyć wnioski zespołu, do którego nie należy
 - Użytkownik próbuje uzyskać dostęp do zasobu bez odpowiednich uprawnień
 
 **Odpowiedzi**:
+
 ```json
 {
   "error": "You can only view your own vacation requests"
@@ -491,25 +504,25 @@ if (!validationResult.success) {
 ```
 
 **Implementacja**:
+
 ```typescript
 if (error.message.includes("only view your own")) {
-  return new Response(
-    JSON.stringify({ error: error.message }),
-    {
-      status: 403,
-      headers: { "Content-Type": "application/json" },
-    }
-  );
+  return new Response(JSON.stringify({ error: error.message }), {
+    status: 403,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 ```
 
 #### 404 Not Found
 
 **Przyczyny**:
+
 - Zespół o podanym `teamId` nie istnieje
 - Użytkownik o podanym `userId` nie istnieje
 
 **Odpowiedzi**:
+
 ```json
 {
   "error": "Team not found"
@@ -523,15 +536,12 @@ if (error.message.includes("only view your own")) {
 ```
 
 **Implementacja**:
+
 ```typescript
 // W serwisie
 if (teamId) {
-  const { data: team, error } = await supabase
-    .from("teams")
-    .select("id")
-    .eq("id", teamId)
-    .single();
-    
+  const { data: team, error } = await supabase.from("teams").select("id").eq("id", teamId).single();
+
   if (error || !team) {
     throw new Error("Team not found");
   }
@@ -541,11 +551,13 @@ if (teamId) {
 #### 500 Internal Server Error
 
 **Przyczyny**:
+
 - Błąd połączenia z bazą danych
 - Nieoczekiwany błąd w trakcie wykonywania zapytania
 - Błąd w logice serwisu
 
 **Odpowiedź**:
+
 ```json
 {
   "error": "Failed to fetch vacation requests"
@@ -553,6 +565,7 @@ if (teamId) {
 ```
 
 **Implementacja**:
+
 ```typescript
 } catch (error) {
   console.error("[GET /api/vacation-requests] Error:", {
@@ -585,6 +598,7 @@ if (teamId) {
 ### Indeksy bazy danych
 
 **Istniejące indeksy** (z migracji `20260109000000_add_vacation_requests_indexes.sql`):
+
 - `vacation_requests.user_id`
 - `vacation_requests.status`
 - `vacation_requests.start_date`
@@ -592,21 +606,24 @@ if (teamId) {
 - `vacation_requests.created_at`
 
 **Weryfikacja**: Sprawdzić czy istnieją composite indexes dla typowych kombinacji:
+
 ```sql
 -- Możliwe dodatkowe indeksy do rozważenia
-CREATE INDEX IF NOT EXISTS idx_vacation_requests_user_status 
+CREATE INDEX IF NOT EXISTS idx_vacation_requests_user_status
   ON vacation_requests(user_id, status);
 
-CREATE INDEX IF NOT EXISTS idx_vacation_requests_status_dates 
+CREATE INDEX IF NOT EXISTS idx_vacation_requests_status_dates
   ON vacation_requests(status, start_date, end_date);
 ```
 
 ### Optymalizacja zapytań
 
 1. **Window functions dla total count**:
+
    ```sql
    COUNT(*) OVER() as total_count
    ```
+
    Zamiast osobnego zapytania `COUNT(*)`, używamy window function dla pojedynczego query.
 
 2. **Selective field fetching**:
@@ -624,6 +641,7 @@ CREATE INDEX IF NOT EXISTS idx_vacation_requests_status_dates
 ### Caching strategy
 
 **Dla przyszłej implementacji**:
+
 - Cache'owanie listy zespołów użytkownika (HR)
 - Cache'owanie roli użytkownika
 - Invalidacja cache przy zmianach danych
@@ -666,12 +684,10 @@ if (duration > 1000) {
 
 ### Potencjalne wąskie gardła
 
-1. **Duża liczba wniosków urlopowych**: 
+1. **Duża liczba wniosków urlopowych**:
    - **Mitigation**: Paginacja, indeksy, optymalizacja zapytań
-   
 2. **Złożone filtry (wiele JOIN-ów)**:
    - **Mitigation**: Selective indexes, query optimization
-   
 3. **HR z wieloma zespołami**:
    - **Mitigation**: Efficient IN queries, proper indexing
 
@@ -774,12 +790,7 @@ export const getVacationRequestsQuerySchema = z
       .optional()
       .default(50),
 
-    offset: z.coerce
-      .number()
-      .int()
-      .min(0, "Offset must be non-negative")
-      .optional()
-      .default(0),
+    offset: z.coerce.number().int().min(0, "Offset must be non-negative").optional().default(0),
 
     status: z
       .union([
@@ -793,15 +804,9 @@ export const getVacationRequestsQuerySchema = z
         return Array.isArray(val) ? val : [val];
       }),
 
-    userId: z
-      .string()
-      .uuid("Invalid user ID format")
-      .optional(),
+    userId: z.string().uuid("Invalid user ID format").optional(),
 
-    teamId: z
-      .string()
-      .uuid("Invalid team ID format")
-      .optional(),
+    teamId: z.string().uuid("Invalid team ID format").optional(),
 
     startDate: z
       .string()
@@ -841,11 +846,7 @@ export const getVacationRequestsQuerySchema = z
  */
 
 import type { SupabaseClient } from "@/db/supabase.client";
-import type {
-  GetVacationRequestsQueryDTO,
-  GetVacationRequestsResponseDTO,
-  VacationRequestListItemDTO,
-} from "@/types";
+import type { GetVacationRequestsQueryDTO, GetVacationRequestsResponseDTO, VacationRequestListItemDTO } from "@/types";
 
 /**
  * Get vacation requests list with pagination and filtering
@@ -863,15 +864,7 @@ export async function getVacationRequests(
   currentUserRole: "ADMINISTRATOR" | "HR" | "EMPLOYEE",
   query: GetVacationRequestsQueryDTO
 ): Promise<GetVacationRequestsResponseDTO> {
-  const {
-    limit = 50,
-    offset = 0,
-    status,
-    userId,
-    teamId,
-    startDate,
-    endDate,
-  } = query;
+  const { limit = 50, offset = 0, status, userId, teamId, startDate, endDate } = query;
 
   // 1. Implement RBAC logic
   let effectiveUserId: string | undefined = userId;
@@ -886,7 +879,7 @@ export async function getVacationRequests(
     effectiveUserId = currentUserId;
   } else if (currentUserRole === "HR") {
     // HR can view requests from their team members
-    
+
     // Get teams where current user is a member
     const { data: memberships, error: membershipError } = await supabase
       .from("team_members")
@@ -905,18 +898,14 @@ export async function getVacationRequests(
       if (!userTeamIds.includes(teamId)) {
         throw new Error("You are not a member of this team");
       }
-      
+
       // Validate team exists
-      const { data: team, error: teamError } = await supabase
-        .from("teams")
-        .select("id")
-        .eq("id", teamId)
-        .single();
+      const { data: team, error: teamError } = await supabase.from("teams").select("id").eq("id", teamId).single();
 
       if (teamError || !team) {
         throw new Error("Team not found");
       }
-      
+
       teamIds = [teamId];
     } else {
       // Use all user's teams
@@ -936,43 +925,33 @@ export async function getVacationRequests(
     }
   } else if (currentUserRole === "ADMINISTRATOR") {
     // ADMINISTRATOR has no restrictions
-    
+
     // Validate teamId if provided
     if (teamId) {
-      const { data: team, error: teamError } = await supabase
-        .from("teams")
-        .select("id")
-        .eq("id", teamId)
-        .single();
+      const { data: team, error: teamError } = await supabase.from("teams").select("id").eq("id", teamId).single();
 
       if (teamError || !team) {
         throw new Error("Team not found");
       }
-      
+
       teamIds = [teamId];
     }
-    
+
     // Validate userId if provided
     if (userId) {
-      const { data: user, error: userError } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("id", userId)
-        .single();
+      const { data: user, error: userError } = await supabase.from("profiles").select("id").eq("id", userId).single();
 
       if (userError || !user) {
         throw new Error("User not found");
       }
-      
+
       effectiveUserId = userId;
     }
   }
 
   // 2. Build base query
-  let vacationRequestsQuery = supabase
-    .from("vacation_requests")
-    .select(
-      `
+  let vacationRequestsQuery = supabase.from("vacation_requests").select(
+    `
       id,
       user_id,
       start_date,
@@ -989,8 +968,8 @@ export async function getVacationRequests(
         last_name
       )
     `,
-      { count: "exact" }
-    );
+    { count: "exact" }
+  );
 
   // 3. Apply filters based on RBAC
   if (effectiveUserId) {
@@ -1009,7 +988,7 @@ export async function getVacationRequests(
     }
 
     const teamMemberUserIds = [...new Set(teamMembers.map((m) => m.user_id))];
-    
+
     if (teamMemberUserIds.length === 0) {
       return {
         data: [],
@@ -1065,7 +1044,7 @@ export async function getVacationRequests(
   const vacationRequestsList: VacationRequestListItemDTO[] = vacationRequests.map((vr) => {
     // Handle nested profile data
     const profile = Array.isArray(vr.profiles) ? vr.profiles[0] : vr.profiles;
-    
+
     return {
       id: vr.id,
       userId: vr.user_id,
@@ -1163,25 +1142,17 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     if (profileError || !userProfile) {
       console.error("[GET /api/vacation-requests] Failed to fetch user profile:", profileError);
-      return new Response(
-        JSON.stringify({ error: "Failed to authenticate user" }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Failed to authenticate user" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const userRole = userProfile.role as "ADMINISTRATOR" | "HR" | "EMPLOYEE";
 
     // 4. Call service to get vacation requests
     const startTime = Date.now();
-    const result = await getVacationRequests(
-      locals.supabase,
-      currentUserId,
-      userRole,
-      validatedParams
-    );
+    const result = await getVacationRequests(locals.supabase, currentUserId, userRole, validatedParams);
     const duration = Date.now() - startTime;
 
     // Log access
@@ -1218,10 +1189,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
     // Handle known error types
     if (error instanceof Error) {
       // Authorization errors (403 Forbidden)
-      if (
-        error.message.includes("only view your own") ||
-        error.message.includes("not a member of this team")
-      ) {
+      if (error.message.includes("only view your own") || error.message.includes("not a member of this team")) {
         console.warn("[GET /api/vacation-requests] Authorization failed:", {
           error: error.message,
           timestamp: new Date().toISOString(),
@@ -1234,10 +1202,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
       }
 
       // Not found errors (404)
-      if (
-        error.message.includes("not found") ||
-        error.message.includes("Not found")
-      ) {
+      if (error.message.includes("not found") || error.message.includes("Not found")) {
         return new Response(JSON.stringify({ error: error.message }), {
           status: 404,
           headers: { "Content-Type": "application/json" },
@@ -1246,13 +1211,10 @@ export const GET: APIRoute = async ({ request, locals }) => {
     }
 
     // Generic error response (500)
-    return new Response(
-      JSON.stringify({ error: "Failed to fetch vacation requests" }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: "Failed to fetch vacation requests" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 };
 ```
@@ -1351,6 +1313,7 @@ echo -e "\n${BLUE}Testing completed!${NC}"
 **Akcje**:
 
 1. **Uruchom serwer deweloperski**:
+
    ```bash
    npm run dev
    ```
@@ -1360,15 +1323,17 @@ echo -e "\n${BLUE}Testing completed!${NC}"
    - Użyj narzędzia do sprawdzenia błędów w IDE
 
 3. **Przetestuj endpoint ręcznie**:
+
    ```bash
    # Test podstawowy
    curl http://localhost:4321/api/vacation-requests
-   
+
    # Test z filtrami
    curl "http://localhost:4321/api/vacation-requests?limit=10&status=SUBMITTED"
    ```
 
 4. **Uruchom testy automatyczne** (jeśli utworzone):
+
    ```bash
    chmod +x tests/api/vacation-requests-list.test.sh
    ./tests/api/vacation-requests-list.test.sh
@@ -1412,16 +1377,19 @@ echo -e "\n${BLUE}Testing completed!${NC}"
    - Upewnij się, że nazwy zmiennych są spójne
 
 2. **Sprawdź linting**:
+
    ```bash
    npm run lint
    ```
 
 3. **Formatowanie kodu**:
+
    ```bash
    npm run format  # lub odpowiednia komenda formatowania
    ```
 
 4. **Commit zmian**:
+
    ```bash
    git add .
    git commit -m "feat: implement GET /api/vacation-requests endpoint"
@@ -1485,4 +1453,3 @@ echo -e "\n${BLUE}Testing completed!${NC}"
 **Data utworzenia**: 2026-01-11
 **Wersja**: 1.0
 **Status**: Ready for implementation
-

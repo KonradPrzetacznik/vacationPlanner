@@ -72,6 +72,7 @@ UsersPage (Astro)
 **Opis:** Główny komponent strony, renderowany po stronie serwera. Odpowiada za wstępne pobranie danych użytkowników i przekazanie ich do komponentów React. Zarządza autoryzacją i przekierowaniami.
 
 **Główne elementy:**
+
 - Layout wrapper z nawigacją
 - Server-side data fetching z `/api/users`
 - Przekazanie danych do komponentu `UsersManagement` (React)
@@ -80,11 +81,13 @@ UsersPage (Astro)
 **Obsługiwane zdarzenia:** Brak (komponent statyczny Astro)
 
 **Warunki walidacji:**
+
 - Sprawdzenie czy użytkownik jest zalogowany (middleware)
 - Sprawdzenie czy użytkownik ma rolę `ADMINISTRATOR`
 - Obsługa błędów API (404, 500)
 
 **Typy:**
+
 - `GetUsersResponseDTO` - odpowiedź z API
 - `UserListItemDTO[]` - lista użytkowników
 
@@ -95,6 +98,7 @@ UsersPage (Astro)
 **Opis:** Główny komponent React zarządzający całym widokiem. Koordynuje stan filtrów, paginacji i operacji CRUD. Orkestruje komunikację między podkomponentami.
 
 **Główne elementy:**
+
 - PageHeader z przyciskiem dodawania
 - UsersFilters
 - UsersTable
@@ -103,21 +107,25 @@ UsersPage (Astro)
 - DeleteConfirmDialog
 
 **Obsługiwane zdarzenia:**
+
 - Zmiana filtrów (wyszukiwanie, rola, pokaż usuniętych)
 - Zmiana strony paginacji
 - Otwarcie/zamknięcie dialogów
 - Odświeżenie listy po operacjach CRUD
 
 **Warunki walidacji:**
+
 - Minimalna długość wyszukiwanej frazy (opcjonalnie)
 - Walidacja parametrów paginacji
 
 **Typy:**
+
 - `UsersManagementProps` - propsy komponentu
 - `UsersFiltersState` - stan filtrów
 - `PaginationState` - stan paginacji
 
 **Propsy:**
+
 ```typescript
 interface UsersManagementProps {
   initialUsers: UserListItemDTO[];
@@ -131,10 +139,12 @@ interface UsersManagementProps {
 **Opis:** Nagłówek strony zawierający tytuł oraz przycisk dodawania nowego użytkownika.
 
 **Główne elementy:**
+
 - `<h1>` z tytułem "Zarządzanie użytkownikami"
 - Button (Shadcn/ui) "Dodaj użytkownika"
 
 **Obsługiwane zdarzenia:**
+
 - onClick przycisku "Dodaj użytkownika" - otwiera UserFormDialog
 
 **Warunki walidacji:** Brak
@@ -142,6 +152,7 @@ interface UsersManagementProps {
 **Typy:** Brak specyficznych
 
 **Propsy:**
+
 ```typescript
 interface PageHeaderProps {
   onAddUserClick: () => void;
@@ -153,23 +164,27 @@ interface PageHeaderProps {
 **Opis:** Komponent zawierający wszystkie mechanizmy filtrowania listy użytkowników. Umożliwia wyszukiwanie tekstowe oraz filtrowanie po roli i statusie usunięcia.
 
 **Główne elementy:**
+
 - Input (Shadcn/ui) - pole wyszukiwania z ikoną lupy
 - Select (Shadcn/ui) - wybór roli
 - Checkbox (Shadcn/ui) - "Pokaż usuniętych użytkowników"
 - Button "Wyczyść filtry" (opcjonalnie)
 
 **Obsługiwane zdarzenia:**
+
 - onChange w polu wyszukiwania (debounce 300ms)
 - onChange w Select roli
 - onChange w Checkbox pokazywania usuniętych
 - onClick "Wyczyść filtry"
 
 **Warunki walidacji:**
+
 - Wyszukiwanie: min 0 znaków (puste pole = pokaż wszystkich)
 - Role: tylko wartości z enum
 - Checkbox: boolean
 
 **Typy:**
+
 ```typescript
 interface UsersFiltersProps {
   searchQuery: string;
@@ -183,6 +198,7 @@ interface UsersFiltersProps {
 ```
 
 **Typy:**
+
 - `UsersFiltersState` (ViewModel)
 
 **Propsy:** Zobacz interfejs wyżej
@@ -192,6 +208,7 @@ interface UsersFiltersProps {
 **Opis:** Tabela wyświetlająca listę użytkowników z możliwością wykonywania akcji (edycja, usunięcie). Wyróżnia wizualnie usuniętych użytkowników.
 
 **Główne elementy:**
+
 - Table (Shadcn/ui)
   - TableHeader z kolumnami: Imię, Nazwisko, Email, Rola, Status, Akcje
   - TableBody z TableRow dla każdego użytkownika
@@ -201,20 +218,24 @@ interface UsersFiltersProps {
 - DropdownMenu (Shadcn/ui) dla akcji lub Button inline
 
 **Obsługiwane zdarzenia:**
+
 - onClick "Edytuj" - otwiera UserFormDialog z danymi użytkownika
 - onClick "Usuń" - otwiera DeleteConfirmDialog
 - Hover effects na wierszach
 
 **Warunki walidacji:**
+
 - Nie można edytować własnej roli
 - Nie można usunąć siebie (opcjonalne w MVP)
 - Przyciski disabled dla już usuniętych użytkowników
 
 **Typy:**
+
 - `UserListItemDTO[]` - dane użytkowników
 - `UserRowProps` - propsy pojedynczego wiersza
 
 **Propsy:**
+
 ```typescript
 interface UsersTableProps {
   users: UserListItemDTO[];
@@ -237,6 +258,7 @@ interface UserRowProps {
 **Opis:** Dialog (modal) zawierający formularz dodawania lub edycji użytkownika. Obsługuje walidację i komunikację z API.
 
 **Główne elementy:**
+
 - Dialog (Shadcn/ui)
 - DialogContent
   - DialogHeader z tytułem dynamicznym
@@ -249,6 +271,7 @@ interface UserRowProps {
   - DialogFooter z przyciskami Cancel/Submit
 
 **Obsługiwane zdarzenia:**
+
 - onSubmit formularza
 - onChange w polach (walidacja live)
 - onOpenChange dialogu
@@ -256,6 +279,7 @@ interface UserRowProps {
 - onClick Submit
 
 **Warunki walidacji:**
+
 - **firstName**: wymagane, min 1 znak, max 100 znaków, trim
 - **lastName**: wymagane, min 1 znak, max 100 znaków, trim
 - **email**: wymagane, poprawny format email, lowercase, trim (tylko przy dodawaniu)
@@ -265,12 +289,14 @@ interface UserRowProps {
 - Email musi być unikalny (sprawdzenie po stronie API)
 
 **Typy:**
+
 - `UserFormDialogProps`
 - `UserFormValues` (schemat formularza)
 - `CreateUserDTO` lub `UpdateUserDTO` (żądanie API)
 - `CreateUserResponseDTO` lub `UpdateUserResponseDTO` (odpowiedź API)
 
 **Propsy:**
+
 ```typescript
 interface UserFormDialogProps {
   mode: "create" | "edit";
@@ -295,6 +321,7 @@ interface UserFormValues {
 **Opis:** Dialog potwierdzenia usunięcia użytkownika. Informuje o konsekwencjach (anulowanie przyszłych urlopów).
 
 **Główne elementy:**
+
 - AlertDialog (Shadcn/ui)
 - AlertDialogContent
   - AlertDialogHeader
@@ -305,19 +332,23 @@ interface UserFormValues {
     - AlertDialogAction: "Usuń" (destructive variant)
 
 **Obsługiwane zdarzenia:**
+
 - onClick "Usuń" - wywołuje DELETE API
 - onClick "Anuluj" - zamyka dialog
 - onOpenChange
 
 **Warunki walidacji:**
+
 - userId musi być poprawnym UUID
 - Użytkownik musi istnieć i nie być już usuniętym (sprawdza API)
 
 **Typy:**
+
 - `DeleteConfirmDialogProps`
 - `DeleteUserResponseDTO`
 
 **Propsy:**
+
 ```typescript
 interface DeleteConfirmDialogProps {
   userId: string;
@@ -333,6 +364,7 @@ interface DeleteConfirmDialogProps {
 **Opis:** Komponent paginacji wykorzystujący Shadcn/ui Pagination lub własną implementację z buttonami.
 
 **Główne elementy:**
+
 - Pagination wrapper
 - PaginationPrevious button
 - PaginationContent (liczby stron lub info)
@@ -340,21 +372,25 @@ interface DeleteConfirmDialogProps {
 - Info tekstowa: "Showing X-Y of Z users"
 
 **Obsługiwane zdarzenia:**
+
 - onClick Previous (jeśli offset > 0)
 - onClick Next (jeśli są kolejne strony)
 - onClick konkretnej strony (opcjonalnie)
 
 **Warunki walidacji:**
+
 - offset >= 0
 - limit między 1 a 100
 - Previous disabled gdy offset = 0
 - Next disabled gdy offset + limit >= total
 
 **Typy:**
+
 - `PaginationProps`
 - `UsersPaginationDTO`
 
 **Propsy:**
+
 ```typescript
 interface PaginationProps {
   total: number;
@@ -369,20 +405,22 @@ interface PaginationProps {
 ### 5.1. Istniejące typy (z src/types.ts)
 
 **UserListItemDTO** - reprezentuje pojedynczego użytkownika na liście:
+
 ```typescript
 interface UserListItemDTO {
-  id: string;                                        // UUID użytkownika
-  firstName: string;                                 // Imię
-  lastName: string;                                  // Nazwisko
-  email: string;                                     // Email (unikalny)
-  role: "ADMINISTRATOR" | "HR" | "EMPLOYEE";        // Rola
-  deletedAt: string | null;                         // Data usunięcia (null = aktywny)
-  createdAt: string;                                // Data utworzenia (ISO 8601)
-  updatedAt: string;                                // Data ostatniej aktualizacji
+  id: string; // UUID użytkownika
+  firstName: string; // Imię
+  lastName: string; // Nazwisko
+  email: string; // Email (unikalny)
+  role: "ADMINISTRATOR" | "HR" | "EMPLOYEE"; // Rola
+  deletedAt: string | null; // Data usunięcia (null = aktywny)
+  createdAt: string; // Data utworzenia (ISO 8601)
+  updatedAt: string; // Data ostatniej aktualizacji
 }
 ```
 
 **GetUsersResponseDTO** - odpowiedź z GET /api/users:
+
 ```typescript
 interface GetUsersResponseDTO {
   data: UserListItemDTO[];
@@ -391,26 +429,29 @@ interface GetUsersResponseDTO {
 ```
 
 **UsersPaginationDTO** - metadane paginacji:
+
 ```typescript
 interface UsersPaginationDTO {
-  total: number;    // Całkowita liczba użytkowników
-  limit: number;    // Liczba użytkowników na stronę
-  offset: number;   // Przesunięcie (od którego rekordu)
+  total: number; // Całkowita liczba użytkowników
+  limit: number; // Liczba użytkowników na stronę
+  offset: number; // Przesunięcie (od którego rekordu)
 }
 ```
 
 **CreateUserDTO** - żądanie utworzenia użytkownika (POST /api/users):
+
 ```typescript
 interface CreateUserDTO {
   firstName: string;
   lastName: string;
   email: string;
-  role?: "ADMINISTRATOR" | "HR" | "EMPLOYEE";  // default: EMPLOYEE
+  role?: "ADMINISTRATOR" | "HR" | "EMPLOYEE"; // default: EMPLOYEE
   temporaryPassword: string;
 }
 ```
 
 **CreateUserResponseDTO** - odpowiedź po utworzeniu:
+
 ```typescript
 interface CreateUserResponseDTO {
   id: string;
@@ -424,6 +465,7 @@ interface CreateUserResponseDTO {
 ```
 
 **UpdateUserDTO** - żądanie aktualizacji (PATCH /api/users/:id):
+
 ```typescript
 interface UpdateUserDTO {
   firstName?: string;
@@ -433,6 +475,7 @@ interface UpdateUserDTO {
 ```
 
 **UpdateUserResponseDTO** - odpowiedź po aktualizacji:
+
 ```typescript
 interface UpdateUserResponseDTO {
   id: string;
@@ -445,6 +488,7 @@ interface UpdateUserResponseDTO {
 ```
 
 **DeleteUserResponseDTO** - odpowiedź po usunięciu (DELETE /api/users/:id):
+
 ```typescript
 interface DeleteUserResponseDTO {
   message: string;
@@ -457,40 +501,45 @@ interface DeleteUserResponseDTO {
 ### 5.2. Nowe typy (ViewModel - do stworzenia)
 
 **UsersFiltersState** - stan filtrów w UI:
+
 ```typescript
 interface UsersFiltersState {
-  searchQuery: string;                               // Fraza wyszukiwania
-  roleFilter: "ALL" | "ADMINISTRATOR" | "HR" | "EMPLOYEE";  // Filtr roli
-  showDeleted: boolean;                              // Czy pokazywać usuniętych
+  searchQuery: string; // Fraza wyszukiwania
+  roleFilter: "ALL" | "ADMINISTRATOR" | "HR" | "EMPLOYEE"; // Filtr roli
+  showDeleted: boolean; // Czy pokazywać usuniętych
 }
 ```
 
 **PaginationState** - stan paginacji w UI:
+
 ```typescript
 interface PaginationState {
-  limit: number;      // Liczba na stronę (default: 50)
-  offset: number;     // Obecne przesunięcie
-  total: number;      // Całkowita liczba (z API)
+  limit: number; // Liczba na stronę (default: 50)
+  offset: number; // Obecne przesunięcie
+  total: number; // Całkowita liczba (z API)
 }
 ```
 
 **UserFormMode** - tryb formularza:
+
 ```typescript
 type UserFormMode = "create" | "edit";
 ```
 
 **UserFormValues** - wartości formularza (react-hook-form):
+
 ```typescript
 interface UserFormValues {
   firstName: string;
   lastName: string;
   email: string;
   role: "ADMINISTRATOR" | "HR" | "EMPLOYEE";
-  temporaryPassword?: string;  // tylko w trybie create
+  temporaryPassword?: string; // tylko w trybie create
 }
 ```
 
 **UserFormDialogState** - stan dialogu formularza:
+
 ```typescript
 interface UserFormDialogState {
   isOpen: boolean;
@@ -500,6 +549,7 @@ interface UserFormDialogState {
 ```
 
 **DeleteDialogState** - stan dialogu usuwania:
+
 ```typescript
 interface DeleteDialogState {
   isOpen: boolean;
@@ -513,6 +563,7 @@ interface DeleteDialogState {
 ### 6.1. Stan lokalny (React useState/useReducer)
 
 **UsersManagement Component:**
+
 - `users` - aktualna lista użytkowników (UserListItemDTO[])
 - `pagination` - stan paginacji (PaginationState)
 - `filters` - stan filtrów (UsersFiltersState)
@@ -525,6 +576,7 @@ interface DeleteDialogState {
 **Cel:** Enkapsulacja logiki zarządzania stanem i operacji CRUD.
 
 **Funkcjonalność:**
+
 ```typescript
 function useUsersManagement(
   initialUsers: UserListItemDTO[],
@@ -542,11 +594,19 @@ function useUsersManagement(
   const [isLoading, setIsLoading] = useState(false);
 
   // Funkcje
-  const fetchUsers = async () => { /* ... */ };
-  const createUser = async (data: CreateUserDTO) => { /* ... */ };
-  const updateUser = async (userId: string, data: UpdateUserDTO) => { /* ... */ };
-  const deleteUser = async (userId: string) => { /* ... */ };
-  
+  const fetchUsers = async () => {
+    /* ... */
+  };
+  const createUser = async (data: CreateUserDTO) => {
+    /* ... */
+  };
+  const updateUser = async (userId: string, data: UpdateUserDTO) => {
+    /* ... */
+  };
+  const deleteUser = async (userId: string) => {
+    /* ... */
+  };
+
   // Effects
   useEffect(() => {
     // Fetch users gdy zmienią się filtry lub paginacja
@@ -597,6 +657,7 @@ function useDebounce<T>(value: T, delay: number): T {
 ### 7.1. GET /api/users - Pobieranie listy użytkowników
 
 **Request:**
+
 - Method: GET
 - Query params:
   - `limit` (number, default: 50)
@@ -606,6 +667,7 @@ function useDebounce<T>(value: T, delay: number): T {
   - `teamId` (UUID, optional) - nieużywane w tym widoku
 
 **Response (200 OK):**
+
 ```typescript
 GetUsersResponseDTO {
   data: UserListItemDTO[],
@@ -614,17 +676,20 @@ GetUsersResponseDTO {
 ```
 
 **Error Responses:**
+
 - 401 Unauthorized - nie zalogowany
 - 403 Forbidden - brak uprawnień (nie ADMINISTRATOR)
 - 500 Internal Server Error
 
 **Kiedy wywołujemy:**
+
 - Initial load (server-side w Astro)
 - Po zmianie filtrów (client-side)
 - Po zmianie strony paginacji
 - Po udanym create/update/delete (refresh)
 
 **Implementacja client-side:**
+
 ```typescript
 const fetchUsers = async (
   filters: UsersFiltersState,
@@ -644,7 +709,7 @@ const fetchUsers = async (
   // lub wymaga dodania search param do API (poza zakresem MVP)
 
   const response = await fetch(`/api/users?${params.toString()}`);
-  
+
   if (!response.ok) {
     throw new Error(`Failed to fetch users: ${response.statusText}`);
   }
@@ -654,31 +719,37 @@ const fetchUsers = async (
 ```
 
 **Uwaga:** Wyszukiwanie tekstowe (`searchQuery`) może być implementowane:
+
 1. Client-side filtering (prostsze, wystarczy dla MVP do ~1000 userów)
 2. Server-side search param (wymaga modyfikacji API - opcjonalne)
 
 ### 7.2. POST /api/users - Tworzenie użytkownika
 
 **Request:**
+
 - Method: POST
 - Headers: `Content-Type: application/json`
 - Body: `CreateUserDTO`
 
 **Response (201 Created):**
+
 ```typescript
-CreateUserResponseDTO
+CreateUserResponseDTO;
 ```
 
 **Error Responses:**
+
 - 400 Bad Request - błędy walidacji lub email już istnieje
 - 401 Unauthorized
 - 403 Forbidden - nie ADMINISTRATOR
 - 500 Internal Server Error
 
 **Kiedy wywołujemy:**
+
 - Po submicie formularza dodawania użytkownika
 
 **Implementacja:**
+
 ```typescript
 const createUser = async (data: CreateUserDTO): Promise<CreateUserResponseDTO> => {
   const response = await fetch("/api/users", {
@@ -699,17 +770,20 @@ const createUser = async (data: CreateUserDTO): Promise<CreateUserResponseDTO> =
 ### 7.3. PATCH /api/users/:id - Aktualizacja użytkownika
 
 **Request:**
+
 - Method: PATCH
 - Headers: `Content-Type: application/json`
 - Path param: `id` (UUID)
 - Body: `UpdateUserDTO`
 
 **Response (200 OK):**
+
 ```typescript
-UpdateUserResponseDTO
+UpdateUserResponseDTO;
 ```
 
 **Error Responses:**
+
 - 400 Bad Request - błędy walidacji, próba zmiany własnej roli
 - 401 Unauthorized
 - 403 Forbidden - brak uprawnień
@@ -717,14 +791,13 @@ UpdateUserResponseDTO
 - 500 Internal Server Error
 
 **Kiedy wywołujemy:**
+
 - Po submicie formularza edycji użytkownika
 
 **Implementacja:**
+
 ```typescript
-const updateUser = async (
-  userId: string,
-  data: UpdateUserDTO
-): Promise<UpdateUserResponseDTO> => {
+const updateUser = async (userId: string, data: UpdateUserDTO): Promise<UpdateUserResponseDTO> => {
   const response = await fetch(`/api/users/${userId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -743,10 +816,12 @@ const updateUser = async (
 ### 7.4. DELETE /api/users/:id - Usuwanie użytkownika (soft-delete)
 
 **Request:**
+
 - Method: DELETE
 - Path param: `id` (UUID)
 
 **Response (200 OK):**
+
 ```typescript
 DeleteUserResponseDTO {
   message: string,
@@ -757,15 +832,18 @@ DeleteUserResponseDTO {
 ```
 
 **Error Responses:**
+
 - 401 Unauthorized
 - 403 Forbidden - nie ADMINISTRATOR
 - 404 Not Found - użytkownik nie istnieje
 - 500 Internal Server Error
 
 **Kiedy wywołujemy:**
+
 - Po potwierdzeniu w DeleteConfirmDialog
 
 **Implementacja:**
+
 ```typescript
 const deleteUser = async (userId: string): Promise<DeleteUserResponseDTO> => {
   const response = await fetch(`/api/users/${userId}`, {
@@ -788,12 +866,14 @@ const deleteUser = async (userId: string): Promise<DeleteUserResponseDTO> => {
 **Akcja:** Użytkownik wpisuje tekst w pole wyszukiwania.
 
 **Oczekiwany wynik:**
+
 1. Po 300ms debounce, lista użytkowników jest filtrowana
 2. Filtrowanie odbywa się po: firstName, lastName, email (case-insensitive)
 3. Jeśli brak wyników, wyświetlany jest EmptyState
 4. Licznik wyników aktualizuje się w paginacji
 
 **Implementacja:**
+
 - useDebounce hook dla searchQuery
 - Client-side filtering tablicy users lub server-side call
 - Update stanu users
@@ -803,12 +883,14 @@ const deleteUser = async (userId: string): Promise<DeleteUserResponseDTO> => {
 **Akcja:** Użytkownik wybiera rolę z dropdown (Wszystkie/ADMINISTRATOR/HR/EMPLOYEE).
 
 **Oczekiwany wynik:**
+
 1. Natychmiastowe wywołanie API z parametrem `role`
 2. Offset resetuje się do 0 (pierwsza strona)
 3. Lista użytkowników aktualizuje się
 4. Select pokazuje wybraną wartość
 
 **Implementacja:**
+
 - onChange na Select
 - Update filters.roleFilter
 - useEffect wywołuje fetchUsers z nowym filtrem
@@ -818,12 +900,14 @@ const deleteUser = async (userId: string): Promise<DeleteUserResponseDTO> => {
 **Akcja:** Użytkownik zaznacza/odznacza checkbox "Pokaż usuniętych użytkowników".
 
 **Oczekiwany wynik:**
+
 1. API call z `includeDeleted=true/false`
 2. Offset resetuje się do 0
 3. Lista aktualizuje się
 4. Usunięci użytkownicy są wizualnie wyróżnieni (opacity, wyszarzenie, badge)
 
 **Implementacja:**
+
 - onChange na Checkbox
 - Update filters.showDeleted
 - useEffect wywołuje fetchUsers
@@ -833,6 +917,7 @@ const deleteUser = async (userId: string): Promise<DeleteUserResponseDTO> => {
 **Akcja:** Użytkownik klika "Następna" lub "Poprzednia" strona.
 
 **Oczekiwany wynik:**
+
 1. API call z nowym offset
 2. Lista użytkowników aktualizuje się
 3. Przyciski Previous/Next są disabled jeśli brak kolejnych/poprzednich stron
@@ -840,6 +925,7 @@ const deleteUser = async (userId: string): Promise<DeleteUserResponseDTO> => {
 5. Scroll do góry strony (optional)
 
 **Implementacja:**
+
 - onClick Previous: offset -= limit
 - onClick Next: offset += limit
 - Update pagination.offset
@@ -850,12 +936,14 @@ const deleteUser = async (userId: string): Promise<DeleteUserResponseDTO> => {
 **Akcja:** Użytkownik klika "Dodaj użytkownika".
 
 **Oczekiwany wynik:**
+
 1. Otwiera się UserFormDialog w trybie "create"
 2. Formularz jest pusty
 3. Wszystkie pola są edytowalne
 4. Pole "Hasło tymczasowe" jest widoczne
 
 **Po wypełnieniu i kliknięciu "Zapisz":**
+
 1. Walidacja formularza (react-hook-form + zod)
 2. POST request do /api/users
 3. W przypadku sukcesu:
@@ -869,6 +957,7 @@ const deleteUser = async (userId: string): Promise<DeleteUserResponseDTO> => {
    - Błędy walidacji pod polami (np. "Email już istnieje")
 
 **Implementacja:**
+
 - Dialog state: isOpen, mode="create"
 - Form submission handler wywołuje createUser
 - Success: toast + closeDialog + refreshUsers
@@ -879,6 +968,7 @@ const deleteUser = async (userId: string): Promise<DeleteUserResponseDTO> => {
 **Akcja:** Użytkownik klika "Edytuj" przy użytkowniku.
 
 **Oczekiwany wynik:**
+
 1. Otwiera się UserFormDialog w trybie "edit"
 2. Formularz jest wypełniony danymi użytkownika
 3. Pole "Email" jest disabled
@@ -886,6 +976,7 @@ const deleteUser = async (userId: string): Promise<DeleteUserResponseDTO> => {
 5. Pole "Rola" jest disabled jeśli edytujesz siebie
 
 **Po edycji i kliknięciu "Zapisz":**
+
 1. Walidacja formularza
 2. PATCH request do /api/users/:id
 3. W przypadku sukcesu:
@@ -897,6 +988,7 @@ const deleteUser = async (userId: string): Promise<DeleteUserResponseDTO> => {
    - Formularz pozostaje otwarty
 
 **Implementacja:**
+
 - Dialog state: isOpen, mode="edit", editingUser=UserListItemDTO
 - Form defaultValues z editingUser
 - Conditional rendering: email disabled, role disabled if isCurrentUser
@@ -907,6 +999,7 @@ const deleteUser = async (userId: string): Promise<DeleteUserResponseDTO> => {
 **Akcja:** Użytkownik klika "Usuń" przy użytkowniku.
 
 **Oczekiwany wynik:**
+
 1. Otwiera się DeleteConfirmDialog
 2. Dialog zawiera:
    - Tytuł: "Potwierdź usunięcie użytkownika"
@@ -914,6 +1007,7 @@ const deleteUser = async (userId: string): Promise<DeleteUserResponseDTO> => {
    - Przyciski: "Anuluj" (secondary), "Usuń" (destructive)
 
 **Po kliknięciu "Usuń":**
+
 1. DELETE request do /api/users/:id
 2. W przypadku sukcesu:
    - Toast success: "Użytkownik został usunięty. Anulowano X przyszłych urlopów."
@@ -926,6 +1020,7 @@ const deleteUser = async (userId: string): Promise<DeleteUserResponseDTO> => {
    - Dialog się zamyka
 
 **Implementacja:**
+
 - DeleteDialog state: isOpen, userId, userName
 - Confirmation handler wywołuje deleteUser
 - Success: toast z info o anulowanych urlopach + closeDialog + refreshUsers
@@ -936,11 +1031,13 @@ const deleteUser = async (userId: string): Promise<DeleteUserResponseDTO> => {
 **Akcja:** Użytkownik klika "Anuluj" lub zamyka dialog (X, ESC, click outside).
 
 **Oczekiwany wynik:**
+
 1. Dialog się zamyka
 2. Żadne zmiany nie są zapisywane
 3. Stan formularza jest resetowany
 
 **Implementacja:**
+
 - onOpenChange(false) zamyka dialog
 - Form reset on close
 
@@ -951,36 +1048,44 @@ const deleteUser = async (userId: string): Promise<DeleteUserResponseDTO> => {
 **Komponent:** UsersPage (Astro)
 
 **Warunki:**
+
 - Użytkownik musi być zalogowany (middleware)
 - Użytkownik musi mieć rolę `ADMINISTRATOR`
 
 **Jak weryfikujemy:**
+
 - Middleware sprawdza sesję
 - Server-side w Astro sprawdzamy role z context.locals.user lub API call
 - Jeśli nie ADMINISTRATOR: redirect do / lub strona błędu 403
 
 **Wpływ na UI:**
+
 - Jeśli brak dostępu: użytkownik nie widzi strony, jest przekierowany
 
 ### 9.2. Warunki wyświetlania elementów UI
 
 **Przycisk "Edytuj rolę":**
+
 - Disabled jeśli edytujesz siebie (currentUserId === user.id)
 - Weryfikacja: porównanie id w UI
 
 **Przycisk "Usuń":**
+
 - Opcjonalnie hidden/disabled jeśli usuwasz siebie
 - Hidden dla już usuniętych użytkowników (gdy deletedAt !== null)
 - Weryfikacja: sprawdzenie deletedAt i id
 
 **Pole "Rola" w formularzu edycji:**
+
 - Disabled jeśli currentUserId === editingUser.id
 - Weryfikacja: porównanie id
 
 **Pole "Email" w formularzu edycji:**
+
 - Zawsze disabled (email nie może być edytowany)
 
 **Pole "Hasło tymczasowe":**
+
 - Widoczne tylko w trybie "create"
 - Weryfikacja: mode === "create"
 
@@ -989,26 +1094,13 @@ const deleteUser = async (userId: string): Promise<DeleteUserResponseDTO> => {
 **Komponent:** UserFormDialog
 
 **Schema (Zod):**
+
 ```typescript
 const createUserFormSchema = z.object({
-  firstName: z
-    .string()
-    .min(1, "Imię jest wymagane")
-    .max(100, "Imię może mieć maksymalnie 100 znaków")
-    .trim(),
-  lastName: z
-    .string()
-    .min(1, "Nazwisko jest wymagane")
-    .max(100, "Nazwisko może mieć maksymalnie 100 znaków")
-    .trim(),
-  email: z
-    .string()
-    .email("Nieprawidłowy format email")
-    .toLowerCase()
-    .trim(),
-  role: z
-    .enum(["ADMINISTRATOR", "HR", "EMPLOYEE"])
-    .default("EMPLOYEE"),
+  firstName: z.string().min(1, "Imię jest wymagane").max(100, "Imię może mieć maksymalnie 100 znaków").trim(),
+  lastName: z.string().min(1, "Nazwisko jest wymagane").max(100, "Nazwisko może mieć maksymalnie 100 znaków").trim(),
+  email: z.string().email("Nieprawidłowy format email").toLowerCase().trim(),
+  role: z.enum(["ADMINISTRATOR", "HR", "EMPLOYEE"]).default("EMPLOYEE"),
   temporaryPassword: z
     .string()
     .min(8, "Hasło musi mieć minimum 8 znaków")
@@ -1017,15 +1109,18 @@ const createUserFormSchema = z.object({
 ```
 
 **Kiedy walidujemy:**
+
 - Live validation on blur (react-hook-form)
 - Full validation on submit
 - Server-side validation w API (duplikat)
 
 **Komunikaty błędów:**
+
 - Pod każdym polem (FormMessage z Shadcn/ui)
 - Toast dla błędów API (np. "Email już istnieje")
 
 **Wpływ na UI:**
+
 - Pola z błędami mają czerwone obramowanie
 - FormMessage wyświetla tekst błędu
 - Przycisk Submit jest disabled podczas submitu (isSubmitting)
@@ -1033,66 +1128,75 @@ const createUserFormSchema = z.object({
 ### 9.4. Walidacja formularza edycji użytkownika
 
 **Schema (Zod):**
+
 ```typescript
-const updateUserFormSchema = z.object({
-  firstName: z
-    .string()
-    .min(1, "Imię nie może być puste")
-    .max(100, "Imię może mieć maksymalnie 100 znaków")
-    .trim()
-    .optional(),
-  lastName: z
-    .string()
-    .min(1, "Nazwisko nie może być puste")
-    .max(100, "Nazwisko może mieć maksymalnie 100 znaków")
-    .trim()
-    .optional(),
-  role: z
-    .enum(["ADMINISTRATOR", "HR", "EMPLOYEE"])
-    .optional(),
-})
-.refine((data) => Object.keys(data).length > 0, {
-  message: "Przynajmniej jedno pole musi zostać zmienione",
-});
+const updateUserFormSchema = z
+  .object({
+    firstName: z
+      .string()
+      .min(1, "Imię nie może być puste")
+      .max(100, "Imię może mieć maksymalnie 100 znaków")
+      .trim()
+      .optional(),
+    lastName: z
+      .string()
+      .min(1, "Nazwisko nie może być puste")
+      .max(100, "Nazwisko może mieć maksymalnie 100 znaków")
+      .trim()
+      .optional(),
+    role: z.enum(["ADMINISTRATOR", "HR", "EMPLOYEE"]).optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "Przynajmniej jedno pole musi zostać zmienione",
+  });
 ```
 
 **Dodatkowa walidacja:**
+
 - Nie można zmienić własnej roli (UI i API)
 - Email jest disabled więc nie może być zmieniony
 
 **Wpływ na UI:**
+
 - Podobnie jak w formularzu dodawania
 - Pole "Rola" disabled jeśli isCurrentUser
 
 ### 9.5. Walidacja filtrów
 
 **SearchQuery:**
+
 - Min 0 znaków (puste = pokaż wszystkich)
 - Max 255 znaków (opcjonalnie)
 - Trim before search
 
 **RoleFilter:**
+
 - Tylko wartości z enum lub "ALL"
 - Select nie pozwala na inne wartości
 
 **ShowDeleted:**
+
 - Boolean checkbox
 
 **Wpływ na UI:**
+
 - Filtry nie blokują UI, zawsze można je zmienić
 - Błędy API (np. timeout) są wyświetlane jako toast
 
 ### 9.6. Walidacja paginacji
 
 **Limit:**
+
 - Min 1, max 100
 - Default 50
 
 **Offset:**
+
 - Min 0
 - Musi być wielokrotnością limit (opcjonalnie)
 
 **Wpływ na UI:**
+
 - Previous disabled gdy offset = 0
 - Next disabled gdy offset + limit >= total
 - Przycisk Submit jest disabled gdy brak zmian w formularzu (opcjonalnie)
@@ -1104,11 +1208,13 @@ const updateUserFormSchema = z.object({
 **Scenariusz:** Nie udało się pobrać listy użytkowników podczas initial load.
 
 **Obsługa:**
+
 - Astro page wyświetla komunikat błędu zamiast listy
 - Komunikat: "Nie udało się załadować użytkowników. Spróbuj odświeżyć stronę."
 - Opcjonalnie przycisk "Spróbuj ponownie"
 
 **Implementacja:**
+
 ```typescript
 // W UsersPage.astro
 let users: UserListItemDTO[] = [];
@@ -1129,6 +1235,7 @@ try {
 ### 10.2. Błędy API podczas operacji (client-side)
 
 **Scenariusze:**
+
 1. **Network error** - brak połączenia
 2. **401 Unauthorized** - sesja wygasła
 3. **403 Forbidden** - brak uprawnień (nie powinno się zdarzyć)
@@ -1137,12 +1244,14 @@ try {
 6. **500 Internal Server Error** - błąd serwera
 
 **Obsługa:**
+
 - Try-catch w każdej funkcji API
 - Toast error z komunikatem
 - Log do console.error
 - Rollback stanu UI jeśli potrzeba
 
 **Komunikaty:**
+
 - 401: "Sesja wygasła. Zaloguj się ponownie." + redirect do /login
 - 403: "Brak uprawnień do wykonania tej operacji."
 - 404: "Użytkownik nie został znaleziony."
@@ -1151,6 +1260,7 @@ try {
 - Network: "Brak połączenia z serwerem."
 
 **Implementacja:**
+
 ```typescript
 try {
   await createUser(data);
@@ -1169,6 +1279,7 @@ try {
 **Scenariusz:** Użytkownik próbuje zapisać formularz z błędnymi danymi.
 
 **Obsługa:**
+
 - React-hook-form + Zod automatycznie blokuje submit
 - Komunikaty błędów pod polami (FormMessage)
 - Pole z błędem ma czerwone obramowanie
@@ -1179,21 +1290,25 @@ try {
 ### 10.4. Błędy stanu (Edge cases)
 
 **Próba edycji usuniętego użytkownika:**
+
 - API zwraca 404
 - Toast: "Użytkownik został już usunięty"
 - Refresh listy
 
 **Próba usunięcia już usuniętego użytkownika:**
+
 - API zwraca 404
 - Toast: "Użytkownik został już usunięty"
 - Refresh listy
 
 **Próba zmiany własnej roli:**
+
 - UI blokuje (disabled field)
 - Jeśli ktoś ominie UI: API zwraca 400
 - Toast: "Nie możesz zmienić własnej roli"
 
 **Email już istnieje:**
+
 - API zwraca 400 z komunikatem
 - Toast: "Użytkownik z tym adresem email już istnieje"
 - Formularz pozostaje otwarty, focus na polu email
@@ -1203,23 +1318,27 @@ try {
 **Scenariusz:** Request trwa zbyt długo (>30s).
 
 **Obsługa:**
+
 - Browser timeout (domyślnie)
 - Loading state w UI (spinner, disabled buttons)
 - Komunikat: "Operacja trwa dłużej niż zwykle..."
 - Po timeout: Toast error "Request timeout. Spróbuj ponownie."
 
 **Implementacja:**
+
 - isLoading state dla każdej operacji
 - Conditional rendering: spinner w przyciskach, skeleton w tabeli
 
 ### 10.6. Empty States
 
 **Brak użytkowników (po filtrach):**
+
 - EmptyState component w UsersTable
 - Komunikat: "Nie znaleziono użytkowników spełniających kryteria."
 - Przycisk "Wyczyść filtry" jeśli filtry są aktywne
 
 **Brak użytkowników w systemie (edge case):**
+
 - EmptyState: "Brak użytkowników w systemie."
 - Przycisk "Dodaj pierwszego użytkownika"
 
@@ -1230,6 +1349,7 @@ try {
 **Cel:** Zainstalowanie brakujących komponentów z Shadcn/ui.
 
 **Działania:**
+
 1. Zainstaluj komponenty Shadcn/ui:
    ```bash
    npx shadcn@latest add table
@@ -1247,6 +1367,7 @@ try {
 **Cel:** Utworzenie pliku z typami specyficznymi dla widoku.
 
 **Działania:**
+
 1. Utwórz plik: `src/lib/types/users-management.types.ts`
 2. Zdefiniuj typy:
    - `UsersFiltersState`
@@ -1262,6 +1383,7 @@ try {
 **Cel:** Schematy walidacji formularzy dla frontendu.
 
 **Działania:**
+
 1. Utwórz plik: `src/lib/schemas/user-form.schema.ts`
 2. Zdefiniuj schematy:
    - `createUserFormSchema` - dla tworzenia użytkownika
@@ -1273,6 +1395,7 @@ try {
 **Cel:** Enkapsulacja logiki stanu i API calls.
 
 **Działania:**
+
 1. Utwórz plik: `src/lib/hooks/useUsersManagement.ts`
    - Implementuj logikę stanu users, pagination, filters
    - Implementuj funkcje: fetchUsers, createUser, updateUser, deleteUser
@@ -1286,6 +1409,7 @@ try {
 **Cel:** Najmniejsze, reużywalne komponenty.
 
 **Działania:**
+
 1. `src/components/users/StatusBadge.tsx`
    - Badge pokazujący status (Aktywny/Usunięty)
    - Props: isDeleted
@@ -1299,6 +1423,7 @@ try {
 **Cel:** Dialog do dodawania/edycji użytkowników.
 
 **Działania:**
+
 1. Utwórz plik: `src/components/users/UserFormDialog.tsx`
 2. Implementuj:
    - Dialog wrapper (Shadcn/ui Dialog)
@@ -1315,6 +1440,7 @@ try {
 **Cel:** Dialog potwierdzenia usunięcia użytkownika.
 
 **Działania:**
+
 1. Utwórz plik: `src/components/users/DeleteConfirmDialog.tsx`
 2. Implementuj:
    - AlertDialog (Shadcn/ui)
@@ -1329,6 +1455,7 @@ try {
 **Cel:** Tabela wyświetlająca listę użytkowników.
 
 **Działania:**
+
 1. Utwórz plik: `src/components/users/UsersTable.tsx`
 2. Implementuj:
    - Table z Shadcn/ui (Table, TableHeader, TableBody, TableRow, TableCell)
@@ -1345,6 +1472,7 @@ try {
 **Cel:** Filtry i wyszukiwarka.
 
 **Działania:**
+
 1. Utwórz plik: `src/components/users/UsersFilters.tsx`
 2. Implementuj:
    - Input dla searchQuery z ikoną Search (lucide-react)
@@ -1360,6 +1488,7 @@ try {
 **Cel:** Nawigacja między stronami listy.
 
 **Działania:**
+
 1. Utwórz plik: `src/components/users/UsersPagination.tsx`
    (lub użyj Shadcn/ui Pagination component)
 2. Implementuj:
@@ -1374,6 +1503,7 @@ try {
 **Cel:** Kompozycja wszystkich komponentów z zarządzaniem stanem.
 
 **Działania:**
+
 1. Utwórz plik: `src/components/users/UsersManagement.tsx`
 2. Implementuj:
    - Import i użycie useUsersManagement hook
@@ -1395,6 +1525,7 @@ try {
 **Cel:** Server-side rendered page z initial data fetch.
 
 **Działania:**
+
 1. Utwórz plik: `src/pages/admin/users.astro`
 2. Implementuj:
    - export const prerender = false
@@ -1411,6 +1542,7 @@ try {
 **Cel:** Dopracowanie wyglądu i responsywności.
 
 **Działania:**
+
 1. Sprawdź responsive design na różnych rozdzielczościach
 2. Mobile: table może być scrollable lub kartami
 3. Tailwind breakpoints: sm, md, lg, xl
@@ -1423,6 +1555,7 @@ try {
 **Cel:** Pokrycie wszystkich scenariuszy błędów.
 
 **Działania:**
+
 1. Implementuj error boundaries (React)
 2. Testuj wszystkie scenariusze błędów z sekcji 10
 3. Dodaj toast notifications dla wszystkich operacji
@@ -1434,6 +1567,7 @@ try {
 **Cel:** Zapewnienie płynności działania.
 
 **Działania:**
+
 1. React.memo dla komponentów które często re-renderują się
 2. useCallback dla funkcji przekazywanych jako props
 3. useMemo dla expensive computations (filtrowanie client-side)
@@ -1445,6 +1579,7 @@ try {
 **Cel:** Weryfikacja wszystkich User Stories.
 
 **Działania:**
+
 1. **US-003: Dodawanie nowego użytkownika**
    - Wypełnij formularz poprawnymi danymi → sukces
    - Spróbuj dodać z duplikatem email → błąd
@@ -1482,6 +1617,7 @@ try {
 **Cel:** Zapewnienie zgodności z WCAG 2.1 AA.
 
 **Działania:**
+
 1. Sprawdź navigację klawiaturą (Tab, Enter, Escape)
 2. Dodaj aria-labels dla ikon i przycisków bez tekstu
 3. Sprawdź role i landmarks (table, dialog, etc.)
@@ -1494,6 +1630,7 @@ try {
 **Cel:** Dokumentacja dla przyszłych developerów.
 
 **Działania:**
+
 1. Dodaj JSDoc comments do wszystkich komponentów
 2. Dokumentuj propsy i interfejsy
 3. Dodaj README w folderze `src/components/users/`
@@ -1505,6 +1642,7 @@ try {
 **Cel:** Czyszczenie i optymalizacja kodu.
 
 **Działania:**
+
 1. Przejrzyj kod pod kątem duplikacji
 2. Wydziel reużywalne utility functions
 3. Sprawdź naming conventions
@@ -1517,6 +1655,7 @@ try {
 **Cel:** Wdrożenie na produkcję i monitorowanie.
 
 **Działania:**
+
 1. Merge do main branch
 2. Deploy przez CI/CD (GitHub Actions + DigitalOcean)
 3. Monitoruj logi błędów

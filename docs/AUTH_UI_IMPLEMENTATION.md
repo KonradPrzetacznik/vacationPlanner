@@ -9,12 +9,14 @@ Zaimplementowano kompletny interfejs użytkownika dla procesu logowania, rejestr
 ### 1. Schematy walidacji (Zod)
 
 **`src/lib/schemas/auth-form.schema.ts`**
+
 - Schema dla formularza logowania (`loginFormSchema`)
 - Schema dla formularza odzyskiwania hasła (`forgotPasswordFormSchema`)
 - Schema dla formularza ustawiania hasła (`setPasswordFormSchema`)
 - Typy TypeScript wygenerowane z schematów
 
 Funkcje walidacji:
+
 - Email: walidacja formatu adresu e-mail
 - Hasło logowania: minimalna walidacja obecności
 - Nowe hasło: minimum 8 znaków, wymaga małej litery, wielkiej litery i cyfry
@@ -23,6 +25,7 @@ Funkcje walidacji:
 ### 2. Komponenty React (Formularze)
 
 #### **`src/components/forms/LoginForm.tsx`**
+
 - Formularz logowania z polami: email, password
 - Integracja z react-hook-form + Zod
 - Obsługa błędów z toast notifications (Sonner)
@@ -31,6 +34,7 @@ Funkcje walidacji:
 - Link do strony odzyskiwania hasła
 
 #### **`src/components/forms/ForgotPasswordForm.tsx`**
+
 - Formularz z polem email
 - Dwustanowy interfejs:
   - Stan wpisywania email
@@ -39,6 +43,7 @@ Funkcje walidacji:
 - Powrót do strony logowania
 
 #### **`src/components/forms/SetPasswordForm.tsx`**
+
 - Formularz z polami: password, confirmPassword
 - Przyjmuje token jako prop
 - Walidacja siły hasła
@@ -49,6 +54,7 @@ Funkcje walidacji:
 ### 3. Strony Astro
 
 #### **`src/pages/login.astro`**
+
 - Strona publiczna dostępna pod `/login`
 - Layout bez nawigacji
 - Wyśrodkowany formularz z logo aplikacji
@@ -56,11 +62,13 @@ Funkcje walidacji:
 - TODO: Dodać middleware check - przekierowanie zalogowanych użytkowników
 
 #### **`src/pages/forgot-password.astro`**
+
 - Strona publiczna dostępna pod `/forgot-password`
 - Layout bez nawigacji
 - Komponent `<ForgotPasswordForm client:load />`
 
 #### **`src/pages/set-password.astro`**
+
 - Strona publiczna dostępna pod `/set-password`
 - Pobiera token z query parameters (`?token=...`)
 - Komponent `<SetPasswordForm client:load token={token} />`
@@ -70,11 +78,13 @@ Funkcje walidacji:
 ### Zgodność z wytycznymi projektu
 
 ✅ **Astro guidelines**
+
 - Użyto `export const prerender = false` dla wszystkich stron
 - Strony statyczne w Astro, interaktywność w React
 - Hydratacja z `client:load`
 
 ✅ **React guidelines**
+
 - Functional components z hooks
 - React Hook Form + Zod resolver
 - Komponenty Shadcn/ui: Form, Input, Button, Card
@@ -82,12 +92,14 @@ Funkcje walidacji:
 - Named exports
 
 ✅ **Styling**
+
 - Tailwind CSS classes
 - Responsive design (`min-h-screen`, `max-w-md`)
 - Dark mode support z klasą `bg-muted/50`
 - Shadcn/ui design system
 
 ✅ **Accessibility**
+
 - Semantyczne pola formularzy
 - Labels dla wszystkich inputów
 - Autocomplete attributes (`email`, `current-password`, `new-password`)
@@ -123,6 +135,7 @@ Wszystkie strony uwierzytelniania używają tego samego layoutu:
 ## Przepływ użytkownika
 
 ### 1. Logowanie (Login)
+
 ```
 /login → wprowadź email/hasło → POST /api/auth/login → sukces → redirect /
                                                       ↓
@@ -130,6 +143,7 @@ Wszystkie strony uwierzytelniania używają tego samego layoutu:
 ```
 
 ### 2. Odzyskiwanie hasła (Forgot Password)
+
 ```
 /forgot-password → wprowadź email → POST /api/auth/forgot-password → sukces
                                                                       ↓
@@ -139,6 +153,7 @@ Wszystkie strony uwierzytelniania używają tego samego layoutu:
 ```
 
 ### 3. Ustawianie hasła (Set Password)
+
 ```
 /set-password?token=... → wprowadź nowe hasło → POST /api/auth/set-password → sukces
                                                                                ↓
@@ -167,17 +182,20 @@ Komponenty UI są gotowe do integracji z następującymi endpointami API:
 ## Następne kroki
 
 ### Backend (priorytet 1)
+
 - [ ] Implementacja endpointów API w `src/pages/api/auth/`
 - [ ] Integracja z Supabase Auth
 - [ ] Konfiguracja middleware w `src/middleware/index.ts`
 - [ ] Konfiguracja szablonów email w Supabase
 
 ### Modyfikacje istniejących komponentów (priorytet 2)
+
 - [ ] Aktualizacja `src/layouts/Layout.astro` - przycisk Zaloguj/Wyloguj
 - [ ] Aktualizacja `src/components/Navigation.astro` - stan zalogowania
 - [ ] Implementacja przekierowania dla zalogowanych użytkowników na `/login`
 
 ### Testy (priorytet 3)
+
 - [ ] Testy jednostkowe schematów Zod
 - [ ] Testy integracyjne formularzy
 - [ ] Testy e2e przepływu uwierzytelniania
@@ -185,6 +203,7 @@ Komponenty UI są gotowe do integracji z następującymi endpointami API:
 ## Weryfikacja
 
 Build projektu przeszedł pomyślnie:
+
 ```bash
 npm run build
 # ✓ Completed - wszystkie komponenty zbudowane bez błędów

@@ -13,6 +13,7 @@ Użytkownik (HR/ADMINISTRATOR) może kliknąć na dowolny urlop wyświetlony w k
 ### 2. Dialog z akcjami (VacationActionDialog)
 
 Dialog wyświetla:
+
 - **Informacje o urlopie:**
   - Imię i nazwisko pracownika
   - Zakres dat (od-do)
@@ -28,6 +29,7 @@ Dialog wyświetla:
 **Endpoint:** `POST /api/vacation-requests/:id/approve`
 
 **Parametry:**
+
 ```json
 {
   "acknowledgeThresholdWarning": true
@@ -35,6 +37,7 @@ Dialog wyświetla:
 ```
 
 **Przepływ:**
+
 1. Kliknięcie "Zatwierdź"
 2. Wysłanie requesta do API
 3. Komunikat o sukcesie lub błędzie
@@ -46,6 +49,7 @@ Dialog wyświetla:
 **Endpoint:** `POST /api/vacation-requests/:id/reject`
 
 **Parametry:**
+
 ```json
 {
   "reason": "Przyczyna odrzucenia"
@@ -53,6 +57,7 @@ Dialog wyświetla:
 ```
 
 **Przepływ:**
+
 1. Kliknięcie "Odrzuć"
 2. Wyświetlenie formularza z polem tekstowym (textarea)
 3. Walidacja: przyczyna jest wymagana
@@ -69,12 +74,14 @@ Dialog wyświetla:
 **Plik:** `src/components/calendar/VacationActionDialog.tsx`
 
 **Props:**
+
 - `vacation: VacationRequestViewModel | null` - dane urlopu do wyświetlenia
 - `open: boolean` - czy dialog jest otwarty
 - `onOpenChange: (open: boolean) => void` - callback zmiany stanu
 - `onSuccess: () => void` - callback po udanej akcji (używany do odświeżenia kalendarza)
 
 **State:**
+
 - `isApproving: boolean` - stan ładowania podczas zatwierdzania
 - `isRejecting: boolean` - stan ładowania podczas odrzucania
 - `showRejectForm: boolean` - czy pokazać formularz odrzucenia
@@ -82,12 +89,14 @@ Dialog wyświetla:
 - `error: string | null` - komunikat błędu
 
 **Funkcje:**
+
 - `handleApprove()` - zatwierdza urlop
 - `handleReject()` - odrzuca urlop z podaną przyczyną
 - `resetForm()` - czyści formularz i błędy
 - `handleClose()` - zamyka dialog (z blokowaniem podczas akcji)
 
 **UI:**
+
 - Ikony: User, Calendar, CheckCircle, XCircle, Loader2 (z lucide-react)
 - Komponenty Shadcn/ui: Dialog, Button, Textarea, Label
 - Kolorowanie statusów: SUBMITTED (żółty), APPROVED (zielony), REJECTED (czerwony), CANCELLED (szary)
@@ -97,6 +106,7 @@ Dialog wyświetla:
 **Plik:** `src/components/calendar/Calendar.tsx`
 
 **Dodano:**
+
 - Props: `onEventClick?: (vacation: VacationRequestViewModel) => void`
 - Handler: `handleEventClick` - wywołuje callback po kliknięciu na wydarzenie
 - FullCalendar config: `eventClick={handleEventClick}`
@@ -106,6 +116,7 @@ Dialog wyświetla:
 **Plik:** `src/components/calendar/CalendarView.tsx`
 
 **Dodano:**
+
 - State: `selectedVacation` - przechowuje wybrany urlop
 - State: `isDialogOpen` - czy dialog jest otwarty
 - Handler: `handleEventClick` - otwiera dialog z wybranym urlopem
@@ -119,6 +130,7 @@ Dialog wyświetla:
 **URL:** `POST /api/vacation-requests/:id/approve`
 
 **Request body:**
+
 ```typescript
 {
   acknowledgeThresholdWarning?: boolean;
@@ -126,6 +138,7 @@ Dialog wyświetla:
 ```
 
 **Response (200 OK):**
+
 ```typescript
 {
   id: string;
@@ -141,6 +154,7 @@ Dialog wyświetla:
 **URL:** `POST /api/vacation-requests/:id/reject`
 
 **Request body:**
+
 ```typescript
 {
   reason: string; // REQUIRED
@@ -148,6 +162,7 @@ Dialog wyświetla:
 ```
 
 **Response (200 OK):**
+
 ```typescript
 {
   id: string;
@@ -167,6 +182,7 @@ Dialog wyświetla:
 ## Odświeżanie danych
 
 Po udanej akcji (zatwierdź/odrzuć):
+
 1. Wywołanie `onSuccess()` callback
 2. CalendarView wykonuje: `actions.setDateRange({ start: currentRange.start, end: currentRange.end })`
 3. Hook `useTeamCalendar` wykrywa zmianę (nawet jeśli wartości są te same, wywołuje fetch)
@@ -176,15 +192,18 @@ Po udanej akcji (zatwierdź/odrzuć):
 ## UX/UI
 
 ### Stan ładowania
+
 - Buttony disabled podczas akcji
 - Spinner + tekst "Zatwierdzanie..." / "Odrzucanie..."
 - Dialog nie może być zamknięty podczas akcji
 
 ### Walidacja
+
 - Przycisk "Potwierdź odrzucenie" disabled gdy brak przyczyny
 - Textarea disabled podczas odrzucania
 
 ### Dostępność
+
 - Labele dla textarea (Label z Shadcn/ui)
 - Ikony z opisami
 - Semantic HTML (DialogTitle, DialogDescription)
@@ -199,6 +218,7 @@ npx shadcn@latest add textarea  # Textarea dla przyczyny odrzucenia
 ## Testowanie
 
 ### Test 1: Zatwierdzanie urlopu
+
 1. Otwórz kalendarz zespołu
 2. Kliknij na urlop ze statusem "Oczekujący" (żółty)
 3. W dialogu kliknij "Zatwierdź"
@@ -209,6 +229,7 @@ npx shadcn@latest add textarea  # Textarea dla przyczyny odrzucenia
    - ✅ Dialog zamyka się
 
 ### Test 2: Odrzucanie urlopu
+
 1. Kliknij na urlop "Oczekujący"
 2. Kliknij "Odrzuć"
 3. Wpisz przyczynę w textarea
@@ -220,6 +241,7 @@ npx shadcn@latest add textarea  # Textarea dla przyczyny odrzucenia
    - ✅ Dialog zamyka się
 
 ### Test 3: Walidacja
+
 1. Kliknij "Odrzuć"
 2. NIE wpisuj przyczyny
 3. Sprawdź:
@@ -229,6 +251,7 @@ npx shadcn@latest add textarea  # Textarea dla przyczyny odrzucenia
    - ✅ Przycisk nadal disabled (trim sprawdza puste stringi)
 
 ### Test 4: Anulowanie
+
 1. Kliknij "Odrzuć"
 2. Wpisz tekst
 3. Kliknij "Anuluj"
@@ -237,6 +260,7 @@ npx shadcn@latest add textarea  # Textarea dla przyczyny odrzucenia
    - ✅ Tekst jest wyczyszczony
 
 ### Test 5: Urlop nieoczekujący
+
 1. Kliknij na urlop "Zatwierdzony" lub "Odrzucony"
 2. Sprawdź:
    - ✅ Brak buttonów akcji
@@ -250,9 +274,11 @@ npx shadcn@latest add textarea  # Textarea dla przyczyny odrzucenia
 ## Pliki
 
 **Nowe:**
+
 - `src/components/calendar/VacationActionDialog.tsx` (282 linie)
 - `src/components/ui/textarea.tsx` (zainstalowany przez CLI)
 
 **Zmodyfikowane:**
+
 - `src/components/calendar/Calendar.tsx` - dodano obsługę kliknięć
 - `src/components/calendar/CalendarView.tsx` - dodano stan dialogu i handlery

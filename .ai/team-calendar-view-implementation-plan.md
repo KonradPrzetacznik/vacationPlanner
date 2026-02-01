@@ -1,14 +1,18 @@
 # Plan implementacji widoku: Kalendarz Zespołu
 
 ## 1. Przegląd
+
 Celem tego dokumentu jest stworzenie szczegółowego planu wdrożenia widoku "Kalendarz Zespołu". Widok ten umożliwi menedżerom i administratorom wizualizację nieobecności w zespole lub w całej firmie. Będzie on przedstawiał kalendarz z oznaczonymi urlopami, z możliwością filtrowania i przeglądania szczegółów.
 
 ## 2. Routing widoku
+
 Widok będzie dostępny pod następującą ścieżką:
+
 - **Ścieżka:** `/calendar`
 - **Plik:** `src/pages/calendar.astro`
 
 ## 3. Struktura komponentów
+
 Hierarchia komponentów dla widoku kalendarza będzie następująca:
 
 ```
@@ -24,6 +28,7 @@ Hierarchia komponentów dla widoku kalendarza będzie następująca:
 ## 4. Szczegóły komponentów
 
 ### `CalendarView`
+
 - **Opis komponentu:** Główny komponent kontenera, który zarządza stanem całego widoku, pobiera dane i koordynuje interakcje między komponentami podrzędnymi.
 - **Główne elementy:** `div` jako kontener, renderuje `TeamSelector`, `Calendar` i `VacationLegend`.
 - **Obsługiwane interakcje:** Brak bezpośrednich interakcji. Przekazuje dane i handlery do komponentów podrzędnych.
@@ -35,6 +40,7 @@ Hierarchia komponentów dla widoku kalendarza będzie następująca:
   - `currentUser: User`: Informacje o zalogowanym użytkowniku (do określenia uprawnień).
 
 ### `TeamSelector`
+
 - **Opis komponentu:** Komponent `select` pozwalający użytkownikowi (Admin/Manager) wybrać zespół, dla którego chce wyświetlić kalendarz.
 - **Główne elementy:** Wykorzystuje komponent `Select` z biblioteki `Shadcn/ui`.
 - **Obsługiwane interakcje:**
@@ -48,6 +54,7 @@ Hierarchia komponentów dla widoku kalendarza będzie następująca:
   - `disabled: boolean`: Określa, czy selektor jest nieaktywny (np. podczas ładowania danych).
 
 ### `Calendar`
+
 - **Opis komponentu:** Komponent renderujący kalendarz z nieobecnościami. Wykorzystuje bibliotekę `FullCalendar` do wyświetlania danych.
 - **Główne elementy:** Komponent `FullCalendar` z odpowiednią konfiguracją. Renderuje `VacationDetailsTooltip` przy interakcji z wydarzeniem.
 - **Obsługiwane interakcje:**
@@ -61,6 +68,7 @@ Hierarchia komponentów dla widoku kalendarza będzie następująca:
   - `onDateRangeChange: (startDate: string, endDate: string) => void`: Funkcja zwrotna wywoływana przy zmianie widocznego zakresu dat.
 
 ### `VacationDetailsTooltip`
+
 - **Opis komponentu:** Wyświetla dymek (tooltip) ze szczegółowymi informacjami o wniosku urlopowym po najechaniu na niego w kalendarzu.
 - **Główne elementy:** Wykorzystuje komponenty `Tooltip` z `Shadcn/ui` do ostylowania. Zawiera pola: Imię i nazwisko, Daty urlopu, Status.
 - **Obsługiwane interakcje:** Brak.
@@ -71,6 +79,7 @@ Hierarchia komponentów dla widoku kalendarza będzie następująca:
   - `triggerElement: HTMLElement`: Element, do którego dymek ma być przypięty.
 
 ### `VacationLegend`
+
 - **Opis komponentu:** Prosty komponent wyświetlający legendę kolorów używanych w kalendarzu do oznaczania statusów urlopów (np. Zatwierdzony, Oczekujący).
 - **Główne elementy:** Lista (`ul`, `li`) z kolorowymi kwadratami i opisami.
 - **Obsługiwane interakcje:** Brak.
@@ -81,7 +90,9 @@ Hierarchia komponentów dla widoku kalendarza będzie następująca:
 ## 5. Typy
 
 ### `TeamCalendarViewModel`
+
 Reprezentuje dane potrzebne do wyświetlenia kalendarza dla jednego zespołu.
+
 ```typescript
 interface TeamCalendarViewModel {
   teamId: string;
@@ -93,7 +104,9 @@ interface TeamCalendarViewModel {
 ```
 
 ### `TeamMemberViewModel`
+
 Reprezentuje członka zespołu wraz z jego wnioskami urlopowymi.
+
 ```typescript
 interface TeamMemberViewModel {
   id: string;
@@ -104,13 +117,15 @@ interface TeamMemberViewModel {
 ```
 
 ### `VacationRequestViewModel`
+
 Uproszczony model wniosku urlopowego, dostosowany do potrzeb widoku kalendarza.
+
 ```typescript
 interface VacationRequestViewModel {
   id: string;
   startDate: string;
   endDate: string;
-  status: 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+  status: "SUBMITTED" | "APPROVED" | "REJECTED" | "CANCELLED";
   user: {
     id: string;
     firstName: string;
@@ -120,9 +135,11 @@ interface VacationRequestViewModel {
 ```
 
 ## 6. Zarządzanie stanem
+
 Stan będzie zarządzany w głównym komponencie `CalendarView` przy użyciu hooków `useState` i `useEffect`. Zostanie stworzony customowy hook `useTeamCalendar` w celu hermetyzacji logiki pobierania i przetwarzania danych.
 
 ### `useTeamCalendar(initialTeamId: string)`
+
 - **Cel:** Zarządzanie stanem kalendarza, w tym wybranym zespołem, zakresem dat, ładowaniem danych i obsługą błędów.
 - **Zwracane wartości:**
   - `state`: Obiekt zawierający:
@@ -136,6 +153,7 @@ Stan będzie zarządzany w głównym komponencie `CalendarView` przy użyciu hoo
     - `setDateRange: (range: { start: string, end: string }) => void`: Aktualizuje zakres dat i inicjuje pobieranie danych.
 
 ## 7. Integracja API
+
 Komponent `CalendarView` (poprzez hook `useTeamCalendar`) będzie komunikował się z endpointem `/api/teams/:id/calendar`.
 
 - **Endpoint:** `GET /api/teams/:id/calendar`
@@ -146,21 +164,25 @@ Komponent `CalendarView` (poprzez hook `useTeamCalendar`) będzie komunikował s
 - **Typy odpowiedzi:** Odpowiedź API będzie miała strukturę zgodną z `TeamCalendarApiResponse` (zdefiniowaną w opisie endpointu), która zostanie zmapowana na `VacationRequestViewModel[]`.
 
 ## 8. Interakcje użytkownika
+
 - **Wybór zespołu:** Użytkownik wybiera zespół z `TeamSelector`. Wywołuje to `onTeamChange`, co aktualizuje stan w `useTeamCalendar` i pobiera nowe dane dla wybranego zespołu.
 - **Zmiana miesiąca:** Użytkownik nawiguje do poprzedniego/następnego miesiąca w kalendarzu. Wywołuje to `onDateRangeChange`, co aktualizuje zakres dat w `useTeamCalendar` i pobiera dane dla nowego miesiąca.
 - **Najazd na urlop:** Użytkownik najeżdża kursorem na wydarzenie w kalendarzu. Wyświetlony zostaje `VacationDetailsTooltip` ze szczegółami danego urlopu.
 
 ## 9. Warunki i walidacja
+
 - **Uprawnienia:** Przed renderowaniem komponentu, na poziomie strony `calendar.astro`, sprawdzane są uprawnienia użytkownika. Widok jest dostępny tylko dla ról `MANAGER` i `ADMIN`.
 - **Dostęp do zespołu:** API zapewnia, że menedżer może pobrać dane tylko dla zespołów, którymi zarządza. Frontend nie musi implementować tej logiki, ale powinien obsłużyć błąd `403 Forbidden`.
 - **Wybór zespołu:** Komponent `TeamSelector` jest nieaktywny (`disabled`) podczas ładowania danych, aby zapobiec wielokrotnym wywołaniom API.
 
 ## 10. Obsługa błędów
+
 - **Błąd ładowania danych:** Jeśli wywołanie API zakończy się niepowodzeniem, hook `useTeamCalendar` ustawi stan `error`. Komponent `CalendarView` wyświetli komunikat o błędzie (np. "Nie udało się załadować danych kalendarza.") zamiast kalendarza.
 - **Brak zespołów:** Jeśli zalogowany menedżer nie zarządza żadnym zespołem, `TeamSelector` będzie pusty, a na ekranie pojawi się informacja "Nie zarządzasz żadnym zespołem".
 - **Brak urlopów:** Jeśli w wybranym okresie nie ma żadnych wniosków urlopowych, kalendarz wyświetli się pusty, co jest oczekiwanym zachowaniem.
 
 ## 11. Kroki implementacji
+
 1. **Stworzenie pliku strony:** Utworzyć plik `src/pages/calendar.astro`. Dodać w nim logikę sprawdzania uprawnień użytkownika (rola `MANAGER` lub `ADMIN`) i pobierania listy zespołów, które zostaną przekazane do komponentu React.
 2. **Instalacja biblioteki:** Dodać `FullCalendar` i jego wtyczki do projektu: `npm install @fullcalendar/react @fullcalendar/daygrid`.
 3. **Struktura komponentów:** Utworzyć pliki dla wszystkich zdefiniowanych komponentów React w katalogu `src/components/calendar/`.

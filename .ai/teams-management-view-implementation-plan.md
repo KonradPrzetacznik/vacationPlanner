@@ -1,12 +1,15 @@
 # Plan implementacji widoku Zarządzanie Zespołami
 
 ## 1. Przegląd
+
 Widok "Zarządzanie Zespołami" umożliwia administratorom i menedżerom (HR) tworzenie, przeglądanie, modyfikowanie i usuwanie zespołów. Pozwala również na zarządzanie członkostwem w zespołach poprzez dodawanie i usuwanie użytkowników. Interfejs oparty jest na układzie master-detail, gdzie lista zespołów jest głównym widokiem, a po wybraniu zespołu wyświetlane są jego szczegóły i lista członków.
 
 ## 2. Routing widoku
+
 Widok będzie dostępny pod ścieżką `/teams`. Zostanie zaimplementowany jako strona Astro w pliku `src/pages/teams.astro`.
 
 ## 3. Struktura komponentów
+
 Hierarchia komponentów dla widoku "Zarządzanie Zespołami" będzie następująca:
 
 ```
@@ -36,6 +39,7 @@ TeamsManagementView (React)
 ## 4. Szczegóły komponentów
 
 ### TeamsManagementView
+
 - **Opis**: Główny komponent-kontener, który orkiestruje pracę pozostałych komponentów. Odpowiada za pobieranie danych, zarządzanie stanem (wybrany zespół, listy) i obsługę logiki biznesowej.
 - **Główne elementy**: `TeamsList`, `TeamDetails`, `CreateTeamModal`.
 - **Obsługiwane interakcje**: Wybór zespołu z listy, otwieranie modala do tworzenia zespołu.
@@ -44,6 +48,7 @@ TeamsManagementView (React)
 - **Propsy**: Brak.
 
 ### TeamsList
+
 - **Opis**: Wyświetla listę zespołów. Umożliwia wybór zespołu do edycji.
 - **Główne elementy**: Lista (`<ul>`), komponent `TeamsListItem`.
 - **Obsługiwane interakcje**: Kliknięcie na element listy (`onTeamSelect`).
@@ -55,6 +60,7 @@ TeamsManagementView (React)
   - `onTeamSelect: (teamId: string) => void`
 
 ### TeamDetails
+
 - **Opis**: Wyświetla szczegóły aktywnego zespołu, w tym formularz edycji nazwy i listę członków.
 - **Główne elementy**: `TeamEditForm`, `TeamMembersList`, przycisk "Usuń zespół".
 - **Obsługiwane interakcje**: Zapisanie nowej nazwy zespołu, usunięcie zespołu, otwarcie modala dodawania członków.
@@ -66,6 +72,7 @@ TeamsManagementView (React)
   - `onTeamDelete: () => void`
 
 ### TeamEditForm
+
 - **Opis**: Formularz do aktualizacji nazwy wybranego zespołu.
 - **Główne elementy**: `input[type="text"]`, przycisk "Zapisz".
 - **Obsługiwane interakcje**: Wpisywanie tekstu, kliknięcie przycisku zapisu.
@@ -78,6 +85,7 @@ TeamsManagementView (React)
   - `onTeamUpdate: () => void`
 
 ### TeamMembersList
+
 - **Opis**: Wyświetla listę członków zespołu z opcją ich usunięcia.
 - **Główne elementy**: Lista (`<ul>`), komponent `TeamMembersListItem`, przycisk "Dodaj członka".
 - **Obsługiwane interakcje**: Usunięcie członka z zespołu.
@@ -89,6 +97,7 @@ TeamsManagementView (React)
   - `onMemberRemove: () => void`
 
 ### AddTeamMemberModal
+
 - **Opis**: Modal zawierający komponent do wyszukiwania i dodawania użytkowników do zespołu.
 - **Główne elementy**: Komponent `UserSearch`, przyciski "Dodaj" i "Anuluj".
 - **Obsługiwane interakcje**: Wybór użytkowników, potwierdzenie dodania.
@@ -102,6 +111,7 @@ TeamsManagementView (React)
   - `onMembersAdd: () => void`
 
 ### CreateTeamModal
+
 - **Opis**: Modal z formularzem do tworzenia nowego zespołu.
 - **Główne elementy**: `input[type="text"]`, przyciski "Utwórz" i "Anuluj".
 - **Obsługiwane interakcje**: Wprowadzenie nazwy, zatwierdzenie formularza.
@@ -115,6 +125,7 @@ TeamsManagementView (React)
   - `onTeamCreate: () => void`
 
 ## 5. Typy
+
 Do implementacji widoku potrzebne będą następujące kluczowe typy i modele widoku:
 
 - **`TeamWithMemberCount` (ViewModel)**: Używany w liście zespołów.
@@ -149,9 +160,11 @@ Do implementacji widoku potrzebne będą następujące kluczowe typy i modele wi
   - `userIds: string[]` - Tablica UUID użytkowników do dodania.
 
 ## 6. Zarządzanie stanem
+
 Zarządzanie stanem zostanie zrealizowane za pomocą hooków React (`useState`, `useEffect`) wewnątrz komponentu `TeamsManagementView`. Rozważone zostanie stworzenie niestandardowego hooka `useTeamsManagement`, aby hermetyzować logikę i uczynić komponent `TeamsManagementView` czystszym.
 
 **Proponowany hook `useTeamsManagement` zarządzałby:**
+
 - `teams: TeamWithMemberCount[]`: Lista zespołów.
 - `selectedTeam: TeamWithMembers | null`: Aktualnie wybrany zespół.
 - `isLoading: boolean`: Stan ładowania danych.
@@ -159,6 +172,7 @@ Zarządzanie stanem zostanie zrealizowane za pomocą hooków React (`useState`, 
 - Funkcje do pobierania, tworzenia, aktualizacji i usuwania zespołów oraz zarządzania członkami.
 
 ## 7. Integracja API
+
 Integracja z API będzie realizowana poprzez wywołania `fetch` do odpowiednich endpointów.
 
 - **`GET /api/teams?includeMemberCount=true`**: Pobranie listy zespołów z liczbą członków.
@@ -182,6 +196,7 @@ Integracja z API będzie realizowana poprzez wywołania `fetch` do odpowiednich 
   - **Odpowiedź**: `PaginatedResponse<User>`
 
 ## 8. Interakcje użytkownika
+
 - **Wyświetlenie listy zespołów**: Po załadowaniu widoku, pobierana i wyświetlana jest lista zespołów.
 - **Wybranie zespołu**: Kliknięcie na zespół na liście powoduje pobranie jego szczegółów i wyświetlenie ich w panelu `TeamDetails`.
 - **Tworzenie zespołu**: Kliknięcie "Utwórz zespół" otwiera modal, gdzie użytkownik podaje nazwę. Po zatwierdzeniu, lista zespołów jest odświeżana.
@@ -191,6 +206,7 @@ Integracja z API będzie realizowana poprzez wywołania `fetch` do odpowiednich 
 - **Usuwanie członka**: Kliknięcie ikony usunięcia przy członku zespołu i potwierdzenie powoduje usunięcie go i odświeżenie listy członków.
 
 ## 9. Warunki i walidacja
+
 - **Formularz tworzenia zespołu (`CreateTeamModal`)**:
   - Pole `name` nie może być puste.
   - Pole `name` musi mieć co najmniej 3 znaki.
@@ -203,6 +219,7 @@ Integracja z API będzie realizowana poprzez wywołania `fetch` do odpowiednich 
   - Przycisk "Dodaj" jest nieaktywny, dopóki nie zostanie wybrany co najmniej jeden użytkownik.
 
 ## 10. Obsługa błędów
+
 - **Błędy sieciowe/API**: W przypadku niepowodzenia wywołania API, użytkownikowi zostanie wyświetlony komunikat (np. za pomocą komponentu `Toast`/`Sonner`) informujący o problemie.
 - **Błędy walidacji (serwer)**: Jeśli API zwróci błąd 400 (np. nazwa zespołu już istnieje), odpowiedni komunikat zostanie wyświetlony przy polu formularza.
 - **Brak uprawnień (403 Forbidden)**: Jeśli użytkownik nie ma uprawnień do wykonania akcji, zostanie o tym poinformowany. W idealnym przypadku, przyciski inicjujące akcje, do których użytkownik nie ma uprawnień, nie powinny być w ogóle renderowane.
@@ -210,6 +227,7 @@ Integracja z API będzie realizowana poprzez wywołania `fetch` do odpowiednich 
 - **Puste stany**: Jeśli lista zespołów jest pusta, zostanie wyświetlony komunikat zachęcający do utworzenia pierwszego zespołu. Podobnie dla pustej listy członków.
 
 ## 11. Kroki implementacji
+
 1. **Utworzenie pliku strony**: Stworzenie pliku `src/pages/admin/teams.astro` i osadzenie w nim głównego komponentu React `TeamsManagementView`.
 2. **Implementacja głównego komponentu (`TeamsManagementView`)**: Stworzenie szkieletu komponentu, który będzie zarządzał stanem i renderował komponenty podrzędne.
 3. **Implementacja `useTeamsManagement` (opcjonalnie)**: Wydzielenie logiki zarządzania stanem i komunikacji z API do niestandardowego hooka.

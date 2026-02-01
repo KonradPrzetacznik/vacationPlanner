@@ -5,9 +5,10 @@
 Ten plan obejmuje implementację trzech endpointów REST API do zarządzania statusem wniosków urlopowych:
 
 ### Approve Vacation Request
+
 - **Cel**: Zatwierdzenie wniosku urlopowego przez HR z uwzględnieniem progu obłożenia zespołu
 - **Dostęp**: Tylko dla użytkowników z rolą HR
-- **Logika biznesowa**: 
+- **Logika biznesowa**:
   - Sprawdzenie czy wniosek ma status SUBMITTED
   - Obliczenie obłożenia zespołów użytkownika w okresie urlopu
   - Zwrócenie ostrzeżenia jeśli próg zostanie przekroczony
@@ -15,6 +16,7 @@ Ten plan obejmuje implementację trzech endpointów REST API do zarządzania sta
   - Aktualizacja statusu na APPROVED
 
 ### Reject Vacation Request
+
 - **Cel**: Odrzucenie wniosku urlopowego przez HR z podaniem powodu
 - **Dostęp**: Tylko dla użytkowników z rolą HR
 - **Logika biznesowa**:
@@ -23,6 +25,7 @@ Ten plan obejmuje implementację trzech endpointów REST API do zarządzania sta
   - Aktualizacja statusu na REJECTED
 
 ### Cancel Vacation Request
+
 - **Cel**: Anulowanie wniosku urlopowego przez właściciela
 - **Dostęp**: Tylko dla właściciela wniosku (EMPLOYEE)
 - **Logika biznesowa**:
@@ -38,16 +41,18 @@ Ten plan obejmuje implementację trzech endpointów REST API do zarządzania sta
 - **Metoda HTTP**: POST
 - **Struktura URL**: `/api/vacation-requests/{uuid}/approve`
 - **Parametry**:
-  - **Wymagane**: 
+  - **Wymagane**:
     - `id` (path parameter) - UUID wniosku urlopowego
-  - **Opcjonalne**: 
+  - **Opcjonalne**:
     - `acknowledgeThresholdWarning` (body) - boolean, domyślnie `false`, potwierdza akceptację przekroczenia progu
 - **Request Body**:
+
 ```json
 {
   "acknowledgeThresholdWarning": false
 }
 ```
+
 - **Headers**:
   - `Content-Type: application/json`
 
@@ -56,16 +61,18 @@ Ten plan obejmuje implementację trzech endpointów REST API do zarządzania sta
 - **Metoda HTTP**: POST
 - **Struktura URL**: `/api/vacation-requests/{uuid}/reject`
 - **Parametry**:
-  - **Wymagane**: 
+  - **Wymagane**:
     - `id` (path parameter) - UUID wniosku urlopowego
     - `reason` (body) - string, powód odrzucenia (1-500 znaków)
   - **Opcjonalne**: brak
 - **Request Body**:
+
 ```json
 {
   "reason": "Team capacity exceeded"
 }
 ```
+
 - **Headers**:
   - `Content-Type: application/json`
 
@@ -74,7 +81,7 @@ Ten plan obejmuje implementację trzech endpointów REST API do zarządzania sta
 - **Metoda HTTP**: POST
 - **Struktura URL**: `/api/vacation-requests/{uuid}/cancel`
 - **Parametry**:
-  - **Wymagane**: 
+  - **Wymagane**:
     - `id` (path parameter) - UUID wniosku urlopowego
   - **Opcjonalne**: brak
 - **Request Body**: brak (puste lub brak body)
@@ -168,23 +175,16 @@ export const ApproveVacationRequestSchema = z.object({
   acknowledgeThresholdWarning: z.boolean().optional().default(false),
 });
 
-export type ApproveVacationRequestSchemaType = z.infer<
-  typeof ApproveVacationRequestSchema
->;
+export type ApproveVacationRequestSchemaType = z.infer<typeof ApproveVacationRequestSchema>;
 
 /**
  * Schema for POST /api/vacation-requests/:id/reject body
  */
 export const RejectVacationRequestSchema = z.object({
-  reason: z
-    .string()
-    .min(1, "Reason is required")
-    .max(500, "Reason must be at most 500 characters"),
+  reason: z.string().min(1, "Reason is required").max(500, "Reason must be at most 500 characters"),
 });
 
-export type RejectVacationRequestSchemaType = z.infer<
-  typeof RejectVacationRequestSchema
->;
+export type RejectVacationRequestSchemaType = z.infer<typeof RejectVacationRequestSchema>;
 
 /**
  * Schema for vacation request ID parameter
@@ -193,9 +193,7 @@ export const VacationRequestIdParamSchema = z.object({
   id: UuidSchema,
 });
 
-export type VacationRequestIdParamSchemaType = z.infer<
-  typeof VacationRequestIdParamSchema
->;
+export type VacationRequestIdParamSchemaType = z.infer<typeof VacationRequestIdParamSchema>;
 ```
 
 ## 4. Szczegóły odpowiedzi
@@ -203,6 +201,7 @@ export type VacationRequestIdParamSchemaType = z.infer<
 ### Approve Endpoint
 
 **Success (200 OK) - Z ostrzeżeniem:**
+
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
@@ -219,6 +218,7 @@ export type VacationRequestIdParamSchemaType = z.infer<
 ```
 
 **Success (200 OK) - Bez ostrzeżenia:**
+
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
@@ -230,26 +230,27 @@ export type VacationRequestIdParamSchemaType = z.infer<
 ```
 
 **Error Responses:**
-- `400 Bad Request`: 
+
+- `400 Bad Request`:
   ```json
   { "error": "Request must be in SUBMITTED status" }
   { "error": "You must acknowledge the threshold warning to approve this request" }
   { "error": "Invalid request body" }
   ```
-- `401 Unauthorized`: 
+- `401 Unauthorized`:
   ```json
   { "error": "Not authenticated" }
   ```
-- `403 Forbidden`: 
+- `403 Forbidden`:
   ```json
   { "error": "Only HR can approve vacation requests" }
   { "error": "You are not authorized to approve this request" }
   ```
-- `404 Not Found`: 
+- `404 Not Found`:
   ```json
   { "error": "Vacation request not found" }
   ```
-- `500 Internal Server Error`: 
+- `500 Internal Server Error`:
   ```json
   { "error": "Failed to approve vacation request" }
   ```
@@ -257,6 +258,7 @@ export type VacationRequestIdParamSchemaType = z.infer<
 ### Reject Endpoint
 
 **Success (200 OK):**
+
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
@@ -267,25 +269,26 @@ export type VacationRequestIdParamSchemaType = z.infer<
 ```
 
 **Error Responses:**
-- `400 Bad Request`: 
+
+- `400 Bad Request`:
   ```json
   { "error": "Request must be in SUBMITTED status" }
   { "error": "Reason is required" }
   ```
-- `401 Unauthorized`: 
+- `401 Unauthorized`:
   ```json
   { "error": "Not authenticated" }
   ```
-- `403 Forbidden`: 
+- `403 Forbidden`:
   ```json
   { "error": "Only HR can reject vacation requests" }
   { "error": "You are not authorized to reject this request" }
   ```
-- `404 Not Found`: 
+- `404 Not Found`:
   ```json
   { "error": "Vacation request not found" }
   ```
-- `500 Internal Server Error`: 
+- `500 Internal Server Error`:
   ```json
   { "error": "Failed to reject vacation request" }
   ```
@@ -293,6 +296,7 @@ export type VacationRequestIdParamSchemaType = z.infer<
 ### Cancel Endpoint
 
 **Success (200 OK):**
+
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
@@ -303,24 +307,25 @@ export type VacationRequestIdParamSchemaType = z.infer<
 ```
 
 **Error Responses:**
-- `400 Bad Request`: 
+
+- `400 Bad Request`:
   ```json
   { "error": "Only SUBMITTED or APPROVED requests can be cancelled" }
   { "error": "Cannot cancel vacation that started more than 1 day ago" }
   ```
-- `401 Unauthorized`: 
+- `401 Unauthorized`:
   ```json
   { "error": "Not authenticated" }
   ```
-- `403 Forbidden`: 
+- `403 Forbidden`:
   ```json
   { "error": "You can only cancel your own vacation requests" }
   ```
-- `404 Not Found`: 
+- `404 Not Found`:
   ```json
   { "error": "Vacation request not found" }
   ```
-- `500 Internal Server Error`: 
+- `500 Internal Server Error`:
   ```json
   { "error": "Failed to cancel vacation request" }
   ```
@@ -442,6 +447,7 @@ export type VacationRequestIdParamSchemaType = z.infer<
 ### Interakcje z bazą danych
 
 **Tabele używane:**
+
 - `profiles` - weryfikacja roli użytkownika, sprawdzenie deleted_at
 - `vacation_requests` - fetch, update statusu
 - `team_members` - weryfikacja członkostwa w zespole
@@ -449,6 +455,7 @@ export type VacationRequestIdParamSchemaType = z.infer<
 - `vacation_allowances` - (nie jest bezpośrednio modyfikowana, dni są zwracane przez brak dedukcji przy CANCELLED)
 
 **Funkcje/RPC używane:**
+
 - `check_common_team(user1_id, user2_id)` - sprawdzenie wspólnego zespołu
 - `get_team_occupancy(team_id, start_date, end_date)` - obliczenie obłożenia zespołu
 
@@ -520,50 +527,51 @@ export type VacationRequestIdParamSchemaType = z.infer<
 
 ### Approve Endpoint Error Scenarios
 
-| Scenariusz | Kod | Komunikat | Warunek |
-|-----------|-----|-----------|---------|
-| Invalid UUID format | 400 | "Invalid vacation request ID format" | UUID validation fails |
-| Invalid body | 400 | "Invalid request body" | Zod validation fails |
-| Request not SUBMITTED | 400 | "Request must be in SUBMITTED status" | status !== 'SUBMITTED' |
+| Scenariusz                         | Kod | Komunikat                                                            | Warunek                           |
+| ---------------------------------- | --- | -------------------------------------------------------------------- | --------------------------------- |
+| Invalid UUID format                | 400 | "Invalid vacation request ID format"                                 | UUID validation fails             |
+| Invalid body                       | 400 | "Invalid request body"                                               | Zod validation fails              |
+| Request not SUBMITTED              | 400 | "Request must be in SUBMITTED status"                                | status !== 'SUBMITTED'            |
 | Threshold warning not acknowledged | 400 | "You must acknowledge the threshold warning to approve this request" | hasWarning && !acknowledgeWarning |
-| Not authenticated | 401 | "Not authenticated" | No user session (future) |
-| Not HR | 403 | "Only HR can approve vacation requests" | role !== 'HR' |
-| Own request | 403 | "You cannot approve your own vacation request" | user_id === currentUserId |
-| No common team | 403 | "You are not authorized to approve this request" | check_common_team returns false |
-| Request not found | 404 | "Vacation request not found" | No record with given ID |
-| Database error | 500 | "Failed to approve vacation request" | Any DB operation fails |
-| Settings fetch error | 500 | "Failed to fetch system settings" | Cannot read threshold |
-| Occupancy calculation error | 500 | "Failed to calculate team occupancy" | RPC call fails |
+| Not authenticated                  | 401 | "Not authenticated"                                                  | No user session (future)          |
+| Not HR                             | 403 | "Only HR can approve vacation requests"                              | role !== 'HR'                     |
+| Own request                        | 403 | "You cannot approve your own vacation request"                       | user_id === currentUserId         |
+| No common team                     | 403 | "You are not authorized to approve this request"                     | check_common_team returns false   |
+| Request not found                  | 404 | "Vacation request not found"                                         | No record with given ID           |
+| Database error                     | 500 | "Failed to approve vacation request"                                 | Any DB operation fails            |
+| Settings fetch error               | 500 | "Failed to fetch system settings"                                    | Cannot read threshold             |
+| Occupancy calculation error        | 500 | "Failed to calculate team occupancy"                                 | RPC call fails                    |
 
 ### Reject Endpoint Error Scenarios
 
-| Scenariusz | Kod | Komunikat | Warunek |
-|-----------|-----|-----------|---------|
-| Invalid UUID format | 400 | "Invalid vacation request ID format" | UUID validation fails |
-| Invalid body | 400 | "Reason is required" / "Reason must be at most 500 characters" | Zod validation fails |
-| Request not SUBMITTED | 400 | "Request must be in SUBMITTED status" | status !== 'SUBMITTED' |
-| Not authenticated | 401 | "Not authenticated" | No user session (future) |
-| Not HR | 403 | "Only HR can reject vacation requests" | role !== 'HR' |
-| Own request | 403 | "You cannot reject your own vacation request" | user_id === currentUserId |
-| No common team | 403 | "You are not authorized to reject this request" | check_common_team returns false |
-| Request not found | 404 | "Vacation request not found" | No record with given ID |
-| Database error | 500 | "Failed to reject vacation request" | Any DB operation fails |
+| Scenariusz            | Kod | Komunikat                                                      | Warunek                         |
+| --------------------- | --- | -------------------------------------------------------------- | ------------------------------- |
+| Invalid UUID format   | 400 | "Invalid vacation request ID format"                           | UUID validation fails           |
+| Invalid body          | 400 | "Reason is required" / "Reason must be at most 500 characters" | Zod validation fails            |
+| Request not SUBMITTED | 400 | "Request must be in SUBMITTED status"                          | status !== 'SUBMITTED'          |
+| Not authenticated     | 401 | "Not authenticated"                                            | No user session (future)        |
+| Not HR                | 403 | "Only HR can reject vacation requests"                         | role !== 'HR'                   |
+| Own request           | 403 | "You cannot reject your own vacation request"                  | user_id === currentUserId       |
+| No common team        | 403 | "You are not authorized to reject this request"                | check_common_team returns false |
+| Request not found     | 404 | "Vacation request not found"                                   | No record with given ID         |
+| Database error        | 500 | "Failed to reject vacation request"                            | Any DB operation fails          |
 
 ### Cancel Endpoint Error Scenarios
 
-| Scenariusz | Kod | Komunikat | Warunek |
-|-----------|-----|-----------|---------|
-| Invalid UUID format | 400 | "Invalid vacation request ID format" | UUID validation fails |
-| Invalid status | 400 | "Only SUBMITTED or APPROVED requests can be cancelled" | status not in ['SUBMITTED', 'APPROVED'] |
-| Vacation started | 400 | "Cannot cancel vacation that started more than 1 day ago" | start_date < today - 1 day && status = APPROVED |
-| Not authenticated | 401 | "Not authenticated" | No user session (future) |
-| Not owner | 403 | "You can only cancel your own vacation requests" | user_id !== currentUserId |
-| Request not found | 404 | "Vacation request not found" | No record with given ID |
-| Database error | 500 | "Failed to cancel vacation request" | Any DB operation fails |
+| Scenariusz          | Kod | Komunikat                                                 | Warunek                                         |
+| ------------------- | --- | --------------------------------------------------------- | ----------------------------------------------- |
+| Invalid UUID format | 400 | "Invalid vacation request ID format"                      | UUID validation fails                           |
+| Invalid status      | 400 | "Only SUBMITTED or APPROVED requests can be cancelled"    | status not in ['SUBMITTED', 'APPROVED']         |
+| Vacation started    | 400 | "Cannot cancel vacation that started more than 1 day ago" | start_date < today - 1 day && status = APPROVED |
+| Not authenticated   | 401 | "Not authenticated"                                       | No user session (future)                        |
+| Not owner           | 403 | "You can only cancel your own vacation requests"          | user_id !== currentUserId                       |
+| Request not found   | 404 | "Vacation request not found"                              | No record with given ID                         |
+| Database error      | 500 | "Failed to cancel vacation request"                       | Any DB operation fails                          |
 
 ### Error Response Format
 
 Wszystkie błędy zwracane w formacie:
+
 ```json
 {
   "error": "Human-readable error message"
@@ -573,6 +581,7 @@ Wszystkie błędy zwracane w formacie:
 ### Logging Strategy
 
 1. **Console Errors** (development):
+
    ```typescript
    console.error("[ServiceName] Operation failed:", error);
    ```
@@ -642,7 +651,9 @@ Wszystkie błędy zwracane w formacie:
 ## 9. Etapy wdrożenia
 
 ### Krok 1: Rozszerzenie types.ts
+
 **Czas: 15 min**
+
 - [ ] Dodać nowe DTO types w sekcji "Vacation Request Actions DTOs"
 - [ ] Dodać `ApproveVacationRequestDTO`
 - [ ] Dodać `ThresholdWarningDTO`
@@ -653,7 +664,9 @@ Wszystkie błędy zwracane w formacie:
 - [ ] Sprawdzić błędy TypeScript
 
 ### Krok 2: Rozszerzenie vacation-requests.schema.ts
+
 **Czas: 20 min**
+
 - [ ] Dodać `ApproveVacationRequestSchema` z Zod
 - [ ] Dodać `RejectVacationRequestSchema` z Zod
 - [ ] Dodać `VacationRequestIdParamSchema` z Zod (jeśli nie istnieje)
@@ -661,7 +674,9 @@ Wszystkie błędy zwracane w formacie:
 - [ ] Przetestować walidację z przykładowymi danymi
 
 ### Krok 3: Implementacja approveVacationRequest w service
+
 **Czas: 2h**
+
 - [ ] Otworzyć `src/lib/services/vacation-requests.service.ts`
 - [ ] Dodać funkcję `approveVacationRequest(supabase, currentUserId, requestId, acknowledgeWarning)`
 - [ ] Implementacja:
@@ -682,7 +697,9 @@ Wszystkie błędy zwracane w formacie:
 - [ ] Dodać error logging
 
 ### Krok 4: Implementacja rejectVacationRequest w service
+
 **Czas: 1h**
+
 - [ ] W tym samym pliku dodać funkcję `rejectVacationRequest(supabase, currentUserId, requestId, reason)`
 - [ ] Implementacja:
   - [ ] Fetch user role i weryfikacja HR
@@ -698,7 +715,9 @@ Wszystkie błędy zwracane w formacie:
 - [ ] Dodać error logging
 
 ### Krok 5: Implementacja cancelVacationRequest w service
+
 **Czas: 1.5h**
+
 - [ ] W tym samym pliku dodać funkcję `cancelVacationRequest(supabase, currentUserId, requestId)`
 - [ ] Implementacja:
   - [ ] Fetch vacation request by ID with user info
@@ -714,7 +733,9 @@ Wszystkie błędy zwracane w formacie:
 - [ ] Dodać error logging
 
 ### Krok 6: Utworzenie approve endpoint
+
 **Czas: 1h**
+
 - [ ] Utworzyć plik `src/pages/api/vacation-requests/[id]/approve.ts`
 - [ ] Implementacja POST handler:
   - [ ] Extract supabase from context.locals
@@ -735,7 +756,9 @@ Wszystkie błędy zwracane w formacie:
 - [ ] Test manually z curl/Postman
 
 ### Krok 7: Utworzenie reject endpoint
+
 **Czas: 45 min**
+
 - [ ] Utworzyć plik `src/pages/api/vacation-requests/[id]/reject.ts`
 - [ ] Implementacja POST handler:
   - [ ] Extract supabase from context.locals
@@ -751,7 +774,9 @@ Wszystkie błędy zwracane w formacie:
 - [ ] Test manually z curl/Postman
 
 ### Krok 8: Utworzenie cancel endpoint
+
 **Czas: 45 min**
+
 - [ ] Utworzyć plik `src/pages/api/vacation-requests/[id]/cancel.ts`
 - [ ] Implementacja POST handler:
   - [ ] Extract supabase from context.locals
@@ -766,7 +791,9 @@ Wszystkie błędy zwracane w formacie:
 - [ ] Test manually z curl/Postman
 
 ### Krok 9: Testy integracyjne
+
 **Czas: 2h**
+
 - [ ] Utworzyć `tests/api/vacation-request-approve.test.sh`
   - [ ] Test: HR approves SUBMITTED request (no threshold exceeded)
   - [ ] Test: HR approves SUBMITTED request (threshold exceeded, with acknowledgment)
@@ -796,7 +823,9 @@ Wszystkie błędy zwracane w formacie:
 - [ ] Uruchomić pełny test suite: `./tests/api/run-all.sh`
 
 ### Krok 10: Dokumentacja API
+
 **Czas: 30 min**
+
 - [ ] Aktualizować `docs/API_EXAMPLES.md`
   - [ ] Dodać sekcję "Vacation Request Actions"
   - [ ] Przykłady curl dla approve endpoint
@@ -807,7 +836,9 @@ Wszystkie błędy zwracane w formacie:
 - [ ] Aktualizować README.md jeśli potrzebne
 
 ### Krok 11: Code review i refactoring
+
 **Czas: 1h**
+
 - [ ] Przejrzeć wszystkie pliki pod kątem:
   - [ ] Spójność konwencji nazewnictwa
   - [ ] Kompletność error handling
@@ -819,7 +850,9 @@ Wszystkie błędy zwracane w formacie:
 - [ ] Sprawdzić błędy TypeScript: `npx tsc --noEmit`
 
 ### Krok 12: Testing edge cases
+
 **Czas: 1h**
+
 - [ ] Przetestować concurrent approvals tego samego wniosku
 - [ ] Przetestować approve po cancel
 - [ ] Przetestować cancel po approve
@@ -829,7 +862,9 @@ Wszystkie błędy zwracane w formacie:
 - [ ] Przetestować special characters w reason
 
 ### Krok 13: Final validation
+
 **Czas: 30 min**
+
 - [ ] Uruchomić wszystkie testy: `./tests/api/run-all.sh`
 - [ ] Sprawdzić wszystkie endpointy są dostępne
 - [ ] Zweryfikować format wszystkich responses
@@ -909,4 +944,3 @@ Wszystkie błędy zwracane w formacie:
 - [ ] Testy przechodzą na staging
 - [ ] Dokumentacja API aktualna
 - [ ] Monitoring skonfigurowany
-

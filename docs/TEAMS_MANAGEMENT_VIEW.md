@@ -45,12 +45,14 @@ useTeamsManagement - /src/components/hooks/useTeamsManagement.ts
 ## Główne funkcjonalności
 
 ### 1. Przeglądanie zespołów
+
 - Lista wszystkich zespołów w organizacji
 - Wyświetlanie nazwy zespołu i liczby członków
 - Oznaczanie aktualnie wybranego zespołu
 - Stan pustej listy z zachętą do utworzenia pierwszego zespołu
 
 ### 2. Tworzenie zespołu
+
 - Modal z formularzem tworzenia
 - Walidacja:
   - Nazwa jest wymagana
@@ -59,18 +61,21 @@ useTeamsManagement - /src/components/hooks/useTeamsManagement.ts
 - Automatyczne odświeżanie listy po utworzeniu
 
 ### 3. Edycja zespołu
+
 - Formularz edycji nazwy zespołu
 - Przycisk "Zapisz" aktywny tylko gdy są zmiany
 - Walidacja identyczna jak przy tworzeniu
 - Wyświetlanie metadanych (data utworzenia, ostatnia modyfikacja)
 
 ### 4. Usuwanie zespołu
+
 - Przycisk z AlertDialog potwierdzenia
 - Ostrzeżenie o nieodwracalności operacji
 - Informacja o usunięciu wszystkich członków
 - Automatyczne wyczyszczenie szczegółów i odświeżenie listy
 
 ### 5. Zarządzanie członkami
+
 - Lista członków z informacjami:
   - Imię i nazwisko
   - Email
@@ -81,6 +86,7 @@ useTeamsManagement - /src/components/hooks/useTeamsManagement.ts
 - Stan pustej listy z zachętą do dodania pierwszego członka
 
 ### 6. Dodawanie członków
+
 - Modal z wyszukiwarką użytkowników
 - Filtrowanie po imieniu, nazwisku i emailu
 - Debounce wyszukiwania (300ms)
@@ -92,6 +98,7 @@ useTeamsManagement - /src/components/hooks/useTeamsManagement.ts
 - Scrollowalna lista użytkowników
 
 ### 7. Usuwanie członków
+
 - AlertDialog z potwierdzeniem
 - Wyświetlanie imienia i nazwiska użytkownika
 - Informacja o skutkach usunięcia
@@ -99,11 +106,13 @@ useTeamsManagement - /src/components/hooks/useTeamsManagement.ts
 ## Layout i UX
 
 ### Master-Detail Pattern
+
 - **Lewa kolumna (1/3 szerokości)**: Lista zespołów
 - **Prawa kolumna (2/3 szerokości)**: Szczegóły wybranego zespołu
 - **Mobile**: Kolumny układają się pionowo (1 kolumna)
 
 ### Stany UI
+
 - **Loading**: Spinner podczas ładowania danych
 - **Empty**: Komunikat gdy brak zespołów/członków
 - **Error**: Komunikaty błędów w toastach
@@ -111,6 +120,7 @@ useTeamsManagement - /src/components/hooks/useTeamsManagement.ts
 - **Disabled**: Przyciski nieaktywne podczas operacji
 
 ### Responsywność
+
 - Desktop: Layout 3-kolumnowy (grid)
 - Tablet/Mobile: Pionowy układ kolumn
 - Scrollowalne listy z max-height
@@ -119,34 +129,36 @@ useTeamsManagement - /src/components/hooks/useTeamsManagement.ts
 
 ### Endpointy używane przez widok
 
-| Metoda | Endpoint | Cel |
-|--------|----------|-----|
-| GET | `/api/teams?includeMemberCount=true` | Lista zespołów z liczbą członków |
-| GET | `/api/teams/:id` | Szczegóły zespołu z listą członków |
-| POST | `/api/teams` | Tworzenie nowego zespołu |
-| PATCH | `/api/teams/:id` | Aktualizacja nazwy zespołu |
-| DELETE | `/api/teams/:id` | Usunięcie zespołu |
-| POST | `/api/teams/:id/members` | Dodanie członków do zespołu |
-| DELETE | `/api/teams/:id/members/:userId` | Usunięcie członka z zespołu |
-| GET | `/api/users` | Lista użytkowników (dla AddTeamMemberModal) |
+| Metoda | Endpoint                             | Cel                                         |
+| ------ | ------------------------------------ | ------------------------------------------- |
+| GET    | `/api/teams?includeMemberCount=true` | Lista zespołów z liczbą członków            |
+| GET    | `/api/teams/:id`                     | Szczegóły zespołu z listą członków          |
+| POST   | `/api/teams`                         | Tworzenie nowego zespołu                    |
+| PATCH  | `/api/teams/:id`                     | Aktualizacja nazwy zespołu                  |
+| DELETE | `/api/teams/:id`                     | Usunięcie zespołu                           |
+| POST   | `/api/teams/:id/members`             | Dodanie członków do zespołu                 |
+| DELETE | `/api/teams/:id/members/:userId`     | Usunięcie członka z zespołu                 |
+| GET    | `/api/users`                         | Lista użytkowników (dla AddTeamMemberModal) |
 
 ## Walidacja
 
 ### Formularz tworzenia zespołu (CreateTeamModal)
+
 ```typescript
-name: z
-  .string()
+name: z.string()
   .min(1, "Nazwa zespołu jest wymagana")
   .min(3, "Nazwa zespołu musi mieć co najmniej 3 znaki")
   .max(100, "Nazwa zespołu nie może przekraczać 100 znaków")
-  .transform((val) => val.trim())
+  .transform((val) => val.trim());
 ```
 
 ### Formularz edycji zespołu (TeamEditForm)
+
 - Identyczna walidacja jak przy tworzeniu
 - Przycisk "Zapisz" disabled gdy brak zmian (dirty check)
 
 ### Dodawanie członków (AddTeamMemberModal)
+
 - Minimum 1 użytkownik musi być wybrany
 - Przycisk "Dodaj" disabled gdy selection jest pusty
 - Użytkownicy usunięci (`deletedAt !== null`) są wykluczeni z listy
@@ -199,41 +211,47 @@ interface AddTeamMembersDTO {
 
 ## Uprawnienia
 
-| Rola | Uprawnienia |
-|------|-------------|
+| Rola          | Uprawnienia                                                                |
+| ------------- | -------------------------------------------------------------------------- |
 | ADMINISTRATOR | Pełny dostęp: tworzenie, edycja, usuwanie zespołów i zarządzanie członkami |
-| HR | Pełny dostęp: tworzenie, edycja, usuwanie zespołów i zarządzanie członkami |
-| EMPLOYEE | Brak dostępu do widoku (redirect do `/`) |
+| HR            | Pełny dostęp: tworzenie, edycja, usuwanie zespołów i zarządzanie członkami |
+| EMPLOYEE      | Brak dostępu do widoku (redirect do `/`)                                   |
 
 ## Obsługa błędów
 
 ### Błędy sieciowe/API
+
 - Wyświetlanie toasta z komunikatem błędu (Sonner)
 - Logowanie błędów do konsoli
 - Graceful degradation - UI pozostaje użyteczne
 
 ### Błędy walidacji
+
 - Wyświetlanie komunikatów pod polami formularza
 - Blokada submisji przy błędach walidacji
 - Komunikat w alert box dla błędów serwera
 
 ### Błędy uprawnień
+
 - Redirect na stronę główną dla użytkowników bez uprawnień
 - Obsługa 403 z API (teoretycznie nie powinno się zdarzyć)
 
 ## Optymalizacja wydajności
 
 ### React optimizations
+
 - `useCallback` dla handlerów eventów
 - Destructuring state do prymitywów (limit, offset, total)
 - Lazy loading komponentów modalnych
 
 ### API optimizations
+
 - Debounce dla wyszukiwania (300ms)
 - Pagination dla długich list
 - Selective refresh - tylko zmienione dane
 
 ### UX optimizations
+
 - Loading states dla wszystkich operacji asynchronicznych
 - Optimistic updates nie są używane (bezpieczeństwo > szybkość)
 - Automatyczne odświeżanie list po operacjach
@@ -241,17 +259,20 @@ interface AddTeamMembersDTO {
 ## Accessibility (A11y)
 
 ### Keyboard Navigation
+
 - Wszystkie interaktywne elementy dostępne z klawiatury
 - Focus-visible styles dla lepszej widoczności focus
 - Tab order zgodny z wizualnym layoutem
 
 ### ARIA
+
 - Przyciski z odpowiednimi labels
 - Dialogs z role="dialog"
 - Alert dialogs z role="alertdialog"
 - Loading states z aria-busy
 
 ### Screen Readers
+
 - Semantic HTML (button, nav, main)
 - Opisowe teksty dla ikon (lucide-react)
 - Status updates przez toasty (live regions)
@@ -327,6 +348,7 @@ src/
 ## Zależności
 
 ### Biblioteki zewnętrzne
+
 - `react` v19 - UI framework
 - `react-hook-form` - zarządzanie formularzami
 - `zod` - walidacja schematów
@@ -335,6 +357,7 @@ src/
 - `lucide-react` - ikony
 
 ### Komponenty Shadcn/ui
+
 - `Dialog` - modale
 - `AlertDialog` - dialogi potwierdzenia
 - `Card` - karty
@@ -367,6 +390,7 @@ src/
 ## Dalszy rozwój
 
 ### Planowane ulepszenia
+
 1. Filtrowanie i sortowanie listy zespołów
 2. Wyszukiwanie w liście zespołów
 3. Bulk operations dla członków
@@ -377,6 +401,7 @@ src/
 8. Powiadomienia o zmianach w zespole
 
 ### Integracje
+
 1. Kalendarz zespołu (już zaplanowany)
 2. Wnioski urlopowe zespołu
 3. Dashboard zespołu

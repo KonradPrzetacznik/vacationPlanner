@@ -99,6 +99,7 @@
 #### 1. Główne wymagania dotyczące architektury UI
 
 ##### 1.1. Tech Stack
+
 - **Framework**: Astro 5 dla stron statycznych + React 19 dla komponentów interaktywnych
 - **Stylowanie**: Tailwind CSS 4 dla utility-first styling
 - **Biblioteka UI**: Shadcn/ui zapewniająca gotowe, dostępne komponenty
@@ -108,6 +109,7 @@
 - **Notyfikacje**: Sonner (Shadcn/ui toast system)
 
 ##### 1.2. Wymagania funkcjonalne
+
 - **Role-based UI**: Trzy różne interfejsy dla ADMINISTRATOR, HR i EMPLOYEE
 - **Responsywność**: Mobile-first approach, breakpoints: 320px-1920px+
 - **Dostępność**: WCAG 2.1 Level AA compliance
@@ -115,6 +117,7 @@
 - **Autentykacja**: Supabase Auth z JWT tokens, middleware-based protection
 
 ##### 1.3. Wymagania niefunkcjonalne
+
 - **Performance**: Lighthouse score > 90
 - **Load time**: < 2s FCP, < 3s LCP
 - **Accessibility score**: 100
@@ -126,11 +129,13 @@
 ##### 2.1. Struktura routing
 
 **Publiczne (niezalogowane):**
+
 ```
 /login                    - Formularz logowania
 ```
 
 **Wymagające autoryzacji:**
+
 ```
 /change-password          - Wymuszana zmiana hasła (wszystkie role)
 /                         - Redirect do właściwego dashboardu
@@ -162,6 +167,7 @@
 ##### 2.2. Przepływy użytkownika
 
 **A. Pierwsze logowanie (wszystkie role):**
+
 1. Użytkownik wpisuje email i hasło tymczasowe
 2. POST do `/api/auth/login`
 3. Middleware wykrywa `requiresPasswordReset: true`
@@ -171,6 +177,7 @@
 7. Redirect na dashboard odpowiedni dla roli
 
 **B. Składanie wniosku urlopowego (EMPLOYEE):**
+
 1. Użytkownik klika "Złóż nowy wniosek" na `/employee/vacation`
 2. Otwiera się dialog `NewVacationRequestDialog`
 3. Wybór daty "od" (DatePicker blokuje weekendy i przeszłe daty)
@@ -186,6 +193,7 @@
 9. Zamknięcie dialogu, odświeżenie listy wniosków
 
 **C. Akceptacja wniosku z ostrzeżeniem o progu (HR):**
+
 1. HR widzi listę wniosków na `/hr/vacation-requests` (zakładka "Oczekujące")
 2. Kliknięcie "Akceptuj" przy wniosku
 3. POST `/api/vacation-requests/:id/approve` z `acknowledgeThresholdWarning: false`
@@ -200,6 +208,7 @@
 9. Odświeżenie listy wniosków (usunięcie z zakładki "Oczekujące")
 
 **D. Zarządzanie zespołem (HR):**
+
 1. HR przechodzi na `/hr/teams/:id`
 2. Widzi listę członków zespołu w tabeli
 3. Sekcja "Dodaj członków":
@@ -216,6 +225,7 @@
 11. Toast notification, odświeżenie tabeli
 
 **E. Przeglądanie kalendarza zespołu (EMPLOYEE/HR):**
+
 1. Użytkownik przechodzi na `/employee/calendar` lub `/hr/calendar`
 2. GET `/api/teams` dla listy zespołów użytkownika
 3. Domyślnie wybrany pierwszy zespół alfabetycznie
@@ -238,24 +248,26 @@
 ##### 3.1. React Query Configuration
 
 **Query Client Setup** (`src/lib/queryClient.ts`):
+
 ```typescript
-import { QueryClient } from '@tanstack/react-query'
+import { QueryClient } from "@tanstack/react-query";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000,        // 5 minut
-      cacheTime: 10 * 60 * 1000,       // 10 minut
+      staleTime: 5 * 60 * 1000, // 5 minut
+      cacheTime: 10 * 60 * 1000, // 10 minut
       refetchOnWindowFocus: false,
       retry: 1,
     },
   },
-})
+});
 ```
 
 ##### 3.2. Custom Hooks Pattern
 
 **Struktura hooks dla każdego resource:**
+
 ```
 src/components/hooks/
   useUsers.ts              - Admin: CRUD użytkowników
@@ -267,39 +279,41 @@ src/components/hooks/
 ```
 
 **Przykład implementacji hook:**
+
 ```typescript
 // useVacationRequests.ts
 export const useVacationRequests = (params: VacationRequestsQueryParams) => {
   return useQuery({
-    queryKey: ['vacation-requests', params],
+    queryKey: ["vacation-requests", params],
     queryFn: () => fetchVacationRequests(params),
-  })
-}
+  });
+};
 
 export const useApproveVacationRequest = () => {
-  const queryClient = useQueryClient()
-  
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: ({ id, acknowledgeThresholdWarning }: ApproveParams) =>
       approveVacationRequest(id, acknowledgeThresholdWarning),
     onSuccess: (data) => {
       if (data.thresholdWarning) {
         // Obsługa w komponencie (pokazanie dialogu)
-        return
+        return;
       }
-      queryClient.invalidateQueries(['vacation-requests'])
-      toast.success('Wniosek został zaakceptowany')
+      queryClient.invalidateQueries(["vacation-requests"]);
+      toast.success("Wniosek został zaakceptowany");
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error))
+      toast.error(getErrorMessage(error));
     },
-  })
-}
+  });
+};
 ```
 
 ##### 3.3. API Service Layer
 
 **Struktura services:**
+
 ```
 src/lib/api/
   users.ts               - fetchUsers, createUser, updateUser, deleteUser
@@ -310,76 +324,84 @@ src/lib/api/
 ```
 
 **Przykład service function:**
+
 ```typescript
 // vacation-requests.ts
-export async function fetchVacationRequests(
-  params: VacationRequestsQueryParams
-): Promise<VacationRequestsResponse> {
+export async function fetchVacationRequests(params: VacationRequestsQueryParams): Promise<VacationRequestsResponse> {
   const queryString = new URLSearchParams({
-    limit: params.limit?.toString() || '50',
-    offset: params.offset?.toString() || '0',
-    ...(params.status && { status: params.status.join(',') }),
+    limit: params.limit?.toString() || "50",
+    offset: params.offset?.toString() || "0",
+    ...(params.status && { status: params.status.join(",") }),
     ...(params.teamId && { teamId: params.teamId }),
-  }).toString()
+  }).toString();
 
-  const response = await fetch(`/api/vacation-requests?${queryString}`)
-  
+  const response = await fetch(`/api/vacation-requests?${queryString}`);
+
   if (!response.ok) {
-    throw new ApiError(await response.json())
+    throw new ApiError(await response.json());
   }
-  
-  return response.json()
+
+  return response.json();
 }
 ```
 
 ##### 3.4. Error Handling Strategy
 
 **Error Mapper** (`src/lib/errors.ts`):
+
 ```typescript
 export class ApiError extends Error {
-  constructor(public code: string, message: string, public details?: any) {
-    super(message)
+  constructor(
+    public code: string,
+    message: string,
+    public details?: any
+  ) {
+    super(message);
   }
 }
 
 export const getErrorMessage = (error: unknown): string => {
   if (error instanceof ApiError) {
-    return ERROR_MESSAGES[error.code] || error.message
+    return ERROR_MESSAGES[error.code] || error.message;
   }
-  return 'Wystąpił nieoczekiwany błąd. Spróbuj ponownie.'
-}
+  return "Wystąpił nieoczekiwany błąd. Spróbuj ponownie.";
+};
 
 const ERROR_MESSAGES: Record<string, string> = {
-  VALIDATION_ERROR: 'Dane formularza są nieprawidłowe',
-  AUTHENTICATION_REQUIRED: 'Musisz być zalogowany',
-  INSUFFICIENT_PERMISSIONS: 'Nie masz uprawnień do tej akcji',
-  RESOURCE_NOT_FOUND: 'Zasób nie został znaleziony',
-  DUPLICATE_RESOURCE: 'Zasób o tych danych już istnieje',
-  INSUFFICIENT_VACATION_DAYS: 'Niewystarczająca liczba dni urlopowych',
-  OVERLAPPING_VACATION: 'Masz już wniosek na ten okres',
-  WEEKEND_DATE_INVALID: 'Data nie może przypadać na weekend',
-  PAST_DATE_INVALID: 'Nie można wybrać daty z przeszłości',
-}
+  VALIDATION_ERROR: "Dane formularza są nieprawidłowe",
+  AUTHENTICATION_REQUIRED: "Musisz być zalogowany",
+  INSUFFICIENT_PERMISSIONS: "Nie masz uprawnień do tej akcji",
+  RESOURCE_NOT_FOUND: "Zasób nie został znaleziony",
+  DUPLICATE_RESOURCE: "Zasób o tych danych już istnieje",
+  INSUFFICIENT_VACATION_DAYS: "Niewystarczająca liczba dni urlopowych",
+  OVERLAPPING_VACATION: "Masz już wniosek na ten okres",
+  WEEKEND_DATE_INVALID: "Data nie może przypadać na weekend",
+  PAST_DATE_INVALID: "Nie można wybrać daty z przeszłości",
+};
 ```
 
 ##### 3.5. State Management Patterns
 
 **Global State (Supabase Auth):**
+
 - Session state: `context.locals.user` (server-side via middleware)
 - Client-side: Supabase client auto-manages session in localStorage
 
 **Server State (React Query):**
+
 - API data: Managed by React Query cache
 - Automatic background refetching
 - Optimistic updates for mutations
 - Cache invalidation on mutations
 
 **Local State (React useState):**
+
 - Form inputs: React Hook Form
 - UI state: Modal open/close, dropdown selections
 - Temporary calculations: Live preview w formularzu
 
 **URL State (Astro routing):**
+
 - Current page, filters, pagination
 - Query params dla filtrów: `?status=SUBMITTED&teamId=xxx`
 
@@ -388,6 +410,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 ##### 4.1. Strategia responsywności
 
 **Breakpoints (Tailwind CSS 4):**
+
 ```
 Mobile:  320px - 639px   (default, no prefix)
 Tablet:  640px - 1023px  (sm:)
@@ -397,24 +420,29 @@ Desktop: 1024px+         (lg:, xl:, 2xl:)
 **Responsive Patterns:**
 
 **Nawigacja:**
+
 - Desktop: Poziomy TopBar z pełnym menu
 - Mobile: Hamburger icon → Sheet/Drawer z vertical menu
 
 **Tabele:**
+
 - Desktop: Pełna tabela ze wszystkimi kolumnami
 - Tablet: Ukrycie mniej istotnych kolumn (np. "Data złożenia"), scroll horizontal
 - Mobile: Card layout - każdy wiersz jako osobna karta
 
 **Formularze:**
+
 - Desktop: 2-3 kolumny w grid
 - Tablet/Mobile: 1 kolumna, pełna szerokość
 
 **Kalendarz:**
+
 - Desktop: Pełny grid, wszystkie dni widoczne
 - Tablet: Sticky column z nazwiskami, scroll horizontal dla dni
 - Mobile: Lista accordion - pracownik + rozwijane dni z urlopami
 
 **Dashboard Cards:**
+
 - Desktop: Grid 3 kolumny
 - Tablet: Grid 2 kolumny
 - Mobile: Stack vertical, 1 kolumna
@@ -422,24 +450,28 @@ Desktop: 1024px+         (lg:, xl:, 2xl:)
 ##### 4.2. Dostępność (WCAG 2.1 AA)
 
 **Perceivable (Postrzegalność):**
+
 - Kontrast kolorów: Minimum 4.5:1 dla tekstu, 3:1 dla UI components
 - Alternatywny tekst: Wszystkie ikony z `aria-label`
 - Nagłówki semantyczne: Hierarchia h1-h6 na każdej stronie
 - Focus indicators: Widoczne ramki focus (Tailwind `focus-visible:ring-2`)
 
 **Operable (Obsługiwalność):**
+
 - Keyboard navigation: Tab, Shift+Tab, Enter, Space, Arrow keys
 - Skip links: "Przejdź do treści głównej" na początku każdej strony
 - No keyboard traps: Escape zamyka modals, możliwość wyjścia z każdego elementu
 - Sufficient time: Brak time-limitów, które nie mogą być wyłączone
 
 **Understandable (Zrozumiałość):**
+
 - Etykiety formularzy: Wszystkie pola z `<Label>` i `htmlFor`
 - Komunikaty błędów: Jasne, konkretne, pomocne (np. "Imię musi mieć co najmniej 2 znaki")
 - Instrukcje: Helper text dla złożonych pól (np. "Wybierz datę rozpoczęcia urlopu")
 - Język: `<html lang="pl">`, wszystkie teksty w języku polskim
 
 **Robust (Solidność):**
+
 - Semantic HTML: `<nav>`, `<main>`, `<article>`, `<aside>`, `<button>`, `<a>`
 - ARIA landmarks: `role="navigation"`, `role="main"`, `role="complementary"`
 - ARIA roles: `role="table"`, `role="dialog"`, `role="alert"`
@@ -478,8 +510,8 @@ Desktop: 1024px+         (lg:, xl:, 2xl:)
 </table>
 
 // Przycisk usuwania z kontekstem
-<Button 
-  aria-label="Usuń użytkownika Jan Kowalski" 
+<Button
+  aria-label="Usuń użytkownika Jan Kowalski"
   onClick={handleDelete}
 >
   <TrashIcon aria-hidden="true" />
@@ -492,7 +524,7 @@ Desktop: 1024px+         (lg:, xl:, 2xl:)
 
 // Modal confirmation
 <Dialog open={open} onOpenChange={setOpen}>
-  <DialogContent 
+  <DialogContent
     aria-describedby="dialog-description"
     aria-labelledby="dialog-title"
   >
@@ -500,7 +532,7 @@ Desktop: 1024px+         (lg:, xl:, 2xl:)
       Usuń użytkownika
     </DialogTitle>
     <DialogDescription id="dialog-description">
-      Czy na pewno chcesz usunąć użytkownika Jan Kowalski? 
+      Czy na pewno chcesz usunąć użytkownika Jan Kowalski?
       Ta akcja spowoduje anulowanie wszystkich jego przyszłych urlopów.
     </DialogDescription>
     <DialogFooter>
@@ -518,79 +550,87 @@ Desktop: 1024px+         (lg:, xl:, 2xl:)
 ##### 4.3. Bezpieczeństwo
 
 **Autentykacja:**
+
 - Supabase Auth z JWT tokens
 - Tokens w httpOnly cookies (if possible) lub secure localStorage
 - Auto-refresh tokenów przez Supabase SDK
 - Logout: Wywołanie `supabase.auth.signOut()` + clear cache
 
 **Autoryzacja:**
+
 - Middleware sprawdza rolę przed każdym request
 - Role-based routing: `getRouteRole(pathname)` → sprawdzenie `user.role`
 - RLS policies w Supabase jako primary defense
 - Frontend checks jako UX improvement (ukrywanie przycisków)
 
 **Middleware Flow:**
+
 ```typescript
 // src/middleware/index.ts
 export async function onRequest(context, next) {
-  const { url, locals, redirect } = context
-  const supabase = locals.supabase
-  
+  const { url, locals, redirect } = context;
+  const supabase = locals.supabase;
+
   // Publiczne ścieżki
   if (PUBLIC_ROUTES.includes(url.pathname)) {
-    return next()
+    return next();
   }
-  
+
   // Sprawdź autentykację
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) {
-    return redirect('/login')
+    return redirect("/login");
   }
-  
+
   // Pobierz profil
-  const profile = await fetchUserProfile(user.id, supabase)
-  locals.user = profile
-  
+  const profile = await fetchUserProfile(user.id, supabase);
+  locals.user = profile;
+
   // Wymuszana zmiana hasła
-  if (profile.requiresPasswordReset && url.pathname !== '/change-password') {
-    return redirect('/change-password')
+  if (profile.requiresPasswordReset && url.pathname !== "/change-password") {
+    return redirect("/change-password");
   }
-  
+
   // Sprawdź uprawnienia do ścieżki
-  const requiredRole = getRouteRole(url.pathname)
+  const requiredRole = getRouteRole(url.pathname);
   if (requiredRole && profile.role !== requiredRole) {
-    return redirect(ROLE_DASHBOARDS[profile.role])
+    return redirect(ROLE_DASHBOARDS[profile.role]);
   }
-  
-  return next()
+
+  return next();
 }
 ```
 
 **Route Protection:**
+
 ```typescript
 const ROUTE_ROLES: Record<string, Role> = {
-  '/admin': 'ADMINISTRATOR',
-  '/hr': 'HR',
-  '/employee': 'EMPLOYEE',
-}
+  "/admin": "ADMINISTRATOR",
+  "/hr": "HR",
+  "/employee": "EMPLOYEE",
+};
 
 function getRouteRole(pathname: string): Role | null {
   for (const [route, role] of Object.entries(ROUTE_ROLES)) {
     if (pathname.startsWith(route)) {
-      return role
+      return role;
     }
   }
-  return null
+  return null;
 }
 ```
 
 **XSS Prevention:**
+
 - Astro auto-escapes output
 - React auto-escapes JSX
 - Nie używać `dangerouslySetInnerHTML` bez sanitization
 - Walidacja wszystkich user inputs z Zod
 
 **CSRF Protection:**
+
 - Supabase SDK automatycznie dodaje CSRF protection
 - SameSite cookies dla session tokens
 
@@ -599,75 +639,79 @@ function getRouteRole(pathname: string): Role | null {
 ##### 5.1. Layout Components
 
 **MainLayout.astro** - Główny layout dla zalogowanych użytkowników:
+
 ```astro
 ---
 interface Props {
-  title: string
-  role: Role
+  title: string;
+  role: Role;
 }
-const { title, role } = Astro.props
-const user = Astro.locals.user
+const { title, role } = Astro.props;
+const user = Astro.locals.user;
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{title} | VacationPlanner</title>
-</head>
-<body>
-  <a href="#main-content" class="skip-link">Przejdź do treści głównej</a>
-  <TopBar role={role} user={user} client:load />
-  <main id="main-content" role="main">
-    <Breadcrumbs />
-    <slot />
-  </main>
-  <footer role="contentinfo">
-    <p>&copy; 2026 VacationPlanner</p>
-  </footer>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title} | VacationPlanner</title>
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">Przejdź do treści głównej</a>
+    <TopBar role={role} user={user} client:load />
+    <main id="main-content" role="main">
+      <Breadcrumbs />
+      <slot />
+    </main>
+    <footer role="contentinfo">
+      <p>&copy; 2026 VacationPlanner</p>
+    </footer>
+  </body>
 </html>
 ```
 
 **AuthLayout.astro** - Layout dla stron publicznych (login):
+
 ```astro
 ---
 interface Props {
-  title: string
+  title: string;
 }
-const { title } = Astro.props
+const { title } = Astro.props;
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{title} | VacationPlanner</title>
-</head>
-<body class="bg-gray-50">
-  <div class="min-h-screen flex items-center justify-center py-12 px-4">
-    <div class="max-w-md w-full">
-      <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold">VacationPlanner</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title} | VacationPlanner</title>
+  </head>
+  <body class="bg-gray-50">
+    <div class="min-h-screen flex items-center justify-center py-12 px-4">
+      <div class="max-w-md w-full">
+        <div class="text-center mb-8">
+          <h1 class="text-3xl font-bold">VacationPlanner</h1>
+        </div>
+        <slot />
       </div>
-      <slot />
     </div>
-  </div>
-</body>
+  </body>
 </html>
 ```
 
 ##### 5.2. Navigation Components
 
 **TopBar.tsx** - Główna nawigacja z Shadcn/ui Navigation Menu:
+
 - Logo aplikacji (po lewej)
 - Navigation Menu (center/left) - dynamiczne według roli
 - User dropdown (po prawej): [User name] ▼ → Profil, Wyloguj
 - Mobile: Hamburger icon → Sheet/Drawer
 
 **Breadcrumbs.tsx** - Ścieżka nawigacji:
+
 - Wykorzystuje Shadcn/ui Breadcrumb component
 - Auto-generowanie na podstawie URL
 - ARIA: `aria-label="breadcrumb"`
@@ -675,51 +719,56 @@ const { title } = Astro.props
 ##### 5.3. Custom Shared Components
 
 **LoadingState.tsx** - Uniwersalny komponent ładowania:
+
 ```typescript
 interface LoadingStateProps {
-  variant: 'skeleton-table' | 'skeleton-form' | 'skeleton-card' | 'spinner'
-  rows?: number
+  variant: "skeleton-table" | "skeleton-form" | "skeleton-card" | "spinner";
+  rows?: number;
 }
 ```
 
 **ErrorBoundary.tsx** - React Error Boundary:
+
 ```typescript
 interface ErrorBoundaryProps {
-  children: ReactNode
-  fallback?: ReactNode
+  children: ReactNode;
+  fallback?: ReactNode;
 }
 // Features: Wyświetlanie friendly error message, przycisk "Spróbuj ponownie"
 ```
 
 **ConfirmDialog.tsx** - Modal potwierdzenia:
+
 ```typescript
 interface ConfirmDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  title: string
-  description: string
-  confirmText?: string
-  cancelText?: string
-  variant?: 'danger' | 'warning'
-  onConfirm: () => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  description: string;
+  confirmText?: string;
+  cancelText?: string;
+  variant?: "danger" | "warning";
+  onConfirm: () => void;
 }
 ```
 
 **StatusBadge.tsx** - Badge dla statusów:
+
 ```typescript
 interface StatusBadgeProps {
-  status: 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'CANCELLED'
+  status: "SUBMITTED" | "APPROVED" | "REJECTED" | "CANCELLED";
 }
 // Kolory: SUBMITTED (niebieski), APPROVED (zielony), REJECTED (czerwony), CANCELLED (szary)
 ```
 
 **VacationDaysCounter.tsx** - Wizualizacja dni urlopowych:
+
 ```typescript
 interface VacationDaysCounterProps {
-  totalDays: number
-  remainingCurrentYearDays: number
-  remainingCarryoverDays: number
-  carryoverExpiresAt: string
+  totalDays: number;
+  remainingCurrentYearDays: number;
+  remainingCarryoverDays: number;
+  carryoverExpiresAt: string;
 }
 // Features: Główny licznik, breakdown, progress bar, ostrzeżenie o wygasających dniach
 ```
@@ -727,11 +776,13 @@ interface VacationDaysCounterProps {
 ##### 5.4. Role-specific Components
 
 **Admin:**
+
 - `AdminDashboard.tsx` - Statystyki i ostatnie aktywności
 - `UsersTable.tsx` - Tabela użytkowników z sortowaniem, filtrowaniem
 - `UserForm.tsx` - Formularz dodawania/edycji użytkownika
 
 **HR:**
+
 - `HRDashboard.tsx` - Oczekujące wnioski, statystyki zespołów
 - `VacationRequestsTable.tsx` - Tabela z zakładkami (statusy) i filtrami
 - `ThresholdWarningDialog.tsx` - Modal ostrzeżenia o przekroczeniu progu
@@ -741,6 +792,7 @@ interface VacationDaysCounterProps {
 - `SettingsForm.tsx` - Formularz ustawień
 
 **Employee:**
+
 - `EmployeeDashboard.tsx` - Przegląd dni i najbliższych urlopów
 - `MyVacationContent.tsx` - Lista wniosków, VacationDaysCounter
 - `NewVacationRequestDialog.tsx` - Dialog składania wniosku z live preview
@@ -749,6 +801,7 @@ interface VacationDaysCounterProps {
 #### 6. Plan implementacji (8 faz)
 
 **Faza 1: Foundation (Priorytet: WYSOKI)**
+
 - Setup Shadcn/ui + theme configuration
 - MainLayout + AuthLayout
 - TopBar z Navigation Menu (responsive)
@@ -759,6 +812,7 @@ interface VacationDaysCounterProps {
 - Toast notifications setup
 
 **Faza 2: Admin Panel (Priorytet: WYSOKI)**
+
 - /admin/dashboard
 - /admin/users (lista z filtrowaniem)
 - /admin/users/new (formularz)
@@ -766,6 +820,7 @@ interface VacationDaysCounterProps {
 - Soft-delete functionality
 
 **Faza 3: HR Panel - Core (Priorytet: WYSOKI)**
+
 - /hr/dashboard
 - /hr/vacation-requests (zakładki + filtry)
 - Approve/Reject + threshold warning dialog
@@ -775,24 +830,28 @@ interface VacationDaysCounterProps {
 - Add/Remove members
 
 **Faza 4: Employee Panel (Priorytet: WYSOKI)**
+
 - /employee/dashboard
 - /employee/vacation (lista + VacationDaysCounter)
 - /employee/vacation/new (dialog z live preview)
 - Cancel request functionality
 
 **Faza 5: Calendar Views (Priorytet: ŚREDNI)**
+
 - TeamCalendar component (tabelaryczny layout)
 - /hr/calendar
 - /employee/calendar
 - Responsive calendar (mobile list view)
 
 **Faza 6: Settings & Polish (Priorytet: ŚREDNI)**
+
 - /hr/settings
 - Loading states (Skeleton components)
 - Empty states
 - /change-password
 
 **Faza 7: Accessibility & Testing (Priorytet: WYSOKI)**
+
 - WCAG 2.1 AA audit
 - Keyboard navigation testing
 - Screen reader testing
@@ -800,6 +859,7 @@ interface VacationDaysCounterProps {
 - Focus indicators
 
 **Faza 8: Optimization (Priorytet: NISKI)**
+
 - Performance audit
 - Bundle size optimization
 - Lighthouse score > 90
@@ -812,7 +872,7 @@ interface VacationDaysCounterProps {
 
 1. **Persistencja wyboru zespołu w kalendarzu**
    - **Pytanie**: Czy wybór zespołu w kalendarzu powinien być zapisywany w localStorage/cookies, aby po odświeżeniu strony był zapamiętany?
-   - **Alternatywy**: 
+   - **Alternatywy**:
      - Zawsze pokazywać pierwszy zespół alfabetycznie
      - Zapisywać w localStorage preferencję użytkownika
      - Zapisywać w profilu użytkownika (wymaga nowego pola w bazie)
@@ -886,4 +946,3 @@ interface VacationDaysCounterProps {
 </unresolved_issues>
 
 </conversation_summary>
-

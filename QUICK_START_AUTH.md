@@ -3,17 +3,21 @@
 ## 🚀 Szybkie Uruchomienie (5 minut)
 
 ### 1. Zainstaluj zależności (jeśli jeszcze nie zrobiono)
+
 ```bash
 npm install
 ```
 
 ### 2. Zresetuj lokalną bazę danych
+
 ```bash
 npx supabase db reset
 ```
 
 ### 3. Skonfiguruj zmienne środowiskowe
+
 Upewnij się, że masz plik `.env` z:
+
 ```env
 SUPABASE_URL=http://localhost:54321
 SUPABASE_KEY=[twój-anon-key]
@@ -23,11 +27,13 @@ SUPABASE_SERVICE_ROLE_KEY=[twój-service-role-key]
 💡 Klucze znajdziesz po uruchomieniu `npx supabase start` w outputcie.
 
 ### 4. Uruchom serwer deweloperski
+
 ```bash
 npm run dev
 ```
 
 ### 5. Otwórz aplikację
+
 ```
 http://localhost:3000/login
 ```
@@ -35,16 +41,19 @@ http://localhost:3000/login
 ## 📧 Testowe Konta (z seed.sql)
 
 ### Administrator
+
 - **Email:** `admin.user@vacationplanner.pl`
 - **Hasło:** `test123`
 - **Rola:** ADMINISTRATOR
 
 ### HR
+
 - **Email:** `ferdynand.kiepski@vacationplanner.pl`
 - **Hasło:** `test123`
 - **Rola:** HR
 
 ### Employee
+
 - **Email:** `kazimierz.pawlak@vacationplanner.pl`
 - **Hasło:** `test123`
 - **Rola:** EMPLOYEE
@@ -52,12 +61,14 @@ http://localhost:3000/login
 ## 🧪 Testowanie Flow
 
 ### Test 1: Logowanie
+
 1. Otwórz `http://localhost:3000/login`
 2. Zaloguj się jako admin (dane powyżej)
 3. Sprawdź czy jesteś przekierowany na `/`
 4. Sprawdź czy w nawigacji widzisz email i przycisk "Wyloguj się"
 
 ### Test 2: Tworzenie użytkownika
+
 1. Zaloguj się jako administrator
 2. Przejdź do `/admin/users`
 3. Kliknij "Add User"
@@ -74,6 +85,7 @@ http://localhost:3000/login
 10. Zaloguj się nowym kontem
 
 ### Test 3: Reset hasła
+
 1. Na stronie `/login` kliknij "Zapomniałeś hasła?"
 2. Wprowadź email: `admin.user@vacationplanner.pl`
 3. Kliknij "Wyślij link resetujący"
@@ -84,6 +96,7 @@ http://localhost:3000/login
 8. Zaloguj się nowym hasłem
 
 ### Test 4: Wylogowanie
+
 1. Będąc zalogowanym, kliknij "Wyloguj się"
 2. Sprawdź czy jesteś przekierowany na `/login`
 3. Spróbuj wejść na `/calendar` - powinieneś być przekierowany na `/login`
@@ -91,25 +104,30 @@ http://localhost:3000/login
 ## 🔍 Debugowanie
 
 ### Problem: Nie mogę się zalogować
+
 ```bash
 # Sprawdź logi Supabase Auth
 npx supabase logs auth
 ```
 
 ### Problem: Email nie został wysłany
+
 ```bash
 # Sprawdź Inbucket
 open http://localhost:54324
 ```
 
 ### Problem: Token expired
+
 Tokeny mają ograniczony czas życia:
+
 - **Invite token:** 24 godziny
 - **Recovery token:** 1 godzina
 
 Poproś o nowy link.
 
 ### Problem: Błąd 401 Unauthorized
+
 1. Wyloguj się i zaloguj ponownie
 2. Sprawdź czy cookie są poprawnie ustawione (DevTools → Application → Cookies)
 3. Sprawdź logi middleware: `console.log` w `src/middleware/index.ts`

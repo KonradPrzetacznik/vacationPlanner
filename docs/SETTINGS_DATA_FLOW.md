@@ -181,6 +181,7 @@
 ## Przepływ danych - szczegóły
 
 ### 1. Initial Load (GET)
+
 ```
 User → /admin/settings
   → Middleware: Auth check (ADMINISTRATOR/HR)
@@ -196,6 +197,7 @@ User → /admin/settings
 ```
 
 ### 2. Form Interaction (Client-side)
+
 ```
 User types in input
   → onChange: string → parseInt() → number
@@ -205,6 +207,7 @@ User types in input
 ```
 
 ### 3. Form Submit (POST)
+
 ```
 User clicks "Zapisz"
   → onSubmit triggered
@@ -238,6 +241,7 @@ User clicks "Zapisz"
 ## Transformacje danych
 
 ### API → Form (Initial Load)
+
 ```typescript
 // API Response
 SettingsDTO[] = [
@@ -253,6 +257,7 @@ SettingsFormValues = {
 ```
 
 ### Form → API (Submit)
+
 ```typescript
 // Form Values
 SettingsFormValues = {
@@ -270,38 +275,40 @@ SettingsDTO[] = [
 ## Poziomy walidacji
 
 ### 1. Browser (HTML5)
+
 ```html
 <input type="number" />
 <!-- Blokuje wpisywanie liter -->
 ```
 
 ### 2. React (onChange)
+
 ```typescript
 onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
 // Konwersja string → number
 ```
 
 ### 3. Zod Schema (Client)
+
 ```typescript
-z.number()
-  .int("Musi być liczbą całkowitą")
-  .min(1, "Min 1")
-  .max(365, "Max 365")
+z.number().int("Musi być liczbą całkowitą").min(1, "Min 1").max(365, "Max 365");
 // Walidacja z komunikatami
 ```
 
 ### 4. Zod Schema (API)
+
 ```typescript
 z.array(
   z.object({
     key: z.string(),
-    value: z.number()
+    value: z.number(),
   })
-)
+);
 // Walidacja struktury
 ```
 
 ### 5. Service (Business Logic)
+
 ```typescript
 if (key === "default_vacation_days") {
   if (value < 1 || value > 365) {
@@ -348,29 +355,29 @@ Time →
 
 T0: Initial Load
     [Loading...] (settings.astro fetch)
-    
+
 T1: Rendered
     Form: [26] [75]
     Button: [Zapisz ustawienia]
-    
+
 T2: User edits
     Form: [28] [75]  ← changed
     Validation: ✅ OK
-    
+
 T3: User clicks submit
     Form: [28] [75]
     Button: [Zapisywanie...] (disabled)
-    
+
 T4: API processing
     Form: [28] [75]
     Button: [Zapisywanie...] (disabled)
     Loading indicator visible
-    
+
 T5: Success response
     Form: [28] [75]
     Button: [Zapisz ustawienia] (enabled)
     Toast: "✅ Zapisano!"
-    
+
 T6: Toast auto-hide
     Form: [28] [75]
     Button: [Zapisz ustawienia] (enabled)

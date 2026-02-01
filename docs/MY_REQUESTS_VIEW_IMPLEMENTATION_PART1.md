@@ -1,6 +1,7 @@
 # Podsumowanie Implementacji - Widok "Moje Wnioski" (Część 1)
 
 ## Data: 2026-02-01
+
 ## Status: ✅ Kroki 1-3 ukończone
 
 ## Wykonane Kroki
@@ -8,6 +9,7 @@
 ### 1. Utworzenie struktury plików i komponentów ✅
 
 Utworzone pliki:
+
 - `/src/pages/requests.astro` - Strona Astro dla widoku /requests
 - `/src/components/requests/MyRequestsView.tsx` - Główny komponent React
 - `/src/components/requests/VacationSummary.tsx` - Podsumowanie dni urlopowych
@@ -21,6 +23,7 @@ Utworzone pliki:
 Hook implementuje pełną logikę zarządzania stanem widoku:
 
 **Zarządzany stan:**
+
 - `requests` - Lista wniosków urlopowych użytkownika
 - `allowance` - Informacje o dostępnych dniach urlopowych
 - `filters` - Aktywne filtry
@@ -28,12 +31,14 @@ Hook implementuje pełną logikę zarządzania stanem widoku:
 - `error` - Informacje o błędach
 
 **Funkcje:**
+
 - `setFilters()` - Aktualizacja filtrów i odświeżanie danych
 - `cancelRequest(id)` - Anulowanie wniosku urlopowego
 - `createRequest(data)` - Tworzenie nowego wniosku
 - `refreshRequests()` - Manualne odświeżanie listy
 
 **Integracja z API:**
+
 - GET `/api/vacation-requests` - Pobieranie listy wniosków z filtrowaniem
 - POST `/api/vacation-requests/:id/cancel` - Anulowanie wniosku
 - POST `/api/vacation-requests` - Tworzenie nowego wniosku
@@ -41,6 +46,7 @@ Hook implementuje pełną logikę zarządzania stanem widoku:
 ### 3. Implementacja komponentu głównego `MyRequestsView` ✅
 
 **Zaimplementowane funkcjonalności:**
+
 - Wyświetlanie podsumowania dni urlopowych (`VacationSummary`)
 - Wyświetlanie listy wniosków z filtrowaniem (`RequestList`)
 - Przycisk "Złóż nowy wniosek" z nawigacją do `/requests/new`
@@ -51,7 +57,9 @@ Hook implementuje pełną logikę zarządzania stanem widoku:
 ## Zaimplementowane Komponenty
 
 ### VacationSummary.tsx
+
 **Funkcjonalność:**
+
 - Wyświetla 3 karty z informacjami: Łącznie dni, Wykorzystane, Pozostało
 - Wyświetla informację o dniach zaległych z poprzedniego roku (jeśli istnieją)
 - Formatowanie daty terminu wykorzystania dni zaległych (31 marca)
@@ -59,7 +67,9 @@ Hook implementuje pełną logikę zarządzania stanem widoku:
 - Responsywny grid layout (3 kolumny na desktop)
 
 ### RequestList.tsx
+
 **Funkcjonalność:**
+
 - Wyświetla listę wniosków w formie kart
 - Integracja z komponentem filtrów
 - Stan ładowania
@@ -67,14 +77,18 @@ Hook implementuje pełną logikę zarządzania stanem widoku:
 - Przekazywanie akcji anulowania do elementów listy
 
 ### RequestListFilters.tsx
+
 **Funkcjonalność:**
+
 - Select z filtrami statusu: Wszystkie, Oczekujące, Zatwierdzone, Odrzucone, Anulowane
 - Przycisk "Wyczyść filtry" (widoczny tylko gdy filtry są aktywne)
 - Wykorzystanie komponentów shadcn/ui (Select, Button)
 - Stan lokalny do zarządzania wybranymi filtrami
 
 ### RequestListItem.tsx
+
 **Funkcjonalność:**
+
 - Wyświetla szczegóły pojedynczego wniosku:
   - Status z kolorowym badge'em
   - Daty: od, do
@@ -96,6 +110,7 @@ Dodano link "Moje Wnioski" do głównego menu nawigacji w `/src/components/Navig
 ## Typy i ViewModels
 
 **Utworzone typy:**
+
 ```typescript
 // W useMyRequests.ts
 interface RequestFilters {
@@ -114,6 +129,7 @@ interface UserVacationAllowance {
 ```
 
 **Wykorzystane typy z types.ts:**
+
 - `VacationRequestListItemDTO`
 - `CreateVacationRequestDTO`
 - `GetVacationRequestsResponseDTO`
@@ -122,6 +138,7 @@ interface UserVacationAllowance {
 ## Stan Kompilacji
 
 ✅ **Build zakończony sukcesem**
+
 - Wszystkie komponenty kompilują się poprawnie
 - Brak błędów TypeScript
 - Bundle size: MyRequestsView.js - 9.96 kB (3.11 kB gzip)
@@ -129,10 +146,12 @@ interface UserVacationAllowance {
 ## Uwagi i TODO
 
 ### Aktualnie użyte mock data:
+
 1. **User ID** - użyto placeholder "user-id-placeholder" (do zmiany po implementacji autentykacji)
 2. **Vacation Allowance** - użyto mock data (brak endpointu `/api/users/me/allowance`)
 
 ### Do dokończenia w następnych krokach:
+
 1. Implementacja formularza nowego wniosku (`RequestForm.tsx`)
 2. Strona `/requests/new` z formularzem
 3. Kalendarz zespołu (`TeamCalendar.tsx`)

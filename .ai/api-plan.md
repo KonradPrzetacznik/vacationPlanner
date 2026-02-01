@@ -3,20 +3,22 @@
 ## 1. Resources
 
 ### Core Resources
-| Resource | Database Table | Description |
-|----------|---------------|-------------|
-| Users | `profiles` | User profiles with roles (ADMINISTRATOR, HR, EMPLOYEE) |
-| Teams | `teams` | Organizational teams |
-| Team Members | `team_members` | Many-to-many relationship between users and teams |
-| Vacation Requests | `vacation_requests` | Vacation/leave requests submitted by employees |
-| Vacation Allowances | `vacation_allowances` | Yearly vacation day pools per user |
-| Settings | `settings` | Global application settings (key-value store) |
+
+| Resource            | Database Table        | Description                                            |
+| ------------------- | --------------------- | ------------------------------------------------------ |
+| Users               | `profiles`            | User profiles with roles (ADMINISTRATOR, HR, EMPLOYEE) |
+| Teams               | `teams`               | Organizational teams                                   |
+| Team Members        | `team_members`        | Many-to-many relationship between users and teams      |
+| Vacation Requests   | `vacation_requests`   | Vacation/leave requests submitted by employees         |
+| Vacation Allowances | `vacation_allowances` | Yearly vacation day pools per user                     |
+| Settings            | `settings`            | Global application settings (key-value store)          |
 
 ## 2. Endpoints
 
 ### 2.2. Users
 
 #### List Users
+
 - **Method**: `GET`
 - **Path**: `/api/users`
 - **Description**: Retrieve list of users (ADMIN sees all including deleted, HR/EMPLOYEE see active only)
@@ -27,6 +29,7 @@
   - `includeDeleted` (boolean, default: false): Include soft-deleted users (ADMIN only)
   - `teamId` (UUID, optional): Filter users by team membership
 - **Response** (200 OK):
+
 ```json
 {
   "data": [
@@ -48,15 +51,18 @@
   }
 }
 ```
+
 - **Error Responses**:
   - `401 Unauthorized`: Not authenticated
   - `403 Forbidden`: Insufficient permissions
 
 #### Get User
+
 - **Method**: `GET`
 - **Path**: `/api/users/:id`
 - **Description**: Retrieve single user by ID
 - **Response** (200 OK):
+
 ```json
 {
   "id": "uuid",
@@ -75,16 +81,19 @@
   ]
 }
 ```
+
 - **Error Responses**:
   - `401 Unauthorized`: Not authenticated
   - `403 Forbidden`: Insufficient permissions
   - `404 Not Found`: User not found
 
 #### Create User
+
 - **Method**: `POST`
 - **Path**: `/api/users`
 - **Description**: Create new user (ADMINISTRATOR only)
 - **Request Body**:
+
 ```json
 {
   "firstName": "John",
@@ -94,7 +103,9 @@
   "temporaryPassword": "temp-password-123"
 }
 ```
+
 - **Response** (201 Created):
+
 ```json
 {
   "id": "uuid",
@@ -106,16 +117,19 @@
   "createdAt": "2026-01-01T00:00:00Z"
 }
 ```
+
 - **Error Responses**:
   - `400 Bad Request`: Invalid input, email already exists
   - `401 Unauthorized`: Not authenticated
   - `403 Forbidden`: Not an administrator
 
 #### Update User
+
 - **Method**: `PATCH`
 - **Path**: `/api/users/:id`
 - **Description**: Update user profile (ADMIN: all fields except email; EMPLOYEE: own name only)
 - **Request Body**:
+
 ```json
 {
   "firstName": "Jane",
@@ -123,7 +137,9 @@
   "role": "HR"
 }
 ```
+
 - **Response** (200 OK):
+
 ```json
 {
   "id": "uuid",
@@ -134,6 +150,7 @@
   "updatedAt": "2026-01-01T12:00:00Z"
 }
 ```
+
 - **Error Responses**:
   - `400 Bad Request`: Invalid input, cannot change own role
   - `401 Unauthorized`: Not authenticated
@@ -141,10 +158,12 @@
   - `404 Not Found`: User not found
 
 #### Soft-Delete User
+
 - **Method**: `DELETE`
 - **Path**: `/api/users/:id`
 - **Description**: Soft-delete user (ADMINISTRATOR only). Automatically cancels future vacations.
 - **Response** (200 OK):
+
 ```json
 {
   "message": "User deleted successfully",
@@ -153,6 +172,7 @@
   "cancelledVacations": 2
 }
 ```
+
 - **Error Responses**:
   - `401 Unauthorized`: Not authenticated
   - `403 Forbidden`: Not an administrator
@@ -163,6 +183,7 @@
 ### 2.3. Teams
 
 #### List Teams
+
 - **Method**: `GET`
 - **Path**: `/api/teams`
 - **Description**: Retrieve list of teams
@@ -171,6 +192,7 @@
   - `offset` (number, default: 0): Pagination offset
   - `includeMemberCount` (boolean, default: false): Include member count in response
 - **Response** (200 OK):
+
 ```json
 {
   "data": [
@@ -189,14 +211,17 @@
   }
 }
 ```
+
 - **Error Responses**:
   - `401 Unauthorized`: Not authenticated
 
 #### Get Team
+
 - **Method**: `GET`
 - **Path**: `/api/teams/:id`
 - **Description**: Retrieve single team with members
 - **Response** (200 OK):
+
 ```json
 {
   "id": "uuid",
@@ -215,22 +240,27 @@
   ]
 }
 ```
+
 - **Error Responses**:
   - `401 Unauthorized`: Not authenticated
   - `403 Forbidden`: Not a member of this team (for EMPLOYEE role)
   - `404 Not Found`: Team not found
 
 #### Create Team
+
 - **Method**: `POST`
 - **Path**: `/api/teams`
 - **Description**: Create new team (HR only)
 - **Request Body**:
+
 ```json
 {
   "name": "Engineering"
 }
 ```
+
 - **Response** (201 Created):
+
 ```json
 {
   "id": "uuid",
@@ -238,22 +268,27 @@
   "createdAt": "2026-01-01T00:00:00Z"
 }
 ```
+
 - **Error Responses**:
   - `400 Bad Request`: Invalid input, team name already exists
   - `401 Unauthorized`: Not authenticated
   - `403 Forbidden`: Not HR
 
 #### Update Team
+
 - **Method**: `PATCH`
 - **Path**: `/api/teams/:id`
 - **Description**: Update team (HR only)
 - **Request Body**:
+
 ```json
 {
   "name": "Engineering Team"
 }
 ```
+
 - **Response** (200 OK):
+
 ```json
 {
   "id": "uuid",
@@ -261,6 +296,7 @@
   "updatedAt": "2026-01-01T12:00:00Z"
 }
 ```
+
 - **Error Responses**:
   - `400 Bad Request`: Invalid input, team name already exists
   - `401 Unauthorized`: Not authenticated
@@ -268,32 +304,39 @@
   - `404 Not Found`: Team not found
 
 #### Delete Team
+
 - **Method**: `DELETE`
 - **Path**: `/api/teams/:id`
 - **Description**: Delete team (HR only). Members become unassigned.
 - **Response** (200 OK):
+
 ```json
 {
   "message": "Team deleted successfully",
   "id": "uuid"
 }
 ```
+
 - **Error Responses**:
   - `401 Unauthorized`: Not authenticated
   - `403 Forbidden`: Not HR
   - `404 Not Found`: Team not found
 
 #### Add Team Members
+
 - **Method**: `POST`
 - **Path**: `/api/teams/:id/members`
 - **Description**: Add one or more users to team (HR only)
 - **Request Body**:
+
 ```json
 {
   "userIds": ["user-uuid-1", "user-uuid-2"]
 }
 ```
+
 - **Response** (200 OK):
+
 ```json
 {
   "message": "Members added successfully",
@@ -307,6 +350,7 @@
   ]
 }
 ```
+
 - **Error Responses**:
   - `400 Bad Request`: Invalid user IDs, user already in team
   - `401 Unauthorized`: Not authenticated
@@ -314,21 +358,25 @@
   - `404 Not Found`: Team or user not found
 
 #### Remove Team Member
+
 - **Method**: `DELETE`
 - **Path**: `/api/teams/:id/members/:userId`
 - **Description**: Remove user from team (HR only)
 - **Response** (200 OK):
+
 ```json
 {
   "message": "Member removed successfully"
 }
 ```
+
 - **Error Responses**:
   - `401 Unauthorized`: Not authenticated
   - `403 Forbidden`: Not HR
   - `404 Not Found`: Team, user, or membership not found
 
 #### Get Team Calendar
+
 - **Method**: `GET`
 - **Path**: `/api/teams/:id/calendar`
 - **Description**: Get vacation calendar for team
@@ -338,6 +386,7 @@
   - `month` (string, optional): Filter by month (format: YYYY-MM)
   - `includeStatus` (string[], optional): Filter by status (SUBMITTED, APPROVED, REJECTED, CANCELLED)
 - **Response** (200 OK):
+
 ```json
 {
   "teamId": "uuid",
@@ -362,6 +411,7 @@
   ]
 }
 ```
+
 - **Error Responses**:
   - `401 Unauthorized`: Not authenticated
   - `403 Forbidden`: Not a member of this team (for EMPLOYEE role)
@@ -372,6 +422,7 @@
 ### 2.4. Vacation Requests
 
 #### List Vacation Requests
+
 - **Method**: `GET`
 - **Path**: `/api/vacation-requests`
 - **Description**: List vacation requests (filtered by permissions)
@@ -384,6 +435,7 @@
   - `startDate` (date, optional): Filter requests starting after this date
   - `endDate` (date, optional): Filter requests ending before this date
 - **Response** (200 OK):
+
 ```json
 {
   "data": [
@@ -412,15 +464,18 @@
   }
 }
 ```
+
 - **Error Responses**:
   - `401 Unauthorized`: Not authenticated
   - `403 Forbidden`: Attempting to view other users' requests without permission
 
 #### Get Vacation Request
+
 - **Method**: `GET`
 - **Path**: `/api/vacation-requests/:id`
 - **Description**: Retrieve single vacation request
 - **Response** (200 OK):
+
 ```json
 {
   "id": "uuid",
@@ -446,23 +501,28 @@
   "updatedAt": "2026-01-02T10:00:00Z"
 }
 ```
+
 - **Error Responses**:
   - `401 Unauthorized`: Not authenticated
   - `403 Forbidden`: Cannot view other users' requests
   - `404 Not Found`: Request not found
 
 #### Create Vacation Request
+
 - **Method**: `POST`
 - **Path**: `/api/vacation-requests`
 - **Description**: Submit new vacation request (EMPLOYEE)
 - **Request Body**:
+
 ```json
 {
   "startDate": "2026-01-10",
   "endDate": "2026-01-15"
 }
 ```
+
 - **Response** (201 Created):
+
 ```json
 {
   "id": "uuid",
@@ -474,22 +534,27 @@
   "createdAt": "2026-01-01T00:00:00Z"
 }
 ```
+
 - **Error Responses**:
   - `400 Bad Request`: Invalid dates (past, weekends, end before start), insufficient vacation days
   - `401 Unauthorized`: Not authenticated
   - `409 Conflict`: Overlapping vacation request exists
 
 #### Approve Vacation Request
+
 - **Method**: `POST`
 - **Path**: `/api/vacation-requests/:id/approve`
 - **Description**: Approve vacation request (HR only). Returns threshold warning if applicable.
 - **Request Body**:
+
 ```json
 {
   "acknowledgeThresholdWarning": false
 }
 ```
+
 - **Response** (200 OK):
+
 ```json
 {
   "id": "uuid",
@@ -504,7 +569,9 @@
   }
 }
 ```
+
 - **Response** (200 OK - No warning):
+
 ```json
 {
   "id": "uuid",
@@ -514,6 +581,7 @@
   "thresholdWarning": null
 }
 ```
+
 - **Error Responses**:
   - `400 Bad Request`: Request not in SUBMITTED status, threshold warning not acknowledged
   - `401 Unauthorized`: Not authenticated
@@ -521,16 +589,20 @@
   - `404 Not Found`: Request not found
 
 #### Reject Vacation Request
+
 - **Method**: `POST`
 - **Path**: `/api/vacation-requests/:id/reject`
 - **Description**: Reject vacation request (HR only)
 - **Request Body**:
+
 ```json
 {
   "reason": "Team capacity exceeded"
 }
 ```
+
 - **Response** (200 OK):
+
 ```json
 {
   "id": "uuid",
@@ -539,6 +611,7 @@
   "processedAt": "2026-01-02T10:00:00Z"
 }
 ```
+
 - **Error Responses**:
   - `400 Bad Request`: Request not in SUBMITTED status
   - `401 Unauthorized`: Not authenticated
@@ -546,10 +619,12 @@
   - `404 Not Found`: Request not found
 
 #### Cancel Vacation Request
+
 - **Method**: `POST`
 - **Path**: `/api/vacation-requests/:id/cancel`
 - **Description**: Cancel vacation request (EMPLOYEE: own requests only)
 - **Response** (200 OK):
+
 ```json
 {
   "id": "uuid",
@@ -558,6 +633,7 @@
   "updatedAt": "2026-01-05T10:00:00Z"
 }
 ```
+
 - **Error Responses**:
   - `400 Bad Request`: Cannot cancel (not SUBMITTED/APPROVED, or vacation started more than 1 day ago)
   - `401 Unauthorized`: Not authenticated
@@ -569,12 +645,14 @@
 ### 2.5. Vacation Allowances
 
 #### Get User Vacation Allowances
+
 - **Method**: `GET`
 - **Path**: `/api/users/:userId/vacation-allowances`
 - **Description**: Get vacation allowances for user (all years or specific year)
 - **Query Parameters**:
   - `year` (number, optional): Filter by specific year
 - **Response** (200 OK):
+
 ```json
 {
   "userId": "uuid",
@@ -597,16 +675,19 @@
   ]
 }
 ```
+
 - **Error Responses**:
   - `401 Unauthorized`: Not authenticated
   - `403 Forbidden`: Cannot view other users' allowances (unless HR)
   - `404 Not Found`: User not found
 
 #### Get Specific Year Allowance
+
 - **Method**: `GET`
 - **Path**: `/api/users/:userId/vacation-allowances/:year`
 - **Description**: Get vacation allowance for specific year
 - **Response** (200 OK):
+
 ```json
 {
   "id": "uuid",
@@ -625,16 +706,19 @@
   "updatedAt": "2026-01-15T00:00:00Z"
 }
 ```
+
 - **Error Responses**:
   - `401 Unauthorized`: Not authenticated
   - `403 Forbidden`: Cannot view other users' allowances (unless HR)
   - `404 Not Found`: User or allowance not found
 
 #### Create Vacation Allowance
+
 - **Method**: `POST`
 - **Path**: `/api/vacation-allowances`
 - **Description**: Create vacation allowance for user (HR only)
 - **Request Body**:
+
 ```json
 {
   "userId": "user-uuid",
@@ -643,7 +727,9 @@
   "carryoverDays": 0
 }
 ```
+
 - **Response** (201 Created):
+
 ```json
 {
   "id": "uuid",
@@ -654,6 +740,7 @@
   "createdAt": "2026-01-01T00:00:00Z"
 }
 ```
+
 - **Error Responses**:
   - `400 Bad Request`: Invalid input, allowance already exists for this user/year
   - `401 Unauthorized`: Not authenticated
@@ -661,17 +748,21 @@
   - `404 Not Found`: User not found
 
 #### Update Vacation Allowance
+
 - **Method**: `PATCH`
 - **Path**: `/api/vacation-allowances/:id`
 - **Description**: Update vacation allowance (HR only)
 - **Request Body**:
+
 ```json
 {
   "totalDays": 28,
   "carryoverDays": 3
 }
 ```
+
 - **Response** (200 OK):
+
 ```json
 {
   "id": "uuid",
@@ -682,6 +773,7 @@
   "updatedAt": "2026-01-15T10:00:00Z"
 }
 ```
+
 - **Error Responses**:
   - `400 Bad Request`: Invalid input (negative values)
   - `401 Unauthorized`: Not authenticated
@@ -693,10 +785,12 @@
 ### 2.6. Settings
 
 #### Get All Settings
+
 - **Method**: `GET`
 - **Path**: `/api/settings`
 - **Description**: Retrieve all global settings
 - **Response** (200 OK):
+
 ```json
 {
   "data": [
@@ -715,14 +809,17 @@
   ]
 }
 ```
+
 - **Error Responses**:
   - `401 Unauthorized`: Not authenticated
 
 #### Get Setting
+
 - **Method**: `GET`
 - **Path**: `/api/settings/:key`
 - **Description**: Retrieve specific setting by key
 - **Response** (200 OK):
+
 ```json
 {
   "key": "default_vacation_days",
@@ -731,21 +828,26 @@
   "updatedAt": "2026-01-01T00:00:00Z"
 }
 ```
+
 - **Error Responses**:
   - `401 Unauthorized`: Not authenticated
   - `404 Not Found`: Setting not found
 
 #### Update Setting
+
 - **Method**: `PUT`
 - **Path**: `/api/settings/:key`
 - **Description**: Update specific setting (HR only)
 - **Request Body**:
+
 ```json
 {
   "value": 28
 }
 ```
+
 - **Response** (200 OK):
+
 ```json
 {
   "key": "default_vacation_days",
@@ -754,6 +856,7 @@
   "updatedAt": "2026-01-15T10:00:00Z"
 }
 ```
+
 - **Error Responses**:
   - `400 Bad Request`: Invalid value for setting (e.g., threshold not 0-100)
   - `401 Unauthorized`: Not authenticated
@@ -765,6 +868,7 @@
 ## 3. Authentication and Authorization
 
 ### Authentication Mechanism
+
 - **Primary Method**: Supabase Authentication with JWT tokens
 - **Token Type**: Bearer token in Authorization header
 - **Token Format**: `Authorization: Bearer <jwt_token>`
@@ -772,6 +876,7 @@
 - **Password Reset**: Two-step flow using tokens (request + complete)
 
 ### Implementation Details
+
 1. **Client-Side**: Use Supabase Auth SDK for login, logout, session management
 2. **Server-Side**: Verify JWT tokens using Supabase client from `context.locals`
 3. **RLS**: Leverage Supabase Row Level Security for data isolation
@@ -780,6 +885,7 @@
 ### Authorization Rules by Role
 
 #### ADMINISTRATOR
+
 - **Can**:
   - Create, read, update, soft-delete all users (including deleted ones)
   - Change any user's role (except own)
@@ -790,6 +896,7 @@
   - Change own role
 
 #### HR
+
 - **Can**:
   - View all active users (not deleted)
   - Create, read, update, delete teams
@@ -804,6 +911,7 @@
   - View deleted users
 
 #### EMPLOYEE
+
 - **Can**:
   - View own profile and team members' profiles
   - View teams they belong to
@@ -818,6 +926,7 @@
   - Approve/reject vacation requests
 
 ### Authorization Enforcement
+
 1. **Row Level Security**: Primary enforcement via Supabase RLS policies (defined in db-plan.md)
 2. **Application Logic**: Additional checks in API endpoints for complex rules
 3. **Error Handling**: Return `403 Forbidden` for insufficient permissions
@@ -829,6 +938,7 @@
 ### Validation Rules
 
 #### User Management
+
 - **Create User**:
   - Email must be valid and unique
   - First name and last name required (non-empty)
@@ -841,6 +951,7 @@
   - Admin-only field changes rejected for non-admins
 
 #### Team Management
+
 - **Create/Update Team**:
   - Name required and unique
   - Name length: 1-100 characters
@@ -850,6 +961,7 @@
   - Cannot add deleted users
 
 #### Vacation Requests
+
 - **Create Request**:
   - Start date must not be in the past
   - End date must be >= start date
@@ -872,6 +984,7 @@
   - Return days to vacation allowance (carryover first)
 
 #### Vacation Allowances
+
 - **Create/Update**:
   - Total days must be >= 0
   - Carryover days must be >= 0
@@ -880,6 +993,7 @@
   - Cannot reduce allowance below already used days
 
 #### Settings
+
 - **Update**:
   - `default_vacation_days`: Must be positive integer (1-365)
   - `team_occupancy_threshold`: Must be 0-100 (percentage)
@@ -888,22 +1002,25 @@
 ### Business Logic Implementation
 
 #### 1. Business Days Calculation
+
 - **Function**: `calculate_business_days(start_date, end_date)`
 - **Logic**: Count weekdays between dates, exclude weekends
 - **Location**: PostgreSQL function, called during vacation request creation
 - **Stored In**: `vacation_requests.business_days_count`
 
 #### 2. Team Occupancy Check
+
 - **Function**: `get_team_occupancy(team_id, start_date, end_date)`
-- **Logic**: 
+- **Logic**:
   - Count active team members (not deleted)
   - Count unique members with approved vacations overlapping the period
-  - Calculate percentage: (members_on_vacation / total_members) * 100
+  - Calculate percentage: (members_on_vacation / total_members) \* 100
 - **Location**: PostgreSQL function, called during vacation approval
 - **Threshold**: Compared against `team_occupancy_threshold` setting
 - **Warning**: Returned in approval response if exceeded, requires acknowledgment
 
 #### 3. Carryover Days Priority
+
 - **Logic**: When deducting vacation days:
   1. First deduct from `carryover_days` (previous year)
   2. Then deduct from `total_days` (current year)
@@ -911,6 +1028,7 @@
 - **Automation**: `pg_cron` job resets carryover to 0 on April 1st
 
 #### 4. Soft-Delete User Cascade
+
 - **Trigger**: `cancel_future_vacations_on_user_delete`
 - **Logic**: When `deleted_at` is set:
   - Find all SUBMITTED or APPROVED requests with `start_date > CURRENT_DATE`
@@ -919,6 +1037,7 @@
 - **Location**: Database trigger, executes automatically
 
 #### 5. Vacation Day Calculation
+
 - **Used Days**: Sum of `business_days_count` for APPROVED requests in the year
 - **Remaining Days**: `(total_days + carryover_days) - used_days`
 - **Breakdown**:
@@ -928,6 +1047,7 @@
   - `remaining_current_year_days`: total_days - used_current_year_days
 
 #### 6. Yearly Allowance Creation
+
 - **Automation**: `pg_cron` job runs on January 1st at 00:00
 - **Logic**:
   - For each active user (deleted_at IS NULL)
@@ -936,12 +1056,14 @@
   - Set `carryover_days` to 0 (manual adjustment by HR if needed)
 
 #### 7. Password Reset Flow
+
 - **Initial Login**: User created with `requiresPasswordReset` flag
 - **First Access**: Redirect to password reset page
 - **Enforcement**: Middleware blocks access until password changed
 - **Token**: Time-limited, single-use token for reset
 
 #### 8. Overlapping Vacation Check
+
 - **Logic**: When creating request, check for existing requests where:
   - `user_id` matches
   - `status` IN ('SUBMITTED', 'APPROVED')
@@ -953,6 +1075,7 @@
 ## 5. Error Handling
 
 ### Standard Error Response Format
+
 ```json
 {
   "error": {
@@ -966,6 +1089,7 @@
 ```
 
 ### HTTP Status Codes
+
 - **200 OK**: Successful GET, PATCH, POST (non-creation), DELETE
 - **201 Created**: Successful POST (resource creation)
 - **400 Bad Request**: Invalid input, validation errors
@@ -978,6 +1102,7 @@
 - **500 Internal Server Error**: Server-side error
 
 ### Common Error Codes
+
 - `VALIDATION_ERROR`: Input validation failed
 - `AUTHENTICATION_REQUIRED`: No valid session
 - `INSUFFICIENT_PERMISSIONS`: Role-based access denied
@@ -996,12 +1121,14 @@
 ## 6. Performance Considerations
 
 ### Pagination
+
 - **Default Limit**: 50 items
 - **Max Limit**: 200 items
 - **Method**: Offset-based pagination (limit/offset)
 - **Future**: Consider cursor-based for large datasets
 
 ### Filtering and Sorting
+
 - **Indexed Fields**: Queries use database indexes for performance
   - Users: `role`, `deleted_at`
   - Vacation Requests: `user_id`, `status`, `start_date`, `end_date`
@@ -1009,17 +1136,20 @@
   - Vacation Allowances: `user_id`, `year`
 
 ### Caching Strategy
+
 - **Settings**: Cache for 5 minutes (infrequently changed)
 - **User Sessions**: Managed by Supabase (short-lived JWTs)
 - **ETags**: Use for conditional requests on user profiles
 
 ### Query Optimization
+
 - **N+1 Prevention**: Use JOIN queries to fetch related data
 - **Eager Loading**: Include related entities in single query where possible
 - **Database Functions**: Use pre-calculated values (business_days_count)
 - **RLS**: Leverage database-level filtering for security and performance
 
 ### Rate Limiting
+
 - **Authentication**: 5 requests per minute per IP
 - **API Endpoints**: 100 requests per minute per user
 - **Burst Allowance**: 20 requests
@@ -1030,12 +1160,14 @@
 ## 7. Additional Notes
 
 ### Tech Stack Alignment
+
 - **Astro 5**: API endpoints in `/src/pages/api` using Astro endpoints
 - **TypeScript 5**: Full type safety with Zod validation schemas
 - **Supabase**: Backend-as-a-Service with PostgreSQL database
 - **RLS Policies**: Primary security enforcement at database level
 
 ### API Conventions
+
 - **URL Format**: kebab-case for paths
 - **JSON Keys**: camelCase for request/response payloads
 - **Date Format**: ISO 8601 (YYYY-MM-DD for dates, full timestamp for datetimes)
@@ -1043,12 +1175,14 @@
 - **Boolean Values**: true/false (lowercase)
 
 ### Supabase Integration
+
 - **Client Access**: Use `supabase` from `context.locals` in API routes
 - **Type Safety**: Import `SupabaseClient` type from `src/db/supabase.client.ts`
 - **RLS**: All queries automatically filtered by RLS policies
 - **Auth**: Verify `context.locals.supabase.auth.getUser()` for authentication
 
 ### Future Enhancements (Out of Scope for MVP)
+
 - Public holidays integration
 - Email notifications (webhooks)
 - Advanced reporting endpoints
@@ -1065,6 +1199,7 @@
 ## 8. Implementation Checklist
 
 ### Phase 1: Foundation
+
 - [ ] Set up API route structure in `/src/pages/api`
 - [ ] Create Zod validation schemas in `/src/types.ts`
 - [ ] Implement authentication middleware
@@ -1072,6 +1207,7 @@
 - [ ] Create database client utilities
 
 ### Phase 2: Core Resources
+
 - [ ] Implement Users endpoints (CRUD)
 - [ ] Implement Teams endpoints (CRUD + members)
 - [ ] Implement Vacation Requests endpoints (CRUD + actions)
@@ -1079,6 +1215,7 @@
 - [ ] Implement Settings endpoints
 
 ### Phase 3: Business Logic
+
 - [ ] Integrate business days calculation
 - [ ] Implement team occupancy checking
 - [ ] Add vacation days deduction logic
@@ -1086,6 +1223,7 @@
 - [ ] Add overlapping vacation validation
 
 ### Phase 4: Polish
+
 - [ ] Add pagination to all list endpoints
 - [ ] Implement filtering and sorting
 - [ ] Add comprehensive error messages
@@ -1093,4 +1231,3 @@
 - [ ] Add API documentation (OpenAPI/Swagger)
 - [ ] Write integration tests
 - [ ] Performance testing and optimization
-

@@ -10,7 +10,7 @@ Utworzono kompleksowy workflow dla pull requestów z następującą strukturą:
 lint (lintowanie kodu)
   ↓
 ├─→ unit-tests (testy jednostkowe)
-├─→ api-tests (testy integracyjne API)  
+├─→ api-tests (testy integracyjne API)
 └─→ e2e-tests (testy E2E Playwright)
   ↓
 status-comment (komentarz z wynikami)
@@ -19,28 +19,33 @@ status-comment (komentarz z wynikami)
 #### Funkcjonalność:
 
 **1. Lint Job**
+
 - Uruchamia ESLint na całym projekcie
 - Sprawdza formatowanie kodu z Prettier
 - Musi zakończyć się sukcesem przed uruchomieniem testów
 
 **2. Unit Tests Job** (równolegle po lint)
+
 - Przygotowany na przyszłość (obecnie placeholder)
 - Skonfigurowany do zbierania coverage
 - Gotowy do uruchomienia po instalacji Vitest
 
 **3. API Tests Job** (równolegle po lint)
+
 - Uruchamia istniejące testy API z katalogu `tests/api/`
 - Startuje lokalną instancję Supabase
 - Używa environment `integration` dla sekretów
 - Zmienne środowiskowe: `SUPABASE_URL`, `SUPABASE_KEY`, `OPENROUTER_API_KEY`
 
 **4. E2E Tests Job** (równolegle po lint)
+
 - Przygotowany na przyszłość (obecnie placeholder)
 - Skonfigurowany do instalacji przeglądarek (chromium, firefox, webkit)
 - Używa environment `integration` dla sekretów
 - Gotowy do uruchomienia po instalacji Playwright
 
 **5. Status Comment Job** (po wszystkich testach)
+
 - Uruchamia się tylko gdy wszystkie poprzednie joby przeszły
 - Dodaje/aktualizuje komentarz na PR z wynikami
 - Pokazuje tabelę ze statusem każdego joba
@@ -52,6 +57,7 @@ status-comment (komentarz z wynikami)
 ### 3. Aktualizacja package.json
 
 Dodano skrypty testowe:
+
 ```json
 {
   "test:unit": "echo 'Unit tests not configured yet...' && exit 0",
@@ -66,14 +72,17 @@ Dodano skrypty testowe:
 Utworzono kompletną dokumentację:
 
 **Główna dokumentacja workflow:**
+
 - `.github/workflows/README.md` - instrukcje użycia i konfiguracji
 
 **Dokumentacja testów E2E:**
+
 - `tests/e2e/README.md` - pełny przewodnik po Playwright
 - `tests/e2e/login.example.spec.ts` - przykładowy test E2E
 - `playwright.config.example.ts` - przykładowa konfiguracja Playwright
 
 **Dokumentacja testów jednostkowych:**
+
 - `tests/unit/README.md` - pełny przewodnik po Vitest
 - `tests/unit/example.test.ts` - przykładowe testy jednostkowe
 - `vitest.config.example.ts` - przykładowa konfiguracja Vitest
@@ -178,6 +187,7 @@ Możesz dodać badge do głównego README.md:
 ## Dodatkowe funkcje
 
 Workflow obsługuje:
+
 - ✅ Równoległe uruchamianie testów dla szybszego wykonania
 - ✅ Caching zależności npm dla szybszych buildów
 - ✅ Upload artefaktów (coverage, raporty)
@@ -212,14 +222,17 @@ npm test
 ## Troubleshooting
 
 ### Workflow nie uruchamia się
+
 - Sprawdź czy plik jest w `.github/workflows/` (nie `workflow`)
 - Sprawdź składnię YAML (wcięcia, brak tabów)
 
 ### Testy API nie działają
+
 - Sprawdź czy sekrety są skonfigurowane w environment `integration`
 - Sprawdź logi Supabase w GitHub Actions
 
 ### Status comment się nie dodaje
+
 - Sprawdź permissions w workflow (pull-requests: write)
 - Sprawdź czy token ma odpowiednie uprawnienia
 

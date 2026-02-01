@@ -1,6 +1,7 @@
 # API Endpoint Implementation Plan: Team Members Management & Calendar
 
 ## Spis treści
+
 1. [POST /api/teams/:id/members - Dodawanie członków do zespołu](#1-post-apiteamsidmembers---dodawanie-członków-do-zespołu)
 2. [DELETE /api/teams/:id/members/:userId - Usuwanie członka z zespołu](#2-delete-apiteamsidmembersuserid---usuwanie-członka-z-zespołu)
 3. [GET /api/teams/:id/calendar - Kalendarz urlopów zespołu](#3-get-apiteamsidcalendar---kalendarz-urlopów-zespołu)
@@ -10,6 +11,7 @@
 ## 1. POST /api/teams/:id/members - Dodawanie członków do zespołu
 
 ### 1.1. Przegląd punktu końcowego
+
 Endpoint umożliwia użytkownikom z rolą HR dodawanie jednego lub więcej użytkowników do zespołu. Operacja jest atomowa - jeśli którykolwiek użytkownik nie może zostać dodany (np. już jest członkiem), cała operacja kończy się błędem. Endpoint wspiera bulk operations dla efektywności.
 
 **Cel biznesowy:** Umożliwienie HR szybkiego zarządzania składem zespołów poprzez dodawanie wielu członków jednocześnie.
@@ -21,10 +23,12 @@ Endpoint umożliwia użytkownikom z rolą HR dodawanie jednego lub więcej użyt
 **Struktura URL:** `/api/teams/:id/members`
 
 **Parametry URL:**
+
 - **Wymagane:**
   - `id` (string, UUID) - Identyfikator zespołu
 
 **Request Body:**
+
 ```typescript
 {
   "userIds": ["uuid-1", "uuid-2", ...] // Array of user UUIDs
@@ -32,6 +36,7 @@ Endpoint umożliwia użytkownikom z rolą HR dodawanie jednego lub więcej użyt
 ```
 
 **Nagłówki:**
+
 - `Content-Type: application/json`
 - `Cookie: sb-access-token=...` (session cookie zarządzany przez Supabase)
 
@@ -72,11 +77,13 @@ export interface AddTeamMembersResponseDTO {
 ```
 
 **Istniejące typy wykorzystywane:**
+
 - Brak - wszystkie potrzebne typy są nowe
 
 ### 1.4. Szczegóły odpowiedzi
 
 **Success Response (200 OK):**
+
 ```json
 {
   "message": "Members added successfully",
@@ -98,13 +105,17 @@ export interface AddTeamMembersResponseDTO {
 ```
 
 **Error Responses:**
+
 - `400 Bad Request` - Nieprawidłowe dane wejściowe
+
   ```json
   {
     "error": "Invalid user IDs provided"
   }
   ```
+
   lub
+
   ```json
   {
     "error": "User {userId} is already a member of this team"
@@ -112,6 +123,7 @@ export interface AddTeamMembersResponseDTO {
   ```
 
 - `401 Unauthorized` - Brak autentykacji
+
   ```json
   {
     "error": "Unauthorized"
@@ -119,6 +131,7 @@ export interface AddTeamMembersResponseDTO {
   ```
 
 - `403 Forbidden` - Użytkownik nie ma roli HR
+
   ```json
   {
     "error": "Only HR can add team members"
@@ -126,12 +139,15 @@ export interface AddTeamMembersResponseDTO {
   ```
 
 - `404 Not Found` - Zespół lub użytkownik nie istnieje
+
   ```json
   {
     "error": "Team not found"
   }
   ```
+
   lub
+
   ```json
   {
     "error": "User {userId} not found"
@@ -177,6 +193,7 @@ export interface AddTeamMembersResponseDTO {
 ```
 
 **Interakcje z bazą danych:**
+
 1. `SELECT id FROM teams WHERE id = $1` - weryfikacja istnienia zespołu
 2. `SELECT id, deleted_at FROM profiles WHERE id = ANY($1)` - weryfikacja użytkowników
 3. `SELECT user_id FROM team_members WHERE team_id = $1 AND user_id = ANY($2)` - sprawdzenie istniejących członkostwa
@@ -185,53 +202,60 @@ export interface AddTeamMembersResponseDTO {
 ### 1.6. Względy bezpieczeństwa
 
 **Autentykacja:**
+
 - Wymagana sesja Supabase (zarządzana przez middleware)
 - Token sesji przesyłany w cookie
 - Weryfikacja przez `supabase.auth.getUser()`
 
 **Autoryzacja:**
+
 - Tylko użytkownicy z rolą `HR` mogą dodawać członków
 - Sprawdzenie: `user.role === 'HR'`
 - Zwrócenie 403 dla innych ról
 
 **Walidacja danych:**
+
 - `userIds` musi być niepustą tablicą
 - Każdy element musi być prawidłowym UUID
 - Użycie Zod schema:
   ```typescript
   z.object({
-    userIds: z.array(z.string().uuid()).min(1)
-  })
+    userIds: z.array(z.string().uuid()).min(1),
+  });
   ```
 
 **Zapobieganie SQL Injection:**
+
 - Użycie Supabase Client z parametryzowanymi zapytaniami
 - Wszystkie wartości przekazywane jako parametry, nie konkatenowane
 
 **Ochrona przed CSRF:**
+
 - Astro automatycznie obsługuje same-site cookies
 - Dodatkowa walidacja origin dla API endpoints
 
 **Rate Limiting:**
+
 - Rozważenie implementacji rate limiting dla operacji HR (np. max 100 members per request)
 - Monitorowanie w audit logs
 
 ### 1.7. Obsługa błędów
 
-| Scenariusz | Kod | Komunikat | Akcja |
-|------------|-----|-----------|-------|
-| Brak autentykacji | 401 | "Unauthorized" | Sprawdzenie context.locals.user |
-| Brak roli HR | 403 | "Only HR can add team members" | Sprawdzenie user.role |
-| Team nie istnieje | 404 | "Team not found" | Query do teams table |
-| User nie istnieje | 404 | "User {userId} not found" | Query do profiles table |
-| User usunięty | 404 | "User {userId} not found" | Sprawdzenie deleted_at |
-| User już w zespole | 400 | "User {userId} is already a member of this team" | Query do team_members |
-| Nieprawidłowe UUID | 400 | "Invalid user IDs provided" | Zod validation |
-| Pusta tablica userIds | 400 | "At least one user ID is required" | Zod validation |
-| Błąd bazy danych | 500 | "Internal server error" | Logging + generic message |
-| Timeout | 500 | "Request timeout" | Retry logic |
+| Scenariusz            | Kod | Komunikat                                        | Akcja                           |
+| --------------------- | --- | ------------------------------------------------ | ------------------------------- |
+| Brak autentykacji     | 401 | "Unauthorized"                                   | Sprawdzenie context.locals.user |
+| Brak roli HR          | 403 | "Only HR can add team members"                   | Sprawdzenie user.role           |
+| Team nie istnieje     | 404 | "Team not found"                                 | Query do teams table            |
+| User nie istnieje     | 404 | "User {userId} not found"                        | Query do profiles table         |
+| User usunięty         | 404 | "User {userId} not found"                        | Sprawdzenie deleted_at          |
+| User już w zespole    | 400 | "User {userId} is already a member of this team" | Query do team_members           |
+| Nieprawidłowe UUID    | 400 | "Invalid user IDs provided"                      | Zod validation                  |
+| Pusta tablica userIds | 400 | "At least one user ID is required"               | Zod validation                  |
+| Błąd bazy danych      | 500 | "Internal server error"                          | Logging + generic message       |
+| Timeout               | 500 | "Request timeout"                                | Retry logic                     |
 
 **Strategia logowania błędów:**
+
 - Błędy 4xx: Info level (oczekiwane błędy użytkownika)
 - Błędy 5xx: Error level (problemy systemowe)
 - Logowanie szczegółów: user.id, teamId, userIds, error message, stack trace
@@ -239,6 +263,7 @@ export interface AddTeamMembersResponseDTO {
 ### 1.8. Wydajność
 
 **Optymalizacje:**
+
 1. **Bulk Insert:** Użycie pojedynczego INSERT dla wszystkich członków zamiast N osobnych
 2. **Single Transaction:** Wszystkie operacje w jednej transakcji
 3. **Batch Validation:** Sprawdzenie wszystkich userIds jednym zapytaniem z ANY($1)
@@ -248,17 +273,20 @@ export interface AddTeamMembersResponseDTO {
    - `teams(id)` PRIMARY KEY
 
 **Potencjalne wąskie gardła:**
+
 - Duże tablice userIds (>100): rozważenie limitu
 - Konflikt UNIQUE constraint przy concurrent requests: proper error handling
 - Timeout przy bardzo dużych batch: implementacja timeout
 
 **Szacowany czas odpowiedzi:**
+
 - Typowy case (1-10 users): <200ms
 - Bulk operation (50-100 users): <500ms
 
 ### 1.9. Etapy wdrożenia
 
 #### Krok 1: Definicja typów (src/types.ts)
+
 ```typescript
 // Dodać nowe typy DTO:
 // - AddTeamMembersDTO
@@ -267,6 +295,7 @@ export interface AddTeamMembersResponseDTO {
 ```
 
 #### Krok 2: Walidacja schema (src/lib/schemas/teams.schema.ts)
+
 ```typescript
 export const addTeamMembersSchema = z.object({
   userIds: z
@@ -277,6 +306,7 @@ export const addTeamMembersSchema = z.object({
 ```
 
 #### Krok 3: Rozszerzenie service (src/lib/services/teams.service.ts)
+
 ```typescript
 export async function addMembers(
   supabase: SupabaseClient,
@@ -292,6 +322,7 @@ export async function addMembers(
 ```
 
 #### Krok 4: Implementacja API handler (src/pages/api/teams/[id]/members.ts)
+
 ```typescript
 export const prerender = false;
 
@@ -309,11 +340,13 @@ export const POST: APIRoute = async (context) => {
 ```
 
 #### Krok 5: Testy
+
 - Unit testy dla service layer
 - Integration testy dla API endpoint
 - Edge cases: empty array, invalid UUIDs, duplicate users, non-existent team/users
 
 #### Krok 6: Dokumentacja
+
 - Aktualizacja API_EXAMPLES.md z przykładami curl
 - Dodanie komentarzy JSDoc w kodzie
 
@@ -322,6 +355,7 @@ export const POST: APIRoute = async (context) => {
 ## 2. DELETE /api/teams/:id/members/:userId - Usuwanie członka z zespołu
 
 ### 2.1. Przegląd punktu końcowego
+
 Endpoint umożliwia użytkownikom z rolą HR usuwanie pojedynczego użytkownika z zespołu. Operacja jest nieodwracalna i natychmiast usuwa powiązanie między użytkownikiem a zespołem. W przypadku gdy użytkownik ma zaplanowane urlopy jako członek zespołu, mogą być wymagane dodatkowe akcje biznesowe (do rozważenia w przyszłości).
 
 **Cel biznesowy:** Umożliwienie HR zarządzania składem zespołów poprzez usuwanie członków, którzy zmienili zespół lub opuścili organizację.
@@ -333,6 +367,7 @@ Endpoint umożliwia użytkownikom z rolą HR usuwanie pojedynczego użytkownika 
 **Struktura URL:** `/api/teams/:id/members/:userId`
 
 **Parametry URL:**
+
 - **Wymagane:**
   - `id` (string, UUID) - Identyfikator zespołu
   - `userId` (string, UUID) - Identyfikator użytkownika do usunięcia
@@ -340,6 +375,7 @@ Endpoint umożliwia użytkownikom z rolą HR usuwanie pojedynczego użytkownika 
 **Request Body:** Brak (DELETE request)
 
 **Nagłówki:**
+
 - `Cookie: sb-access-token=...` (session cookie zarządzany przez Supabase)
 
 ### 2.3. Wykorzystywane typy
@@ -357,11 +393,13 @@ export interface RemoveTeamMemberResponseDTO {
 ```
 
 **Istniejące typy wykorzystywane:**
+
 - Brak dodatkowych typów command (DELETE nie przyjmuje body)
 
 ### 2.4. Szczegóły odpowiedzi
 
 **Success Response (200 OK):**
+
 ```json
 {
   "message": "Member removed successfully"
@@ -369,7 +407,9 @@ export interface RemoveTeamMemberResponseDTO {
 ```
 
 **Error Responses:**
+
 - `401 Unauthorized` - Brak autentykacji
+
   ```json
   {
     "error": "Unauthorized"
@@ -377,6 +417,7 @@ export interface RemoveTeamMemberResponseDTO {
   ```
 
 - `403 Forbidden` - Użytkownik nie ma roli HR
+
   ```json
   {
     "error": "Only HR can remove team members"
@@ -384,18 +425,23 @@ export interface RemoveTeamMemberResponseDTO {
   ```
 
 - `404 Not Found` - Zespół, użytkownik lub członkostwo nie istnieje
+
   ```json
   {
     "error": "Team not found"
   }
   ```
+
   lub
+
   ```json
   {
     "error": "User not found"
   }
   ```
+
   lub
+
   ```json
   {
     "error": "User is not a member of this team"
@@ -439,6 +485,7 @@ export interface RemoveTeamMemberResponseDTO {
 ```
 
 **Interakcje z bazą danych:**
+
 1. `SELECT id FROM teams WHERE id = $1` - weryfikacja istnienia zespołu
 2. `SELECT id FROM profiles WHERE id = $1` - weryfikacja istnienia użytkownika
 3. `DELETE FROM team_members WHERE team_id = $1 AND user_id = $2 RETURNING id` - usunięcie członkostwa
@@ -446,53 +493,60 @@ export interface RemoveTeamMemberResponseDTO {
 ### 2.6. Względy bezpieczeństwa
 
 **Autentykacja:**
+
 - Wymagana sesja Supabase (zarządzana przez middleware)
 - Token sesji przesyłany w cookie
 - Weryfikacja przez `supabase.auth.getUser()`
 
 **Autoryzacja:**
+
 - Tylko użytkownicy z rolą `HR` mogą usuwać członków
 - Sprawdzenie: `user.role === 'HR'`
 - Zwrócenie 403 dla innych ról
 
 **Walidacja danych:**
+
 - `teamId` musi być prawidłowym UUID
 - `userId` musi być prawidłowym UUID
 - Użycie Zod schema dla walidacji params:
   ```typescript
   z.object({
     id: z.string().uuid(),
-    userId: z.string().uuid()
-  })
+    userId: z.string().uuid(),
+  });
   ```
 
 **Zapobieganie SQL Injection:**
+
 - Użycie Supabase Client z parametryzowanymi zapytaniami
 - Wszystkie wartości przekazywane jako parametry
 
 **Audit Trail:**
+
 - Logowanie operacji usunięcia w audit logs
 - Zapisanie: kto, kiedy, którego użytkownika usunął z jakiego zespołu
 
 **Ochrona przed nadużyciem:**
+
 - Rate limiting dla operacji DELETE (np. max 100 per minute per HR user)
 - Monitoring masowych usunięć
 
 ### 2.7. Obsługa błędów
 
-| Scenariusz | Kod | Komunikat | Akcja |
-|------------|-----|-----------|-------|
-| Brak autentykacji | 401 | "Unauthorized" | Sprawdzenie context.locals.user |
-| Brak roli HR | 403 | "Only HR can remove team members" | Sprawdzenie user.role |
-| Team nie istnieje | 404 | "Team not found" | Query do teams table |
-| User nie istnieje | 404 | "User not found" | Query do profiles table |
-| Membership nie istnieje | 404 | "User is not a member of this team" | Query do team_members |
-| Nieprawidłowe UUID (teamId) | 400 | "Invalid team ID" | Zod validation |
-| Nieprawidłowe UUID (userId) | 400 | "Invalid user ID" | Zod validation |
-| Błąd bazy danych | 500 | "Internal server error" | Logging + generic message |
-| Cascade delete failure | 500 | "Failed to remove member" | Rollback transaction |
+| Scenariusz                  | Kod | Komunikat                           | Akcja                           |
+| --------------------------- | --- | ----------------------------------- | ------------------------------- |
+| Brak autentykacji           | 401 | "Unauthorized"                      | Sprawdzenie context.locals.user |
+| Brak roli HR                | 403 | "Only HR can remove team members"   | Sprawdzenie user.role           |
+| Team nie istnieje           | 404 | "Team not found"                    | Query do teams table            |
+| User nie istnieje           | 404 | "User not found"                    | Query do profiles table         |
+| Membership nie istnieje     | 404 | "User is not a member of this team" | Query do team_members           |
+| Nieprawidłowe UUID (teamId) | 400 | "Invalid team ID"                   | Zod validation                  |
+| Nieprawidłowe UUID (userId) | 400 | "Invalid user ID"                   | Zod validation                  |
+| Błąd bazy danych            | 500 | "Internal server error"             | Logging + generic message       |
+| Cascade delete failure      | 500 | "Failed to remove member"           | Rollback transaction            |
 
 **Strategia logowania błędów:**
+
 - Błędy 4xx: Info level (oczekiwane błędy użytkownika)
 - Błędy 5xx: Error level (problemy systemowe)
 - Logowanie szczegółów: user.id, teamId, userId, error message, stack trace
@@ -500,27 +554,32 @@ export interface RemoveTeamMemberResponseDTO {
 ### 2.8. Wydajność
 
 **Optymalizacje:**
+
 1. **Single Query Delete:** Użycie DELETE z WHERE na dwóch kolumnach
 2. **Index Usage:** Wykorzystanie UNIQUE index na (team_id, user_id)
 3. **CASCADE Delete:** Relacyjna baza automatycznie obsługuje powiązane rekordy (jeśli będą w przyszłości)
 
 **Potencjalne wąskie gardła:**
+
 - Brak znaczących wąskich gardeł - prosta operacja DELETE
 - Foreign key constraints validation: minimalne opóźnienie
 
 **Szacowany czas odpowiedzi:**
+
 - Typowy case: <100ms
 - Z weryfikacją wszystkich constraints: <150ms
 
 ### 2.9. Etapy wdrożenia
 
 #### Krok 1: Definicja typów (src/types.ts)
+
 ```typescript
 // Dodać nowy typ DTO:
 // - RemoveTeamMemberResponseDTO
 ```
 
 #### Krok 2: Walidacja schema (src/lib/schemas/teams.schema.ts)
+
 ```typescript
 export const removeTeamMemberParamsSchema = z.object({
   id: z.string().uuid("Team ID must be a valid UUID"),
@@ -529,12 +588,9 @@ export const removeTeamMemberParamsSchema = z.object({
 ```
 
 #### Krok 3: Rozszerzenie service (src/lib/services/teams.service.ts)
+
 ```typescript
-export async function removeMember(
-  supabase: SupabaseClient,
-  teamId: string,
-  userId: string
-): Promise<void> {
+export async function removeMember(supabase: SupabaseClient, teamId: string, userId: string): Promise<void> {
   // 1. Sprawdzenie istnienia zespołu
   // 2. Sprawdzenie istnienia użytkownika
   // 3. Sprawdzenie istnienia członkostwa
@@ -543,6 +599,7 @@ export async function removeMember(
 ```
 
 #### Krok 4: Implementacja API handler (src/pages/api/teams/[id]/members/[userId].ts)
+
 ```typescript
 export const prerender = false;
 
@@ -560,11 +617,13 @@ export const DELETE: APIRoute = async (context) => {
 ```
 
 #### Krok 5: Testy
+
 - Unit testy dla service layer
 - Integration testy dla API endpoint
 - Edge cases: non-existent team, non-existent user, non-existent membership
 
 #### Krok 6: Dokumentacja
+
 - Aktualizacja API_EXAMPLES.md z przykładami curl
 - Dodanie komentarzy JSDoc w kodzie
 
@@ -573,6 +632,7 @@ export const DELETE: APIRoute = async (context) => {
 ## 3. GET /api/teams/:id/calendar - Kalendarz urlopów zespołu
 
 ### 3.1. Przegląd punktu końcowego
+
 Endpoint udostępnia kalendarz urlopów dla zespołu, pokazując wszystkich członków zespołu wraz z ich zaplanowanymi urlopami w określonym przedziale czasowym. Endpoint wspiera różne strategie filtrowania (daty, miesiąc, status) i jest dostępny dla członków zespołu (którzy widzą tylko swój zespół) oraz HR/ADMIN (którzy widzą wszystkie zespoły).
 
 **Cel biznesowy:** Umożliwienie zespołom planowania i koordynowania urlopów poprzez wizualizację dostępności członków zespołu w danym okresie.
@@ -584,26 +644,25 @@ Endpoint udostępnia kalendarz urlopów dla zespołu, pokazując wszystkich czł
 **Struktura URL:** `/api/teams/:id/calendar`
 
 **Parametry URL:**
+
 - **Wymagane:**
   - `id` (string, UUID) - Identyfikator zespołu
 
 **Query Parameters:**
+
 - **Opcjonalne:**
   - `startDate` (string, ISO date) - Data początkowa dla widoku kalendarza
     - Format: `YYYY-MM-DD`
     - Default: 1 tydzień wstecz od dzisiaj
     - Przykład: `2026-01-01`
-  
   - `endDate` (string, ISO date) - Data końcowa dla widoku kalendarza
     - Format: `YYYY-MM-DD`
     - Default: 2 tygodnie do przodu od dzisiaj
     - Przykład: `2026-01-31`
-  
   - `month` (string) - Filtrowanie po miesiącu (zastępuje startDate/endDate)
     - Format: `YYYY-MM`
     - Przykład: `2026-01`
     - Jeśli podany, ustawia startDate na 1. dzień miesiąca i endDate na ostatni dzień
-  
   - `includeStatus` (string[]) - Filtrowanie po statusach wniosków
     - Wartości: `SUBMITTED`, `APPROVED`, `REJECTED`, `CANCELLED`
     - Default: wszystkie statusy
@@ -611,6 +670,7 @@ Endpoint udostępnia kalendarz urlopów dla zespołu, pokazując wszystkich czł
     - Przykład: `includeStatus=APPROVED` (tylko zatwierdzone urlopy)
 
 **Przykładowe URL:**
+
 ```
 GET /api/teams/123e4567-e89b-12d3-a456-426614174000/calendar
 GET /api/teams/123e4567-e89b-12d3-a456-426614174000/calendar?month=2026-01
@@ -619,6 +679,7 @@ GET /api/teams/123e4567-e89b-12d3-a456-426614174000/calendar?includeStatus=APPRO
 ```
 
 **Nagłówki:**
+
 - `Cookie: sb-access-token=...` (session cookie zarządzany przez Supabase)
 
 ### 3.3. Wykorzystywane typy
@@ -677,11 +738,13 @@ export interface GetTeamCalendarResponseDTO {
 ```
 
 **Istniejące typy wykorzystywane:**
+
 - Typy database z `database.types.ts` (profiles, teams, vacation_requests, team_members)
 
 ### 3.4. Szczegóły odpowiedzi
 
 **Success Response (200 OK):**
+
 ```json
 {
   "teamId": "123e4567-e89b-12d3-a456-426614174000",
@@ -721,25 +784,33 @@ export interface GetTeamCalendarResponseDTO {
 ```
 
 **Error Responses:**
+
 - `400 Bad Request` - Nieprawidłowe parametry zapytania
+
   ```json
   {
     "error": "Invalid date format. Expected YYYY-MM-DD"
   }
   ```
+
   lub
+
   ```json
   {
     "error": "Start date must be before or equal to end date"
   }
   ```
+
   lub
+
   ```json
   {
     "error": "Invalid month format. Expected YYYY-MM"
   }
   ```
+
   lub
+
   ```json
   {
     "error": "Invalid status value. Allowed: SUBMITTED, APPROVED, REJECTED, CANCELLED"
@@ -747,6 +818,7 @@ export interface GetTeamCalendarResponseDTO {
   ```
 
 - `401 Unauthorized` - Brak autentykacji
+
   ```json
   {
     "error": "Unauthorized"
@@ -754,6 +826,7 @@ export interface GetTeamCalendarResponseDTO {
   ```
 
 - `403 Forbidden` - Użytkownik EMPLOYEE nie jest członkiem zespołu
+
   ```json
   {
     "error": "You are not a member of this team"
@@ -761,6 +834,7 @@ export interface GetTeamCalendarResponseDTO {
   ```
 
 - `404 Not Found` - Zespół nie istnieje
+
   ```json
   {
     "error": "Team not found"
@@ -815,32 +889,36 @@ export interface GetTeamCalendarResponseDTO {
 **Interakcje z bazą danych:**
 
 1. Weryfikacja zespołu i pobranie nazwy:
+
 ```sql
 SELECT id, name FROM teams WHERE id = $1
 ```
 
 2. Sprawdzenie członkostwa (tylko dla EMPLOYEE):
+
 ```sql
-SELECT id FROM team_members 
+SELECT id FROM team_members
 WHERE team_id = $1 AND user_id = $2
 ```
 
 3. Pobranie członków zespołu:
+
 ```sql
-SELECT 
+SELECT
   p.id,
   p.first_name,
   p.last_name
 FROM team_members tm
 JOIN profiles p ON tm.user_id = p.id
-WHERE tm.team_id = $1 
+WHERE tm.team_id = $1
   AND p.deleted_at IS NULL
 ORDER BY p.last_name, p.first_name
 ```
 
 4. Pobranie urlopów dla członków (dla każdego członka lub w jednym zapytaniu z grupowaniem):
+
 ```sql
-SELECT 
+SELECT
   vr.id,
   vr.user_id,
   vr.start_date,
@@ -860,16 +938,18 @@ ORDER BY vr.start_date
 ### 3.6. Względy bezpieczeństwa
 
 **Autentykacja:**
+
 - Wymagana sesja Supabase (zarządzana przez middleware)
 - Token sesji przesyłany w cookie
 - Weryfikacja przez `supabase.auth.getUser()`
 
 **Autoryzacja - wielopoziomowa:**
+
 - **HR i ADMINISTRATOR:** Dostęp do kalendarza każdego zespołu
 - **EMPLOYEE:** Dostęp tylko do kalendarza zespołów, do których należy
 - Sprawdzenie:
   ```typescript
-  if (user.role === 'EMPLOYEE') {
+  if (user.role === "EMPLOYEE") {
     // Sprawdzenie członkostwa w team_members
     if (!isMember) return 403;
   }
@@ -877,6 +957,7 @@ ORDER BY vr.start_date
   ```
 
 **Walidacja danych:**
+
 - Wszystkie daty w formacie ISO (YYYY-MM-DD)
 - month w formacie YYYY-MM
 - includeStatus tylko z dozwolonych wartości
@@ -884,47 +965,60 @@ ORDER BY vr.start_date
 - Użycie Zod schema:
   ```typescript
   z.object({
-    startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-    endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-    month: z.string().regex(/^\d{4}-\d{2}$/).optional(),
-    includeStatus: z.array(z.enum(['SUBMITTED', 'APPROVED', 'REJECTED', 'CANCELLED'])).optional()
-  }).refine(data => {
+    startDate: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional(),
+    endDate: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional(),
+    month: z
+      .string()
+      .regex(/^\d{4}-\d{2}$/)
+      .optional(),
+    includeStatus: z.array(z.enum(["SUBMITTED", "APPROVED", "REJECTED", "CANCELLED"])).optional(),
+  }).refine((data) => {
     if (data.startDate && data.endDate) {
       return new Date(data.startDate) <= new Date(data.endDate);
     }
     return true;
-  })
+  });
   ```
 
 **Zapobieganie wyciekowi danych:**
+
 - EMPLOYEE widzi tylko dane zespołów, do których należy
 - Brak wyświetlania danych usuniętych użytkowników (deleted_at IS NULL)
 - Tylko niezbędne pola w response (nie ma wrażliwych danych typu notes, processed_by)
 
 **Zapobieganie SQL Injection:**
+
 - Użycie Supabase Client z parametryzowanymi zapytaniami
 - Wszystkie wartości przekazywane jako parametry
 
 **Rate Limiting:**
+
 - Rozważenie cache dla często zapytywanych zakresów dat
 - Rate limiting: np. max 100 requests per minute per user
 
 ### 3.7. Obsługa błędów
 
-| Scenariusz | Kod | Komunikat | Akcja |
-|------------|-----|-----------|-------|
-| Brak autentykacji | 401 | "Unauthorized" | Sprawdzenie context.locals.user |
-| EMPLOYEE nie jest członkiem | 403 | "You are not a member of this team" | Query do team_members |
-| Team nie istnieje | 404 | "Team not found" | Query do teams table |
-| Nieprawidłowy format daty | 400 | "Invalid date format. Expected YYYY-MM-DD" | Zod validation |
-| Nieprawidłowy format month | 400 | "Invalid month format. Expected YYYY-MM" | Zod validation |
-| startDate > endDate | 400 | "Start date must be before or equal to end date" | Zod refinement |
-| Nieprawidłowy status | 400 | "Invalid status value" | Zod validation |
-| Nieprawidłowe UUID (teamId) | 400 | "Invalid team ID" | Zod validation |
-| Zbyt duży zakres dat | 400 | "Date range cannot exceed 1 year" | Custom validation |
-| Błąd bazy danych | 500 | "Internal server error" | Logging + generic message |
+| Scenariusz                  | Kod | Komunikat                                        | Akcja                           |
+| --------------------------- | --- | ------------------------------------------------ | ------------------------------- |
+| Brak autentykacji           | 401 | "Unauthorized"                                   | Sprawdzenie context.locals.user |
+| EMPLOYEE nie jest członkiem | 403 | "You are not a member of this team"              | Query do team_members           |
+| Team nie istnieje           | 404 | "Team not found"                                 | Query do teams table            |
+| Nieprawidłowy format daty   | 400 | "Invalid date format. Expected YYYY-MM-DD"       | Zod validation                  |
+| Nieprawidłowy format month  | 400 | "Invalid month format. Expected YYYY-MM"         | Zod validation                  |
+| startDate > endDate         | 400 | "Start date must be before or equal to end date" | Zod refinement                  |
+| Nieprawidłowy status        | 400 | "Invalid status value"                           | Zod validation                  |
+| Nieprawidłowe UUID (teamId) | 400 | "Invalid team ID"                                | Zod validation                  |
+| Zbyt duży zakres dat        | 400 | "Date range cannot exceed 1 year"                | Custom validation               |
+| Błąd bazy danych            | 500 | "Internal server error"                          | Logging + generic message       |
 
 **Strategia logowania błędów:**
+
 - Błędy 4xx: Info level
 - Błędy 5xx: Error level
 - Logowanie szczegółów: user.id, user.role, teamId, filters, error message
@@ -934,6 +1028,7 @@ ORDER BY vr.start_date
 **Optymalizacje:**
 
 1. **Single Query dla urlopów:** Zamiast N queries (jeden per członek), użycie jednego zapytania z `user_id = ANY($1)` i grupowanie wyników w kodzie
+
    ```sql
    SELECT ... WHERE user_id = ANY(ARRAY['id1', 'id2', ...])
    ```
@@ -955,19 +1050,22 @@ ORDER BY vr.start_date
    - Materialized view dla często zapytywanych kombinacji (current month per team)
 
 **Potencjalne wąskie gardła:**
+
 - Duże zespoły (>100 członków): długie czasy odpowiedzi
 - Długie zakresy dat (>1 rok): wiele rekordów vacation_requests
 - Brak odpowiednich indexów na vacation_requests
 
 **Zalecenia:**
+
 - Limit zakresu dat do maksymalnie 1 rok
 - Utworzenie composite index:
   ```sql
-  CREATE INDEX idx_vacation_requests_user_dates 
+  CREATE INDEX idx_vacation_requests_user_dates
   ON vacation_requests(user_id, start_date, end_date);
   ```
 
 **Szacowany czas odpowiedzi:**
+
 - Mały zespół (5-10 członków), 1 miesiąc: <200ms
 - Średni zespół (20-50 członków), 1 miesiąc: <500ms
 - Duży zespół (100+ członków), 1 miesiąc: <1s
@@ -975,6 +1073,7 @@ ORDER BY vr.start_date
 ### 3.9. Etapy wdrożenia
 
 #### Krok 1: Definicja typów (src/types.ts)
+
 ```typescript
 // Dodać nowe typy DTO:
 // - GetTeamCalendarQueryDTO
@@ -984,74 +1083,87 @@ ORDER BY vr.start_date
 ```
 
 #### Krok 2: Database migration - dodanie index (supabase/migrations/)
+
 ```sql
 -- Migracja: add_vacation_requests_composite_index.sql
-CREATE INDEX IF NOT EXISTS idx_vacation_requests_user_dates 
+CREATE INDEX IF NOT EXISTS idx_vacation_requests_user_dates
 ON vacation_requests(user_id, start_date, end_date)
 WHERE deleted_at IS NULL;
 
 -- Index dla szybkiego filtrowania po statusie
-CREATE INDEX IF NOT EXISTS idx_vacation_requests_status 
+CREATE INDEX IF NOT EXISTS idx_vacation_requests_status
 ON vacation_requests(status)
 WHERE deleted_at IS NULL;
 ```
 
 #### Krok 3: Walidacja schema (src/lib/schemas/teams.schema.ts)
-```typescript
-const vacationStatusEnum = z.enum(['SUBMITTED', 'APPROVED', 'REJECTED', 'CANCELLED']);
 
-export const getTeamCalendarQuerySchema = z.object({
-  startDate: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format. Expected YYYY-MM-DD")
-    .optional(),
-  endDate: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format. Expected YYYY-MM-DD")
-    .optional(),
-  month: z
-    .string()
-    .regex(/^\d{4}-\d{2}$/, "Invalid month format. Expected YYYY-MM")
-    .optional(),
-  includeStatus: z.array(vacationStatusEnum).optional()
-})
-.refine(data => {
-  // month i startDate/endDate są wzajemnie wykluczające się
-  if (data.month && (data.startDate || data.endDate)) {
-    return false;
-  }
-  return true;
-}, {
-  message: "Cannot use 'month' together with 'startDate' or 'endDate'"
-})
-.refine(data => {
-  if (data.startDate && data.endDate) {
-    const start = new Date(data.startDate);
-    const end = new Date(data.endDate);
-    return start <= end;
-  }
-  return true;
-}, {
-  message: "Start date must be before or equal to end date"
-})
-.refine(data => {
-  if (data.startDate && data.endDate) {
-    const start = new Date(data.startDate);
-    const end = new Date(data.endDate);
-    const diffDays = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
-    return diffDays <= 365;
-  }
-  return true;
-}, {
-  message: "Date range cannot exceed 1 year"
-});
+```typescript
+const vacationStatusEnum = z.enum(["SUBMITTED", "APPROVED", "REJECTED", "CANCELLED"]);
+
+export const getTeamCalendarQuerySchema = z
+  .object({
+    startDate: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format. Expected YYYY-MM-DD")
+      .optional(),
+    endDate: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format. Expected YYYY-MM-DD")
+      .optional(),
+    month: z
+      .string()
+      .regex(/^\d{4}-\d{2}$/, "Invalid month format. Expected YYYY-MM")
+      .optional(),
+    includeStatus: z.array(vacationStatusEnum).optional(),
+  })
+  .refine(
+    (data) => {
+      // month i startDate/endDate są wzajemnie wykluczające się
+      if (data.month && (data.startDate || data.endDate)) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Cannot use 'month' together with 'startDate' or 'endDate'",
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.startDate && data.endDate) {
+        const start = new Date(data.startDate);
+        const end = new Date(data.endDate);
+        return start <= end;
+      }
+      return true;
+    },
+    {
+      message: "Start date must be before or equal to end date",
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.startDate && data.endDate) {
+        const start = new Date(data.startDate);
+        const end = new Date(data.endDate);
+        const diffDays = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+        return diffDays <= 365;
+      }
+      return true;
+    },
+    {
+      message: "Date range cannot exceed 1 year",
+    }
+  );
 
 export const getTeamCalendarParamsSchema = z.object({
-  id: z.string().uuid("Team ID must be a valid UUID")
+  id: z.string().uuid("Team ID must be a valid UUID"),
 });
 ```
 
 #### Krok 4: Helper functions dla dat (src/lib/services/teams.service.ts)
+
 ```typescript
 function getDefaultDateRange(): { startDate: string; endDate: string } {
   const today = new Date();
@@ -1059,26 +1171,27 @@ function getDefaultDateRange(): { startDate: string; endDate: string } {
   oneWeekAgo.setDate(today.getDate() - 7);
   const twoWeeksAhead = new Date(today);
   twoWeeksAhead.setDate(today.getDate() + 14);
-  
+
   return {
-    startDate: oneWeekAgo.toISOString().split('T')[0],
-    endDate: twoWeeksAhead.toISOString().split('T')[0]
+    startDate: oneWeekAgo.toISOString().split("T")[0],
+    endDate: twoWeeksAhead.toISOString().split("T")[0],
   };
 }
 
 function getMonthDateRange(month: string): { startDate: string; endDate: string } {
-  const [year, monthNum] = month.split('-').map(Number);
+  const [year, monthNum] = month.split("-").map(Number);
   const startDate = new Date(year, monthNum - 1, 1);
   const endDate = new Date(year, monthNum, 0); // Last day of month
-  
+
   return {
-    startDate: startDate.toISOString().split('T')[0],
-    endDate: endDate.toISOString().split('T')[0]
+    startDate: startDate.toISOString().split("T")[0],
+    endDate: endDate.toISOString().split("T")[0],
   };
 }
 ```
 
 #### Krok 5: Implementacja service (src/lib/services/teams.service.ts)
+
 ```typescript
 export async function getCalendar(
   supabase: SupabaseClient,
@@ -1099,14 +1212,12 @@ export async function getCalendar(
 ```
 
 #### Krok 6: Implementacja API handler (src/pages/api/teams/[id]/calendar.ts)
+
 ```typescript
 export const prerender = false;
 
 import type { APIRoute } from "astro";
-import { 
-  getTeamCalendarQuerySchema, 
-  getTeamCalendarParamsSchema 
-} from "@/lib/schemas/teams.schema";
+import { getTeamCalendarQuerySchema, getTeamCalendarParamsSchema } from "@/lib/schemas/teams.schema";
 import { getCalendar } from "@/lib/services/teams.service";
 
 export const GET: APIRoute = async (context) => {
@@ -1118,6 +1229,7 @@ export const GET: APIRoute = async (context) => {
 ```
 
 #### Krok 7: Testy
+
 - Unit testy dla service layer:
   - getDefaultDateRange()
   - getMonthDateRange()
@@ -1136,6 +1248,7 @@ export const GET: APIRoute = async (context) => {
   - Bardzo duże zespoły
 
 #### Krok 8: Dokumentacja
+
 - Aktualizacja API_EXAMPLES.md z przykładami curl dla wszystkich wariantów filtrowania
 - Dodanie komentarzy JSDoc w kodzie
 - Dokumentacja format daty i możliwości filtrowania
@@ -1177,4 +1290,3 @@ export const GET: APIRoute = async (context) => {
 - **GET /api/teams/:id/calendar:** 8-10 godzin (typy, schema, service z złożoną logiką, handler, testy, optimizations)
 
 **Łącznie:** ~15-20 godzin roboczych
-

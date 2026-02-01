@@ -9,6 +9,7 @@ Data: 2026-02-01
 ## 📦 Utworzone pliki
 
 ### Schematy walidacji
+
 - ✅ `src/lib/schemas/auth-form.schema.ts` (66 linii)
   - `loginFormSchema` - walidacja email i hasło
   - `forgotPasswordFormSchema` - walidacja email
@@ -16,6 +17,7 @@ Data: 2026-02-01
   - Eksportowane typy TypeScript
 
 ### Komponenty React (Formularze)
+
 - ✅ `src/components/forms/LoginForm.tsx` (163 linie, ~4.2KB)
   - Formularz z email i password
   - Integracja z react-hook-form + Zod
@@ -37,6 +39,7 @@ Data: 2026-02-01
   - API call: POST /api/auth/set-password
 
 ### Strony Astro
+
 - ✅ `src/pages/login.astro` (25 linii)
   - Publiczna strona: /login
   - Layout bez nawigacji
@@ -54,6 +57,7 @@ Data: 2026-02-01
   - Hydratacja: client:load
 
 ### Dokumentacja
+
 - ✅ `docs/AUTH_UI_IMPLEMENTATION.md` - pełna dokumentacja implementacji
 - ✅ `docs/AUTH_UI_TESTING.md` - instrukcje testowania
 
@@ -62,6 +66,7 @@ Data: 2026-02-01
 ## ✨ Funkcjonalności
 
 ### Walidacja (Zod)
+
 - ✅ Email format validation
 - ✅ Password presence check (login)
 - ✅ Password strength (min 8 chars, lowercase, uppercase, digit)
@@ -69,6 +74,7 @@ Data: 2026-02-01
 - ✅ Komunikaty błędów po polsku
 
 ### UX/UI
+
 - ✅ Responsywny design (Tailwind CSS)
 - ✅ Wyśrodkowane formularze
 - ✅ Logo i subtitle aplikacji
@@ -79,6 +85,7 @@ Data: 2026-02-01
 - ✅ Dark mode support
 
 ### Accessibility
+
 - ✅ Semantic HTML
 - ✅ Labels for all inputs
 - ✅ Autocomplete attributes
@@ -91,18 +98,21 @@ Data: 2026-02-01
 ## 🧪 Weryfikacja
 
 ### Build
+
 ```bash
 npm run build
 # ✅ Success - 0 errors
 ```
 
 ### Prettier/ESLint
+
 ```bash
 npx prettier --write src/**/*.{ts,tsx,astro}
 # ✅ All files formatted
 ```
 
 ### TypeScript
+
 ```bash
 # ✅ No compilation errors
 ```
@@ -112,6 +122,7 @@ npx prettier --write src/**/*.{ts,tsx,astro}
 ## 🔗 Przepływy użytkownika
 
 ### 1. Logowanie
+
 ```
 User → /login
   → wprowadź email + hasło
@@ -124,6 +135,7 @@ User → /login
 ```
 
 ### 2. Odzyskiwanie hasła
+
 ```
 User → /forgot-password
   → wprowadź email
@@ -137,6 +149,7 @@ User → /forgot-password
 ```
 
 ### 3. Ustawianie hasła
+
 ```
 User → /set-password?token=abc123
   → wprowadź hasło + potwierdzenie
@@ -154,6 +167,7 @@ User → /set-password?token=abc123
 ## 📋 TODO: Backend Implementation
 
 ### Priorytet 1: API Endpoints
+
 Należy utworzyć następujące endpointy w `src/pages/api/auth/`:
 
 - [ ] **login.ts**
@@ -180,6 +194,7 @@ Należy utworzyć następujące endpointy w `src/pages/api/auth/`:
   - Response: 200 OK | 400/401 Error
 
 ### Priorytet 2: Middleware
+
 - [ ] Modyfikacja `src/middleware/index.ts`
   - Sprawdzanie sesji Supabase
   - Ustawianie `context.locals.user`
@@ -187,11 +202,13 @@ Należy utworzyć następujące endpointy w `src/pages/api/auth/`:
   - Przekierowania dla zalogowanych (strony publiczne)
 
 ### Priorytet 3: Supabase Configuration
+
 - [ ] Email templates (Password Reset, Invite)
 - [ ] Redirect URLs configuration
 - [ ] Auth settings w dashboard Supabase
 
 ### Priorytet 4: Integracja z istniejącymi komponentami
+
 - [ ] Modyfikacja `src/layouts/Layout.astro`
   - Przycisk "Zaloguj się" dla niezalogowanych
   - Przycisk "Wyloguj się" dla zalogowanych
@@ -206,26 +223,31 @@ Należy utworzyć następujące endpointy w `src/pages/api/auth/`:
 ## 🎯 Sposób testowania (DEV)
 
 1. Uruchom serwer:
+
 ```bash
 npm run dev
 ```
 
 2. Otwórz w przeglądarce:
+
 - http://localhost:3000/login
 - http://localhost:3000/forgot-password
 - http://localhost:3000/set-password?token=test123
 
 3. Testuj walidację:
+
 - Nieprawidłowy email → błąd
 - Puste pola → błąd
 - Słabe hasło → błąd
 - Różne hasła → błąd
 
 4. Sprawdź Network tab:
+
 - Submit powinien wywołać POST /api/auth/...
 - Obecnie zwróci 404 (backend nie zaimplementowany)
 
 5. Sprawdź Console:
+
 - Nie powinno być błędów JavaScript/React
 
 ---
@@ -245,12 +267,14 @@ npm run dev
 ## 🎓 Best Practices zastosowane
 
 ✅ **Astro:**
+
 - Server-side rendering
 - `export const prerender = false`
 - Hydratacja z `client:load`
 - Brak rozszerzeń w importach
 
 ✅ **React:**
+
 - Functional components
 - React Hook Form + Zod
 - Custom hooks potential
@@ -258,18 +282,21 @@ npm run dev
 - TypeScript interfaces
 
 ✅ **Styling:**
+
 - Tailwind utility classes
 - Shadcn/ui components
 - Responsive design
 - Dark mode support
 
 ✅ **Security:**
+
 - Client-side validation (UX)
 - Server-side validation (TODO - backend)
 - Password strength requirements
 - No sensitive data in URL (except token)
 
 ✅ **Accessibility:**
+
 - Semantic HTML
 - ARIA attributes
 - Keyboard navigation

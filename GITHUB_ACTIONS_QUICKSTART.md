@@ -3,25 +3,29 @@
 ## ✅ Co zostało utworzone
 
 ### 1. GitHub Actions Workflow
+
 - **`.github/workflows/pull-request.yml`** - główny workflow dla PR
   - Lintowanie → 3 równoległe testy (unit, API, E2E) → komentarz ze statusem
   - Używa environment `integration` dla sekretów
   - Automatyczne komentarze na PR z wynikami
 
 ### 2. Dokumentacja
+
 - **`.github/workflows/README.md`** - instrukcja workflow
 - **`docs/GITHUB_ACTIONS_IMPLEMENTATION.md`** - pełna dokumentacja implementacji
 - **`tests/e2e/README.md`** - przewodnik po testach E2E
 - **`tests/unit/README.md`** - przewodnik po testach jednostkowych
 
 ### 3. Przykładowe konfiguracje (gotowe do użycia)
+
 - **`playwright.config.example.ts`** - konfiguracja Playwright
-- **`vitest.config.example.ts`** - konfiguracja Vitest  
+- **`vitest.config.example.ts`** - konfiguracja Vitest
 - **`tests/unit/setup.example.ts`** - setup dla testów jednostkowych
 - **`tests/e2e/login.example.spec.ts`** - przykładowy test E2E
 - **`tests/unit/example.test.ts`** - przykładowe testy jednostkowe
 
 ### 4. Aktualizacje
+
 - **`package.json`** - dodano skrypty: `test:unit`, `test:api`, `test:e2e`, `test`
 - Poprawiono strukturę: `.github/workflow/` → `.github/workflows/`
 
@@ -36,6 +40,7 @@ Settings → Secrets and variables → Actions → New environment
 Utwórz environment: **`integration`**
 
 Dodaj sekrety:
+
 - `SUPABASE_URL`
 - `SUPABASE_KEY`
 - `OPENROUTER_API_KEY`
@@ -46,7 +51,7 @@ Dodaj sekrety:
 # Sprawdź linting
 npm run lint
 
-# Sprawdź formatowanie  
+# Sprawdź formatowanie
 npx prettier --check .
 
 # Uruchom testy API
@@ -59,20 +64,21 @@ npm test
 ### 3. Utwórz Pull Request
 
 Workflow uruchomi się automatycznie i:
+
 1. Sprawdzi kod (ESLint + Prettier)
 2. Uruchomi testy API
 3. Doda komentarz z wynikami
 
 ## 📋 Status funkcjonalności
 
-| Funkcja | Status | Akcja |
-|---------|--------|-------|
-| Linting (ESLint + Prettier) | ✅ Działa | Gotowe |
-| Testy API | ✅ Działa | Gotowe |
-| Testy jednostkowe (Vitest) | ⏳ Przygotowane | Zobacz `tests/unit/README.md` |
-| Testy E2E (Playwright) | ⏳ Przygotowane | Zobacz `tests/e2e/README.md` |
-| Komentarze na PR | ✅ Działa | Gotowe |
-| Coverage | ⏳ Przygotowane | Odkomentuj po dodaniu testów |
+| Funkcja                     | Status          | Akcja                         |
+| --------------------------- | --------------- | ----------------------------- |
+| Linting (ESLint + Prettier) | ✅ Działa       | Gotowe                        |
+| Testy API                   | ✅ Działa       | Gotowe                        |
+| Testy jednostkowe (Vitest)  | ⏳ Przygotowane | Zobacz `tests/unit/README.md` |
+| Testy E2E (Playwright)      | ⏳ Przygotowane | Zobacz `tests/e2e/README.md`  |
+| Komentarze na PR            | ✅ Działa       | Gotowe                        |
+| Coverage                    | ⏳ Przygotowane | Odkomentuj po dodaniu testów  |
 
 ## 🎯 Workflow w akcji
 
@@ -115,6 +121,7 @@ mv playwright.config.example.ts playwright.config.ts
 ## 🎉 Gotowe!
 
 Workflow jest w pełni funkcjonalny i gotowy do użycia. Wystarczy:
+
 1. ✅ Dodać sekrety do GitHub
 2. ✅ Utworzyć Pull Request
 3. ✅ Cieszyć się automatycznymi testami!

@@ -1,12 +1,15 @@
 # Plan implementacji widoku Ustawienia
 
 ## 1. Przegląd
+
 Widok "Ustawienia" przeznaczony jest dla administratorów i umożliwia konfigurację globalnych parametrów aplikacji. Celem jest zapewnienie centralnego miejsca do zarządzania kluczowymi aspektami działania systemu, takimi jak domyślna liczba dni urlopowych dla pracowników oraz próg obłożenia zespołu, który wpływa na proces akceptacji wniosków urlopowych.
 
 ## 2. Routing widoku
+
 Widok będzie dostępny pod ścieżką `/admin/settings`. Dostęp do tej ścieżki powinien być ograniczony wyłącznie do użytkowników z rolą "Administrator".
 
 ## 3. Struktura komponentów
+
 Hierarchia komponentów dla widoku ustawień będzie prosta i skupiona na formularzu.
 
 ```
@@ -29,7 +32,9 @@ Hierarchia komponentów dla widoku ustawień będzie prosta i skupiona na formul
 ```
 
 ## 4. Szczegóły komponentów
+
 ### `SettingsForm.tsx`
+
 - **Opis komponentu:** Reaktywny komponent kliencki, który renderuje formularz do edycji ustawień aplikacji. Odpowiada za pobranie aktualnych ustawień, zarządzanie stanem formularza, walidację wprowadzanych danych oraz wysłanie zmian na serwer.
 - **Główne elementy:**
   - Komponent `Form` z biblioteki `shadcn/ui` opakowujący cały formularz.
@@ -49,10 +54,12 @@ Hierarchia komponentów dla widoku ustawień będzie prosta i skupiona na formul
   - `initialSettings: SettingsViewModel` - obiekt z początkowymi wartościami ustawień, pobranymi po stronie serwera w `settings.astro`.
 
 ## 5. Typy
+
 Do implementacji widoku wymagane będą następujące typy:
 
 - **`SettingsViewModel`** (nowy typ, specyficzny dla widoku):
   Jest to model widoku, który ułatwia zarządzanie stanem formularza na froncie. Transformuje tablicę obiektów `SettingsDto` w płaski obiekt.
+
   ```typescript
   interface SettingsViewModel {
     default_vacation_days: number;
@@ -65,12 +72,13 @@ Do implementacji widoku wymagane będą następujące typy:
   ```typescript
   interface SettingsDto {
     key: string; // np. 'default_vacation_days'
-    value: Json;   // Wartość ustawienia, np. 26
+    value: Json; // Wartość ustawienia, np. 26
   }
   ```
   Do aktualizacji używana jest tablica `SettingsDto[]`.
 
 ## 6. Zarządzanie stanem
+
 Zarządzanie stanem formularza zostanie zrealizowane przy użyciu biblioteki `react-hook-form` oraz `zod` do walidacji.
 
 - **`useForm`**: Główny hook z `react-hook-form` do zarządzania polami, walidacją i stanem przesyłania formularza.
@@ -81,6 +89,7 @@ Zarządzanie stanem formularza zostanie zrealizowane przy użyciu biblioteki `re
 Nie ma potrzeby tworzenia dedykowanego hooka (`useSettings`), ponieważ cała logika jest zamknięta w jednym komponencie formularza.
 
 ## 7. Integracja API
+
 Integracja z API będzie dwuetapowa: pobranie danych w Astro i aktualizacja w React.
 
 1.  **Pobranie danych (GET):**
@@ -95,9 +104,9 @@ Integracja z API będzie dwuetapowa: pobranie danych w Astro i aktualizacja w Re
     - Po pomyślnej walidacji, dane zostaną zmapowane na format `SettingsDto[]`:
       ```javascript
       [
-        { key: 'default_vacation_days', value: data.default_vacation_days },
-        { key: 'team_occupancy_threshold', value: data.team_occupancy_threshold }
-      ]
+        { key: "default_vacation_days", value: data.default_vacation_days },
+        { key: "team_occupancy_threshold", value: data.team_occupancy_threshold },
+      ];
       ```
     - Wykonane zostanie wywołanie `fetch` metodą `POST` do endpointu `/api/settings` z powyższym ciałem żądania.
     - **Typ żądania:** `SettingsDto[]`
@@ -105,6 +114,7 @@ Integracja z API będzie dwuetapowa: pobranie danych w Astro i aktualizacja w Re
     - **Typ odpowiedzi (błąd):** `{ message: string }`
 
 ## 8. Interakcje użytkownika
+
 - **Ładowanie widoku:** Użytkownik widzi formularz wypełniony aktualnie zapisanymi wartościami.
 - **Edycja wartości:** Użytkownik może modyfikować wartości w polach input. Walidacja po stronie klienta jest uruchamiana na bieżąco (np. przy utracie fokusa) lub przy próbie zapisu.
 - **Zapis zmian:**
@@ -115,6 +125,7 @@ Integracja z API będzie dwuetapowa: pobranie danych w Astro i aktualizacja w Re
   - Po otrzymaniu odpowiedzi z serwera, przycisk wraca do stanu aktywnego. Wyświetlany jest komunikat o sukcesie (np. toast) lub o błędzie.
 
 ## 9. Warunki i walidacja
+
 - **`default_vacation_days`**:
   - **Warunek:** Wartość musi być liczbą całkowitą z przedziału `[1, 365]`.
   - **Komponent:** `SettingsForm.tsx` (pole `default_vacation_days`).
@@ -128,12 +139,14 @@ Integracja z API będzie dwuetapowa: pobranie danych w Astro i aktualizacja w Re
   - **Stan interfejsu:** Jeśli warunek nie jest spełniony, pod polem pojawia się komunikat błędu (np. "Wartość musi być między 0 a 100"). Przesłanie formularza jest blokowane.
 
 ## 10. Obsługa błędów
+
 - **Błędy walidacji po stronie klienta:** Obsługiwane i wyświetlane przez `react-hook-form` pod odpowiednimi polami formularza.
 - **Błędy sieciowe (np. brak połączenia):** Obsługiwane w bloku `catch` wywołania `fetch`. Użytkownik powinien zobaczyć ogólny komunikat o błędzie, np. w formie komponentu Toast lub pod formularzem, informujący o problemie z połączeniem.
 - **Błędy serwera (np. status 500):** Podobnie jak błędy sieciowe, powinny skutkować wyświetleniem ogólnego komunikatu o błędzie.
 - **Błędy walidacji po stronie serwera (np. status 400):** Chociaż walidacja klienta powinna im zapobiegać, na wypadek ich wystąpienia, komunikat błędu z API powinien zostać wyświetlony użytkownikowi.
 
 ## 11. Kroki implementacji
+
 1.  **Utworzenie strony Astro:** Stworzyć plik `/src/pages/admin/settings.astro`.
 2.  **Implementacja pobierania danych w Astro:** W części frontmatter strony `settings.astro` dodać logikę `fetch` do endpointu `/api/settings`, aby pobrać początkowe dane. Dodać transformację danych z `SettingsDto[]` na `SettingsViewModel`.
 3.  **Struktura strony Astro:** W części template `settings.astro` dodać podstawowy layout (`Layout.astro`), nagłówek strony i wyrenderować komponent `SettingsForm`, przekazując mu pobrane dane jako `prop`.

@@ -72,24 +72,25 @@
 
 ## Feature Comparison Table
 
-| Feature                      | Shell Tests          | Unit Tests           |
-|------------------------------|----------------------|----------------------|
-| **Speed**                    | ⚠️ Slow (5-10s)      | ✅ Fast (~30ms)      |
-| **Isolation**                | ❌ Full stack        | ✅ Isolated function |
-| **Database Required**        | ✅ Yes (real DB)     | ❌ No (mocked)       |
-| **Server Required**          | ✅ Yes (running)     | ❌ No                |
-| **Coverage Metrics**         | ❌ No                | ✅ Yes               |
-| **Debugging**                | ⚠️ Difficult         | ✅ Easy              |
-| **Edge Cases**               | ⚠️ Limited           | ✅ Extensive         |
-| **Mocking Capabilities**     | ❌ No                | ✅ Full control      |
-| **Integration Testing**      | ✅ Yes               | ❌ No                |
-| **CI/CD Friendly**           | ⚠️ Requires setup    | ✅ No dependencies   |
-| **Test Granularity**         | ⚠️ Coarse            | ✅ Fine-grained      |
-| **Parallel Execution**       | ⚠️ Limited           | ✅ Yes               |
+| Feature                  | Shell Tests       | Unit Tests           |
+| ------------------------ | ----------------- | -------------------- |
+| **Speed**                | ⚠️ Slow (5-10s)   | ✅ Fast (~30ms)      |
+| **Isolation**            | ❌ Full stack     | ✅ Isolated function |
+| **Database Required**    | ✅ Yes (real DB)  | ❌ No (mocked)       |
+| **Server Required**      | ✅ Yes (running)  | ❌ No                |
+| **Coverage Metrics**     | ❌ No             | ✅ Yes               |
+| **Debugging**            | ⚠️ Difficult      | ✅ Easy              |
+| **Edge Cases**           | ⚠️ Limited        | ✅ Extensive         |
+| **Mocking Capabilities** | ❌ No             | ✅ Full control      |
+| **Integration Testing**  | ✅ Yes            | ❌ No                |
+| **CI/CD Friendly**       | ⚠️ Requires setup | ✅ No dependencies   |
+| **Test Granularity**     | ⚠️ Coarse         | ✅ Fine-grained      |
+| **Parallel Execution**   | ⚠️ Limited        | ✅ Yes               |
 
 ## Test Coverage Visualization
 
 ### Shell Tests Coverage
+
 ```
 ┌────────────────────────────────────────┐
 │  Test Coverage: UNKNOWN                │
@@ -108,6 +109,7 @@
 ```
 
 ### Unit Tests Coverage
+
 ```
 ┌────────────────────────────────────────┐
 │  Test Coverage: 70.83%                 │
@@ -131,6 +133,7 @@
 ## When to Use Each Type
 
 ### Use Shell Tests (API/Integration) When:
+
 - ✅ Testing full request-response cycle
 - ✅ Verifying API contracts
 - ✅ Testing database interactions
@@ -138,6 +141,7 @@
 - ✅ End-to-end scenarios
 
 ### Use Unit Tests When:
+
 - ✅ Testing business logic
 - ✅ Testing data transformations
 - ✅ Testing error handling
@@ -171,6 +175,7 @@
 ## Current Implementation Status
 
 ### ✅ Unit Tests (DONE)
+
 - **Location**: `tests/unit/settings.service.test.ts`
 - **Tests**: 10 tests for Settings Service
 - **Coverage**: 70.83%
@@ -178,6 +183,7 @@
 - **CI/CD**: Integrated
 
 ### ✅ API Tests (EXISTING)
+
 - **Location**: `tests/api/settings-list.test.sh`
 - **Tests**: Integration tests for GET /api/settings
 - **Coverage**: Full API path
@@ -185,6 +191,7 @@
 - **CI/CD**: Integrated
 
 ### ⏳ E2E Tests (FUTURE)
+
 - **Location**: `tests/e2e/` (not yet implemented)
 - **Framework**: Playwright (planned)
 - **Tests**: User workflows

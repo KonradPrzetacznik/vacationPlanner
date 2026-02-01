@@ -11,13 +11,16 @@ Aplikacja będzie dostępna na `http://localhost:3000` (lub innym porcie, jeśli
 ## Dostępne strony
 
 ### 1. Strona logowania
+
 **URL:** `http://localhost:3000/login`
 
 **Pola formularza:**
+
 - Email (wymagane, walidacja formatu)
 - Hasło (wymagane)
 
 **Funkcjonalność:**
+
 - Walidacja po stronie klienta (Zod)
 - Komunikaty błędów pod polami
 - Link do strony "Zapomniałeś hasła?"
@@ -25,39 +28,48 @@ Aplikacja będzie dostępna na `http://localhost:3000` (lub innym porcie, jeśli
 - Toast notification po błędzie/sukcesie
 
 **Testowanie:**
+
 - Wprowadź nieprawidłowy email → powinien pokazać błąd walidacji
 - Pozostaw puste pole → powinien pokazać błąd "wymagane"
 - Wypełnij formularz → kliknij "Zaloguj się" → wywołuje API (obecnie zwróci błąd, bo backend nie jest zaimplementowany)
 
 ### 2. Strona odzyskiwania hasła
+
 **URL:** `http://localhost:3000/forgot-password`
 
 **Pola formularza:**
+
 - Email (wymagane, walidacja formatu)
 
 **Funkcjonalność:**
+
 - Po wysłaniu formularza pokazuje ekran sukcesu
 - Link powrotu do strony logowania
 - Toast notification
 
 **Testowanie:**
+
 - Wprowadź nieprawidłowy email → błąd walidacji
 - Wypełnij poprawnie → formularz zmienia się w komunikat sukcesu
 
 ### 3. Strona ustawiania hasła
+
 **URL:** `http://localhost:3000/set-password?token=test123`
 
 **Pola formularza:**
+
 - Nowe hasło (minimum 8 znaków, mała litera, wielka litera, cyfra)
 - Potwierdź hasło (musi być identyczne)
 
 **Funkcjonalność:**
+
 - Walidacja siły hasła
 - Porównanie dwóch pól hasła
 - Obsługa braku tokenu w URL
 - Toast notification po sukcesie + przekierowanie
 
 **Testowanie:**
+
 1. Bez tokenu: `http://localhost:3000/set-password`
    - Powinien pokazać komunikat o błędzie i przyciski nawigacji
 
@@ -70,6 +82,7 @@ Aplikacja będzie dostępna na `http://localhost:3000` (lub innym porcie, jeśli
 ## Wizualna weryfikacja
 
 ### Layout
+
 - ✅ Wszystkie strony mają wyśrodkowany formularz
 - ✅ Logo "VacationPlanner" i subtitle na górze
 - ✅ Formularz w karcie (Card z shadcn/ui)
@@ -77,12 +90,14 @@ Aplikacja będzie dostępna na `http://localhost:3000` (lub innym porcie, jeśli
 - ✅ Responsywność (`max-w-md`, `p-4`)
 
 ### Komponenty UI
+
 - ✅ Inputy z labelem i opisem błędu
 - ✅ Przyciski z odpowiednimi stanami (disabled, loading text)
 - ✅ Linki z hover effect
 - ✅ Toast notifications (Sonner)
 
 ### Accessibility
+
 - ✅ Autocomplete dla pól (email, password)
 - ✅ Type="email" dla pól email
 - ✅ Type="password" dla pól hasła
@@ -92,15 +107,19 @@ Aplikacja będzie dostępna na `http://localhost:3000` (lub innym porcie, jeśli
 ## Sprawdzanie w przeglądarce
 
 ### DevTools Console
+
 Sprawdź konsolę - nie powinno być błędów JavaScript/React.
 
 ### Network Tab
+
 1. Wypełnij formularz i wyślij
 2. Sprawdź Network tab - powinien być request do `/api/auth/...`
 3. Obecnie zwróci błąd 404 (API nie zaimplementowane)
 
 ### React DevTools
+
 Jeśli masz React DevTools:
+
 - Sprawdź komponenty: LoginForm, ForgotPasswordForm, SetPasswordForm
 - Zweryfikuj props i state
 - Sprawdź, czy formularz używa react-hook-form
@@ -128,6 +147,7 @@ Po weryfikacji UI, należy zaimplementować:
 ## Zgłaszanie problemów
 
 Jeśli znajdziesz problemy:
+
 - Sprawdź console w przeglądarce
 - Sprawdź output terminala (npm run dev)
 - Zweryfikuj, czy wszystkie zależności są zainstalowane

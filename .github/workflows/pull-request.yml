@@ -2,7 +2,7 @@ name: Pull Request CI
 
 on:
   pull_request:
-    branches: [ master, main, develop ]
+    branches: [master, main, develop]
     types: [opened, synchronize, reopened]
 
 # Permissions needed for PR comments
@@ -26,8 +26,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -53,8 +53,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -105,8 +105,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -129,7 +129,7 @@ jobs:
           echo "Running API integration tests..."
           cd tests/api
           chmod +x *.sh
-          
+
           # Run all test files
           TEST_RESULTS=0
           for test_file in *.test.sh; do
@@ -141,7 +141,7 @@ jobs:
               TEST_RESULTS=1
             fi
           done
-          
+
           exit $TEST_RESULTS
 
       - name: Stop Supabase
@@ -167,8 +167,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -245,42 +245,42 @@ jobs:
             const prNumber = context.issue.number;
             const status = '${{ steps.test-results.outputs.status }}';
             const message = '${{ steps.test-results.outputs.message }}';
-            
+
             const lintStatus = '${{ needs.lint.result }}' === 'success' ? '✅' : '❌';
             const unitStatus = '${{ needs.unit-tests.result }}' === 'success' ? '✅' : '❌';
             const apiStatus = '${{ needs.api-tests.result }}' === 'success' ? '✅' : '❌';
             const e2eStatus = '${{ needs.e2e-tests.result }}' === 'success' ? '✅' : '❌';
-            
+
             const commentBody = `## Pull Request CI Status
-            
+
             ${message}
-            
+
             ### Test Results:
-            
+
             | Job | Status | Result |
             |-----|--------|--------|
             | Linting | ${lintStatus} | \`${{ needs.lint.result }}\` |
             | Unit Tests | ${unitStatus} | \`${{ needs.unit-tests.result }}\` |
             | API Tests | ${apiStatus} | \`${{ needs.api-tests.result }}\` |
             | E2E Tests | ${e2eStatus} | \`${{ needs.e2e-tests.result }}\` |
-            
+
             ---
-            
+
             <sub>Triggered by commit: ${context.sha.substring(0, 7)}</sub>
             `;
-            
+
             // Check if there's already a comment from this workflow
             const comments = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: prNumber,
             });
-            
+
             const botComment = comments.data.find(comment => 
               comment.user.type === 'Bot' && 
               comment.body.includes('Pull Request CI Status')
             );
-            
+
             if (botComment) {
               // Update existing comment
               await github.rest.issues.updateComment({

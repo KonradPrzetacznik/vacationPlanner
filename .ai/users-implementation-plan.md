@@ -26,6 +26,7 @@ Wszystkie endpointy wymagają autentykacji. Create i Delete wymagają roli ADMIN
   - **Opcjonalne**:
     - `role` (enum): Rola użytkownika - ADMINISTRATOR | HR | EMPLOYEE (domyślnie: EMPLOYEE)
 - **Request Body**:
+
 ```json
 {
   "firstName": "John",
@@ -40,7 +41,7 @@ Wszystkie endpointy wymagają autentykacji. Create i Delete wymagają roli ADMIN
 
 - **Metoda HTTP**: PATCH
 - **Struktura URL**: `/api/users/:id`
-- **Wymagana rola**: 
+- **Wymagana rola**:
   - ADMINISTRATOR: może edytować wszystkie pola wszystkich użytkowników (oprócz email)
   - EMPLOYEE: może edytować tylko swoje firstName i lastName
 - **Parametry URL**:
@@ -52,6 +53,7 @@ Wszystkie endpointy wymagają autentykacji. Create i Delete wymagają roli ADMIN
     - `lastName` (string): Nowe nazwisko
     - `role` (enum): Nowa rola - ADMINISTRATOR | HR | EMPLOYEE (tylko ADMIN)
 - **Request Body**:
+
 ```json
 {
   "firstName": "Jane",
@@ -147,6 +149,7 @@ export interface DeleteUserResponseDTO {
 ### 4.1. Create User
 
 **Sukces (201 Created)**:
+
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
@@ -160,6 +163,7 @@ export interface DeleteUserResponseDTO {
 ```
 
 **Błędy**:
+
 - 400 Bad Request - Nieprawidłowe dane lub email już istnieje
 - 401 Unauthorized - Brak autentykacji
 - 403 Forbidden - Użytkownik nie jest administratorem
@@ -168,6 +172,7 @@ export interface DeleteUserResponseDTO {
 ### 4.2. Update User
 
 **Sukces (200 OK)**:
+
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
@@ -180,6 +185,7 @@ export interface DeleteUserResponseDTO {
 ```
 
 **Błędy**:
+
 - 400 Bad Request - Nieprawidłowe dane lub próba zmiany własnej roli
 - 401 Unauthorized - Brak autentykacji
 - 403 Forbidden - Niewystarczające uprawnienia
@@ -189,6 +195,7 @@ export interface DeleteUserResponseDTO {
 ### 4.3. Soft-Delete User
 
 **Sukces (200 OK)**:
+
 ```json
 {
   "message": "User deleted successfully",
@@ -199,6 +206,7 @@ export interface DeleteUserResponseDTO {
 ```
 
 **Błędy**:
+
 - 401 Unauthorized - Brak autentykacji
 - 403 Forbidden - Użytkownik nie jest administratorem
 - 404 Not Found - Użytkownik nie znaleziony
@@ -220,6 +228,7 @@ export interface DeleteUserResponseDTO {
 ```
 
 **Interakcje z bazą danych**:
+
 - Sprawdzenie unikalności email w `auth.users`
 - Utworzenie użytkownika w `auth.users` przez Supabase Admin API
 - Utworzenie profilu w tabeli `profiles` (trigger automatyczny lub ręczny INSERT)
@@ -243,6 +252,7 @@ export interface DeleteUserResponseDTO {
 ```
 
 **Interakcje z bazą danych**:
+
 - SELECT z `profiles` (sprawdzenie istnienia i pobranie obecnych danych)
 - UPDATE w `profiles` (aktualizacja pól)
 - Automatyczna aktualizacja `updated_at` przez trigger
@@ -263,6 +273,7 @@ export interface DeleteUserResponseDTO {
 ```
 
 **Interakcje z bazą danych**:
+
 - UPDATE w `profiles` (ustawienie `deleted_at`)
 - SELECT z `vacation_requests` (znalezienie przyszłych urlopów)
 - UPDATE w `vacation_requests` (zmiana statusu na cancelled)
@@ -274,7 +285,7 @@ export interface DeleteUserResponseDTO {
 
 - **Wszystkie endpointy** wymagają aktywnej sesji użytkownika (weryfikacja w middleware)
 - **Create User**: Wymagana rola `ADMINISTRATOR`
-- **Update User**: 
+- **Update User**:
   - `ADMINISTRATOR`: pełny dostęp (wszystkie pola oprócz email, wszyscy użytkownicy)
   - `HR`: brak dostępu do zmiany roli
   - `EMPLOYEE`: tylko własne firstName/lastName
@@ -283,25 +294,27 @@ export interface DeleteUserResponseDTO {
 ### 6.2. Walidacja danych
 
 **Schemat walidacji Zod dla Create User**:
+
 ```typescript
 z.object({
   firstName: z.string().min(1).max(100).trim(),
   lastName: z.string().min(1).max(100).trim(),
   email: z.string().email().toLowerCase(),
   role: z.enum(["ADMINISTRATOR", "HR", "EMPLOYEE"]).optional().default("EMPLOYEE"),
-  temporaryPassword: z.string().min(8).max(100)
-})
+  temporaryPassword: z.string().min(8).max(100),
+});
 ```
 
 **Schemat walidacji Zod dla Update User**:
+
 ```typescript
 z.object({
   firstName: z.string().min(1).max(100).trim().optional(),
   lastName: z.string().min(1).max(100).trim().optional(),
-  role: z.enum(["ADMINISTRATOR", "HR", "EMPLOYEE"]).optional()
-}).refine(data => Object.keys(data).length > 0, {
-  message: "At least one field must be provided"
-})
+  role: z.enum(["ADMINISTRATOR", "HR", "EMPLOYEE"]).optional(),
+}).refine((data) => Object.keys(data).length > 0, {
+  message: "At least one field must be provided",
+});
 ```
 
 ### 6.3. Business Logic Security
@@ -329,37 +342,37 @@ z.object({
 
 ### 7.1. Create User Error Handling
 
-| Kod | Scenariusz | Komunikat | Akcja |
-|-----|-----------|-----------|-------|
-| 400 | Nieprawidłowe dane wejściowe | Szczegóły walidacji Zod | Zwróć ValidationErrorDTO |
-| 400 | Email już istnieje | "User with this email already exists" | Sprawdź w auth.users |
-| 401 | Brak sesji | "Unauthorized" | Middleware reject |
-| 403 | Nie administrator | "Forbidden: Administrator role required" | Sprawdź role w middleware/handler |
-| 500 | Błąd Supabase Auth | "Failed to create user account" | Log błędu, zwróć ogólny komunikat |
-| 500 | Błąd zapisu do DB | "Failed to create user profile" | Log błędu, rollback, zwróć ogólny komunikat |
+| Kod | Scenariusz                   | Komunikat                                | Akcja                                       |
+| --- | ---------------------------- | ---------------------------------------- | ------------------------------------------- |
+| 400 | Nieprawidłowe dane wejściowe | Szczegóły walidacji Zod                  | Zwróć ValidationErrorDTO                    |
+| 400 | Email już istnieje           | "User with this email already exists"    | Sprawdź w auth.users                        |
+| 401 | Brak sesji                   | "Unauthorized"                           | Middleware reject                           |
+| 403 | Nie administrator            | "Forbidden: Administrator role required" | Sprawdź role w middleware/handler           |
+| 500 | Błąd Supabase Auth           | "Failed to create user account"          | Log błędu, zwróć ogólny komunikat           |
+| 500 | Błąd zapisu do DB            | "Failed to create user profile"          | Log błędu, rollback, zwróć ogólny komunikat |
 
 ### 7.2. Update User Error Handling
 
-| Kod | Scenariusz | Komunikat | Akcja |
-|-----|-----------|-----------|-------|
-| 400 | Nieprawidłowe dane | Szczegóły walidacji Zod | Zwróć ValidationErrorDTO |
-| 400 | Próba zmiany własnej roli | "Cannot change your own role" | Sprawdź requestingUserId vs targetUserId |
-| 400 | Brak pól do aktualizacji | "At least one field must be provided" | Walidacja Zod refine |
-| 401 | Brak sesji | "Unauthorized" | Middleware reject |
-| 403 | EMPLOYEE edytuje innego | "Forbidden: Cannot edit other users" | Sprawdź requestingUserId vs targetUserId |
-| 403 | EMPLOYEE próbuje zmienić rolę | "Forbidden: Cannot change user role" | Sprawdź czy role w request body |
-| 404 | Użytkownik nie istnieje | "User not found" | SELECT z profiles WHERE id = :id AND deleted_at IS NULL |
-| 500 | Błąd DB | "Failed to update user" | Log błędu, zwróć ogólny komunikat |
+| Kod | Scenariusz                    | Komunikat                             | Akcja                                                   |
+| --- | ----------------------------- | ------------------------------------- | ------------------------------------------------------- |
+| 400 | Nieprawidłowe dane            | Szczegóły walidacji Zod               | Zwróć ValidationErrorDTO                                |
+| 400 | Próba zmiany własnej roli     | "Cannot change your own role"         | Sprawdź requestingUserId vs targetUserId                |
+| 400 | Brak pól do aktualizacji      | "At least one field must be provided" | Walidacja Zod refine                                    |
+| 401 | Brak sesji                    | "Unauthorized"                        | Middleware reject                                       |
+| 403 | EMPLOYEE edytuje innego       | "Forbidden: Cannot edit other users"  | Sprawdź requestingUserId vs targetUserId                |
+| 403 | EMPLOYEE próbuje zmienić rolę | "Forbidden: Cannot change user role"  | Sprawdź czy role w request body                         |
+| 404 | Użytkownik nie istnieje       | "User not found"                      | SELECT z profiles WHERE id = :id AND deleted_at IS NULL |
+| 500 | Błąd DB                       | "Failed to update user"               | Log błędu, zwróć ogólny komunikat                       |
 
 ### 7.3. Delete User Error Handling
 
-| Kod | Scenariusz | Komunikat | Akcja |
-|-----|-----------|-----------|-------|
-| 401 | Brak sesji | "Unauthorized" | Middleware reject |
-| 403 | Nie administrator | "Forbidden: Administrator role required" | Sprawdź role w middleware/handler |
-| 404 | Użytkownik nie istnieje | "User not found" | SELECT z profiles WHERE id = :id |
-| 404 | Użytkownik już usunięty | "User already deleted" | Sprawdź deleted_at IS NOT NULL |
-| 500 | Błąd transakcji | "Failed to delete user" | Rollback transakcji, log błędu |
+| Kod | Scenariusz              | Komunikat                                | Akcja                             |
+| --- | ----------------------- | ---------------------------------------- | --------------------------------- |
+| 401 | Brak sesji              | "Unauthorized"                           | Middleware reject                 |
+| 403 | Nie administrator       | "Forbidden: Administrator role required" | Sprawdź role w middleware/handler |
+| 404 | Użytkownik nie istnieje | "User not found"                         | SELECT z profiles WHERE id = :id  |
+| 404 | Użytkownik już usunięty | "User already deleted"                   | Sprawdź deleted_at IS NOT NULL    |
+| 500 | Błąd transakcji         | "Failed to delete user"                  | Rollback transakcji, log błędu    |
 
 ### 7.4. Struktura odpowiedzi błędu
 
@@ -388,7 +401,7 @@ z.object({
 
 ### 8.1. Potencjalne wąskie gardła
 
-1. **Create User**: 
+1. **Create User**:
    - Wywołanie Supabase Admin API (network latency)
    - Tworzenie użytkownika w auth.users + trigger na profiles
    - Możliwy bottleneck przy tworzeniu wielu użytkowników naraz
@@ -439,29 +452,33 @@ z.object({
 ### Krok 1: Przygotowanie typów (src/types.ts)
 
 1.1. Dodać nowe interfejsy DTO do pliku `src/types.ts`:
-   - `CreateUserDTO`
-   - `CreateUserResponseDTO`
-   - `UpdateUserDTO`
-   - `UpdateUserResponseDTO`
-   - `DeleteUserResponseDTO`
+
+- `CreateUserDTO`
+- `CreateUserResponseDTO`
+- `UpdateUserDTO`
+- `UpdateUserResponseDTO`
+- `DeleteUserResponseDTO`
 
 ### Krok 2: Rozszerzenie middleware (src/middleware/index.ts)
 
 2.1. Upewnić się, że middleware autentykacji:
-   - Weryfikuje sesję użytkownika
-   - Dodaje `user` do `context.locals` z polami: `id`, `email`, `role`
-   - Zwraca 401 dla niezautentykowanych żądań
 
-2.2. Opcjonalnie: Dodać middleware do weryfikacji roli:
-   - Helper function `requireRole(roles: string[])`
-   - Sprawdzenie `context.locals.user.role`
+- Weryfikuje sesję użytkownika
+- Dodaje `user` do `context.locals` z polami: `id`, `email`, `role`
+- Zwraca 401 dla niezautentykowanych żądań
+
+  2.2. Opcjonalnie: Dodać middleware do weryfikacji roli:
+
+- Helper function `requireRole(roles: string[])`
+- Sprawdzenie `context.locals.user.role`
 
 ### Krok 3: Utworzenie schematów walidacji
 
 3.1. Utworzyć plik `src/lib/schemas/users.schema.ts`:
-   - Schema Zod dla `CreateUserDTO`
-   - Schema Zod dla `UpdateUserDTO`
-   - Schema Zod dla parametru `id` (UUID)
+
+- Schema Zod dla `CreateUserDTO`
+- Schema Zod dla `UpdateUserDTO`
+- Schema Zod dla parametru `id` (UUID)
 
 ```typescript
 import { z } from "zod";
@@ -471,16 +488,18 @@ export const createUserSchema = z.object({
   lastName: z.string().min(1).max(100).trim(),
   email: z.string().email().toLowerCase(),
   role: z.enum(["ADMINISTRATOR", "HR", "EMPLOYEE"]).optional().default("EMPLOYEE"),
-  temporaryPassword: z.string().min(8).max(100)
+  temporaryPassword: z.string().min(8).max(100),
 });
 
-export const updateUserSchema = z.object({
-  firstName: z.string().min(1).max(100).trim().optional(),
-  lastName: z.string().min(1).max(100).trim().optional(),
-  role: z.enum(["ADMINISTRATOR", "HR", "EMPLOYEE"]).optional()
-}).refine(data => Object.keys(data).length > 0, {
-  message: "At least one field must be provided"
-});
+export const updateUserSchema = z
+  .object({
+    firstName: z.string().min(1).max(100).trim().optional(),
+    lastName: z.string().min(1).max(100).trim().optional(),
+    role: z.enum(["ADMINISTRATOR", "HR", "EMPLOYEE"]).optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "At least one field must be provided",
+  });
 
 export const userIdSchema = z.string().uuid();
 ```
@@ -488,64 +507,69 @@ export const userIdSchema = z.string().uuid();
 ### Krok 4: Rozszerzenie serwisu użytkowników (src/lib/services/users.service.ts)
 
 4.1. Dodać funkcję `createUser`:
-   - Parametry: `supabase: SupabaseClient, data: CreateUserDTO`
-   - Zwrot: `Promise<CreateUserResponseDTO>`
-   - Logika:
-     - Sprawdzić czy email nie istnieje (query do auth.users)
-     - Utworzyć użytkownika przez `supabase.auth.admin.createUser()`
-     - Ustawić `email_confirm: true` i `password` na temporaryPassword
-     - Dodać metadata: `requiresPasswordReset: true`
-     - Utworzyć profil w `profiles` (jeśli nie ma triggera)
-     - Zwrócić sformatowaną odpowiedź
 
-4.2. Dodać funkcję `updateUser`:
-   - Parametry: `supabase: SupabaseClient, userId: string, data: UpdateUserDTO, requestingUserId: string, requestingUserRole: string`
-   - Zwrot: `Promise<UpdateUserResponseDTO>`
-   - Logika:
-     - Sprawdzić czy użytkownik istnieje (SELECT from profiles WHERE id = userId AND deleted_at IS NULL)
-     - Walidacja uprawnień:
-       - Jeśli requestingUserRole === "EMPLOYEE":
-         - Sprawdzić czy requestingUserId === userId
-         - Sprawdzić czy data nie zawiera `role`
-       - Jeśli requestingUserRole === "ADMINISTRATOR":
-         - Jeśli requestingUserId === userId i data zawiera `role`: throw error
-     - UPDATE profiles SET ... WHERE id = userId
-     - Zwrócić zaktualizowane dane
+- Parametry: `supabase: SupabaseClient, data: CreateUserDTO`
+- Zwrot: `Promise<CreateUserResponseDTO>`
+- Logika:
+  - Sprawdzić czy email nie istnieje (query do auth.users)
+  - Utworzyć użytkownika przez `supabase.auth.admin.createUser()`
+  - Ustawić `email_confirm: true` i `password` na temporaryPassword
+  - Dodać metadata: `requiresPasswordReset: true`
+  - Utworzyć profil w `profiles` (jeśli nie ma triggera)
+  - Zwrócić sformatowaną odpowiedź
 
-4.3. Dodać funkcję `deleteUser`:
-   - Parametry: `supabase: SupabaseClient, userId: string`
-   - Zwrot: `Promise<DeleteUserResponseDTO>`
-   - Logika:
-     - Rozpocząć transakcję
-     - Sprawdzić czy użytkownik istnieje i nie jest usunięty
-     - UPDATE profiles SET deleted_at = NOW() WHERE id = userId
-     - SELECT vacation_requests WHERE user_id = userId AND start_date > NOW() AND status != 'CANCELLED'
-     - UPDATE vacation_requests SET status = 'CANCELLED' WHERE id IN (...)
-     - Zliczyć anulowane urlopy
-     - Commit transakcji
-     - Zwrócić podsumowanie
+    4.2. Dodać funkcję `updateUser`:
+
+- Parametry: `supabase: SupabaseClient, userId: string, data: UpdateUserDTO, requestingUserId: string, requestingUserRole: string`
+- Zwrot: `Promise<UpdateUserResponseDTO>`
+- Logika:
+  - Sprawdzić czy użytkownik istnieje (SELECT from profiles WHERE id = userId AND deleted_at IS NULL)
+  - Walidacja uprawnień:
+    - Jeśli requestingUserRole === "EMPLOYEE":
+      - Sprawdzić czy requestingUserId === userId
+      - Sprawdzić czy data nie zawiera `role`
+    - Jeśli requestingUserRole === "ADMINISTRATOR":
+      - Jeśli requestingUserId === userId i data zawiera `role`: throw error
+  - UPDATE profiles SET ... WHERE id = userId
+  - Zwrócić zaktualizowane dane
+
+    4.3. Dodać funkcję `deleteUser`:
+
+- Parametry: `supabase: SupabaseClient, userId: string`
+- Zwrot: `Promise<DeleteUserResponseDTO>`
+- Logika:
+  - Rozpocząć transakcję
+  - Sprawdzić czy użytkownik istnieje i nie jest usunięty
+  - UPDATE profiles SET deleted_at = NOW() WHERE id = userId
+  - SELECT vacation_requests WHERE user_id = userId AND start_date > NOW() AND status != 'CANCELLED'
+  - UPDATE vacation_requests SET status = 'CANCELLED' WHERE id IN (...)
+  - Zliczyć anulowane urlopy
+  - Commit transakcji
+  - Zwrócić podsumowanie
 
 ### Krok 5: Implementacja endpointu POST /api/users
 
 5.1. Utworzyć plik `src/pages/api/users/index.ts`:
-   - Export `prerender = false`
-   - Implementacja funkcji `POST`
 
-5.2. Logika POST handler:
-   - Pobrać `supabase` i `user` z `context.locals`
-   - Sprawdzić autentykację (user exists)
-   - Sprawdzić rolę (user.role === "ADMINISTRATOR")
-   - Parsować i walidować body przez `createUserSchema`
-   - Wywołać `createUser` z serwisu
-   - Obsłużyć błędy (try-catch)
-   - Zwrócić odpowiedź 201 + dane lub odpowiedni błąd
+- Export `prerender = false`
+- Implementacja funkcji `POST`
+
+  5.2. Logika POST handler:
+
+- Pobrać `supabase` i `user` z `context.locals`
+- Sprawdzić autentykację (user exists)
+- Sprawdzić rolę (user.role === "ADMINISTRATOR")
+- Parsować i walidować body przez `createUserSchema`
+- Wywołać `createUser` z serwisu
+- Obsłużyć błędy (try-catch)
+- Zwrócić odpowiedź 201 + dane lub odpowiedni błąd
 
 ```typescript
 export const POST = async (context) => {
   // Implementation
   return new Response(JSON.stringify(result), {
     status: 201,
-    headers: { "Content-Type": "application/json" }
+    headers: { "Content-Type": "application/json" },
   });
 };
 ```
@@ -553,113 +577,127 @@ export const POST = async (context) => {
 ### Krok 6: Implementacja endpointu PATCH /api/users/[id].ts
 
 6.1. Utworzyć plik `src/pages/api/users/[id].ts`:
-   - Export `prerender = false`
-   - Implementacja funkcji `PATCH`
 
-6.2. Logika PATCH handler:
-   - Pobrać `id` z `context.params`
-   - Walidować `id` przez `userIdSchema`
-   - Pobrać `supabase` i `user` z `context.locals`
-   - Sprawdzić autentykację
-   - Parsować i walidować body przez `updateUserSchema`
-   - Wywołać `updateUser` z serwisu
-   - Obsłużyć błędy (try-catch)
-   - Zwrócić odpowiedź 200 + dane lub odpowiedni błąd
+- Export `prerender = false`
+- Implementacja funkcji `PATCH`
+
+  6.2. Logika PATCH handler:
+
+- Pobrać `id` z `context.params`
+- Walidować `id` przez `userIdSchema`
+- Pobrać `supabase` i `user` z `context.locals`
+- Sprawdzić autentykację
+- Parsować i walidować body przez `updateUserSchema`
+- Wywołać `updateUser` z serwisu
+- Obsłużyć błędy (try-catch)
+- Zwrócić odpowiedź 200 + dane lub odpowiedni błąd
 
 ### Krok 7: Implementacja endpointu DELETE /api/users/[id].ts
 
 7.1. Dodać funkcję `DELETE` do pliku `src/pages/api/users/[id].ts`:
 
 7.2. Logika DELETE handler:
-   - Pobrać `id` z `context.params`
-   - Walidować `id` przez `userIdSchema`
-   - Pobrać `supabase` i `user` z `context.locals`
-   - Sprawdzić autentykację
-   - Sprawdzić rolę (user.role === "ADMINISTRATOR")
-   - Wywołać `deleteUser` z serwisu
-   - Obsłużyć błędy (try-catch)
-   - Zwrócić odpowiedź 200 + podsumowanie lub odpowiedni błąd
+
+- Pobrać `id` z `context.params`
+- Walidować `id` przez `userIdSchema`
+- Pobrać `supabase` i `user` z `context.locals`
+- Sprawdzić autentykację
+- Sprawdzić rolę (user.role === "ADMINISTRATOR")
+- Wywołać `deleteUser` z serwisu
+- Obsłużyć błędy (try-catch)
+- Zwrócić odpowiedź 200 + podsumowanie lub odpowiedni błąd
 
 ### Krok 8: Obsługa błędów
 
 8.1. Utworzyć helper do formatowania błędów:
-   - Plik: `src/lib/errors.ts`
-   - Funkcje: `formatValidationError`, `formatApiError`
-   - Mapowanie błędów Supabase na kody HTTP
 
-8.2. W każdym handlerze używać try-catch:
-   - Catch ZodError → 400 z ValidationErrorDTO
-   - Catch known errors (np. "User not found") → odpowiedni kod
-   - Catch unknown errors → 500 z ogólnym komunikatem
-   - Logowanie wszystkich błędów
+- Plik: `src/lib/errors.ts`
+- Funkcje: `formatValidationError`, `formatApiError`
+- Mapowanie błędów Supabase na kody HTTP
+
+  8.2. W każdym handlerze używać try-catch:
+
+- Catch ZodError → 400 z ValidationErrorDTO
+- Catch known errors (np. "User not found") → odpowiedni kod
+- Catch unknown errors → 500 z ogólnym komunikatem
+- Logowanie wszystkich błędów
 
 ### Krok 9: Testy
 
 9.1. Utworzyć testy dla POST /api/users:
-   - `tests/api/users-create.test.sh`
-   - Test przypadki:
-     - Sukces tworzenia (201)
-     - Brak autentykacji (401)
-     - Brak uprawnień - nie admin (403)
-     - Nieprawidłowe dane (400)
-     - Email już istnieje (400)
 
-9.2. Utworzyć testy dla PATCH /api/users/:id:
-   - `tests/api/users-update.test.sh`
-   - Test przypadki:
-     - Admin aktualizuje użytkownika (200)
-     - Employee aktualizuje siebie (200)
-     - Employee próbuje edytować innego (403)
-     - Próba zmiany własnej roli (400)
-     - Użytkownik nie istnieje (404)
+- `tests/api/users-create.test.sh`
+- Test przypadki:
+  - Sukces tworzenia (201)
+  - Brak autentykacji (401)
+  - Brak uprawnień - nie admin (403)
+  - Nieprawidłowe dane (400)
+  - Email już istnieje (400)
 
-9.3. Utworzyć testy dla DELETE /api/users/:id:
-   - `tests/api/users-delete.test.sh`
-   - Test przypadki:
-     - Admin usuwa użytkownika (200)
-     - Nie admin próbuje usunąć (403)
-     - Użytkownik nie istnieje (404)
-     - Sprawdzenie anulowania urlopów
+    9.2. Utworzyć testy dla PATCH /api/users/:id:
 
-9.4. Uruchomić wszystkie testy:
-   - Dodać do `tests/api/run-all.sh`
-   - Weryfikacja wszystkich scenariuszy
+- `tests/api/users-update.test.sh`
+- Test przypadki:
+  - Admin aktualizuje użytkownika (200)
+  - Employee aktualizuje siebie (200)
+  - Employee próbuje edytować innego (403)
+  - Próba zmiany własnej roli (400)
+  - Użytkownik nie istnieje (404)
+
+    9.3. Utworzyć testy dla DELETE /api/users/:id:
+
+- `tests/api/users-delete.test.sh`
+- Test przypadki:
+  - Admin usuwa użytkownika (200)
+  - Nie admin próbuje usunąć (403)
+  - Użytkownik nie istnieje (404)
+  - Sprawdzenie anulowania urlopów
+
+    9.4. Uruchomić wszystkie testy:
+
+- Dodać do `tests/api/run-all.sh`
+- Weryfikacja wszystkich scenariuszy
 
 ### Krok 10: Dokumentacja
 
 10.1. Zaktualizować `docs/API_EXAMPLES.md`:
-   - Dodać przykłady curl dla wszystkich trzech endpointów
-   - Dokumentacja przykładowych request/response
-   - Dokumentacja kodów błędów
 
-10.2. Opcjonalnie: Utworzyć Postman/Insomnia collection
+- Dodać przykłady curl dla wszystkich trzech endpointów
+- Dokumentacja przykładowych request/response
+- Dokumentacja kodów błędów
+
+  10.2. Opcjonalnie: Utworzyć Postman/Insomnia collection
 
 ### Krok 11: Code review i refactoring
 
 11.1. Przegląd kodu:
-   - Sprawdzenie zgodności z coding guidelines
-   - Uruchomienie lintera (eslint)
-   - Sprawdzenie typów TypeScript
 
-11.2. Optymalizacja:
-   - Sprawdzenie wydajności queries
-   - Dodanie indeksów jeśli potrzebne
-   - Refactoring duplikującego się kodu
+- Sprawdzenie zgodności z coding guidelines
+- Uruchomienie lintera (eslint)
+- Sprawdzenie typów TypeScript
+
+  11.2. Optymalizacja:
+
+- Sprawdzenie wydajności queries
+- Dodanie indeksów jeśli potrzebne
+- Refactoring duplikującego się kodu
 
 ### Krok 12: Deployment checklist
 
 12.1. Przed wdrożeniem:
-   - ✅ Wszystkie testy przechodzą
-   - ✅ Brak błędów TypeScript
-   - ✅ Linter bez ostrzeżeń
-   - ✅ Dokumentacja zaktualizowana
-   - ✅ Middleware autentykacji działa
-   - ✅ Indeksy bazodanowe utworzone
 
-12.2. Po wdrożeniu:
-   - Monitoring błędów
-   - Sprawdzenie performance
-   - Feedback od użytkowników
+- ✅ Wszystkie testy przechodzą
+- ✅ Brak błędów TypeScript
+- ✅ Linter bez ostrzeżeń
+- ✅ Dokumentacja zaktualizowana
+- ✅ Middleware autentykacji działa
+- ✅ Indeksy bazodanowe utworzone
+
+  12.2. Po wdrożeniu:
+
+- Monitoring błędów
+- Sprawdzenie performance
+- Feedback od użytkowników
 
 ## 10. Dodatkowe uwagi
 
@@ -685,4 +723,3 @@ export const POST = async (context) => {
 - Możliwość eksportu danych użytkownika (przyszły endpoint)
 - Logowanie dostępu do danych osobowych
 - Szyfrowanie danych wrażliwych (automatycznie przez Supabase)
-

@@ -9,12 +9,14 @@ Implementacja trzech endpointów API do zarządzania globalnymi ustawieniami apl
 - **PUT /api/settings/:key** - Aktualizacja konkretnego ustawienia (tylko dla użytkowników HR)
 
 Ustawienia są przechowywane w tabeli `settings` z następującymi kluczami:
+
 - `default_vacation_days` - domyślna liczba dni urlopowych w roku (liczba całkowita ≥ 0)
 - `team_occupancy_threshold` - próg procentowy dla zajętości zespołu (liczba całkowita 0-100)
 
 ## 2. Szczegóły żądania
 
 ### GET /api/settings
+
 - **Metoda HTTP**: GET
 - **Struktura URL**: `/api/settings`
 - **Parametry**: Brak
@@ -22,29 +24,34 @@ Ustawienia są przechowywane w tabeli `settings` z następującymi kluczami:
 - **Autoryzacja**: Wszyscy zalogowani użytkownicy (EMPLOYEE, HR, ADMINISTRATOR)
 
 ### GET /api/settings/:key
+
 - **Metoda HTTP**: GET
 - **Struktura URL**: `/api/settings/:key`
 - **Parametry**:
-  - **Wymagane** (path): 
+  - **Wymagane** (path):
     - `key` (string) - Klucz ustawienia (np. "default_vacation_days", "team_occupancy_threshold")
 - **Request Body**: Brak
 - **Autoryzacja**: Wszyscy zalogowani użytkownicy (EMPLOYEE, HR, ADMINISTRATOR)
 
 ### PUT /api/settings/:key
+
 - **Metoda HTTP**: PUT
 - **Struktura URL**: `/api/settings/:key`
 - **Parametry**:
   - **Wymagane** (path):
     - `key` (string) - Klucz ustawienia do aktualizacji
 - **Request Body**:
+
 ```json
 {
   "value": 28
 }
 ```
+
 - **Autoryzacja**: Tylko HR
 
 **Walidacja wartości**:
+
 - Dla `default_vacation_days`: liczba całkowita ≥ 0
 - Dla `team_occupancy_threshold`: liczba całkowita 0-100
 - Inne klucze: liczba całkowita ≥ 0 (domyślna walidacja)
@@ -112,22 +119,21 @@ export const settingKeyParamSchema = z.object({
  * Value must be a non-negative integer
  */
 export const updateSettingSchema = z.object({
-  value: z.number()
-    .int("Value must be an integer")
-    .nonnegative("Value must be non-negative"),
+  value: z.number().int("Value must be an integer").nonnegative("Value must be non-negative"),
 });
 ```
 
 ### Typy z database.types.ts (istniejące):
 
 ```typescript
-Database['public']['Tables']['settings']['Row']
-Database['public']['Tables']['settings']['Update']
+Database["public"]["Tables"]["settings"]["Row"];
+Database["public"]["Tables"]["settings"]["Update"];
 ```
 
 ## 4. Szczegóły odpowiedzi
 
 ### GET /api/settings - Success (200 OK)
+
 ```json
 {
   "data": [
@@ -148,6 +154,7 @@ Database['public']['Tables']['settings']['Update']
 ```
 
 ### GET /api/settings/:key - Success (200 OK)
+
 ```json
 {
   "key": "default_vacation_days",
@@ -158,6 +165,7 @@ Database['public']['Tables']['settings']['Update']
 ```
 
 ### GET /api/settings/:key - Not Found (404)
+
 ```json
 {
   "error": "Setting not found"
@@ -165,6 +173,7 @@ Database['public']['Tables']['settings']['Update']
 ```
 
 ### PUT /api/settings/:key - Success (200 OK)
+
 ```json
 {
   "key": "default_vacation_days",
@@ -175,6 +184,7 @@ Database['public']['Tables']['settings']['Update']
 ```
 
 ### PUT /api/settings/:key - Bad Request (400)
+
 ```json
 {
   "error": "Invalid request body",
@@ -193,6 +203,7 @@ lub dla walidacji threshold:
 ```
 
 ### PUT /api/settings/:key - Forbidden (403)
+
 ```json
 {
   "error": "Only HR users can update settings"
@@ -200,6 +211,7 @@ lub dla walidacji threshold:
 ```
 
 ### PUT /api/settings/:key - Not Found (404)
+
 ```json
 {
   "error": "Setting not found"
@@ -207,6 +219,7 @@ lub dla walidacji threshold:
 ```
 
 ### Wszystkie endpointy - Internal Server Error (500)
+
 ```json
 {
   "error": "Internal server error"
@@ -216,6 +229,7 @@ lub dla walidacji threshold:
 ## 5. Przepływ danych
 
 ### GET /api/settings
+
 ```
 1. Request → API Route (/api/settings/index.ts)
 2. Walidacja autoryzacji (DEFAULT_USER_ID)
@@ -230,6 +244,7 @@ Error Flow:
 ```
 
 ### GET /api/settings/:key
+
 ```
 1. Request → API Route (/api/settings/[key].ts)
 2. Walidacja path parameter (key) - Zod schema
@@ -248,6 +263,7 @@ Error Flow:
 ```
 
 ### PUT /api/settings/:key
+
 ```
 1. Request → API Route (/api/settings/[key].ts)
 2. Walidacja path parameter (key) - Zod schema
@@ -277,12 +293,14 @@ Error Flow:
 ## 6. Względy bezpieczeństwa
 
 ### Uwierzytelnianie
+
 - **Obecna implementacja**: Używamy `DEFAULT_USER_ID` ze stałej (development mode)
 - **Przyszła implementacja**: Pełna autentykacja Supabase Auth
 - **Endpoint**: Wszystkie endpointy wymagają autentykacji
 - **Błąd**: 401 Unauthorized dla nieautentykowanych użytkowników
 
 ### Autoryzacja
+
 - **GET /api/settings**: Wszyscy zalogowani użytkownicy (EMPLOYEE, HR, ADMINISTRATOR)
 - **GET /api/settings/:key**: Wszyscy zalogowani użytkownicy (EMPLOYEE, HR, ADMINISTRATOR)
 - **PUT /api/settings/:key**: Tylko HR
@@ -290,6 +308,7 @@ Error Flow:
   - Błąd: 403 Forbidden dla non-HR users
 
 ### Walidacja danych wejściowych
+
 - **Zod schemas**: Wszystkie parametry i body są walidowane przez Zod
 - **Path parameter (key)**: Niepusty string
 - **Request body (value)**: Liczba całkowita, nieujemna
@@ -299,11 +318,13 @@ Error Flow:
   - Dodatkowa walidacja w service layer
 
 ### Bezpieczeństwo bazy danych
+
 - **Supabase Client**: Używamy `locals.supabase` z middleware
 - **Parametryzowane zapytania**: Supabase automatycznie chroni przed SQL injection
 - **Row Level Security**: Nie dotyczy (settings to tabela systemowa, authorization w API layer)
 
 ### JSONB Storage
+
 - Wartości są przechowywane jako JSONB w bazie danych
 - Walidacja typu: parsowanie i sprawdzenie czy wartość to number
 - Zapisywanie: konwersja number → JSONB
@@ -312,7 +333,9 @@ Error Flow:
 ## 7. Obsługa błędów
 
 ### 400 Bad Request
+
 **Sytuacje**:
+
 1. Invalid JSON w request body
    - Message: `"Invalid JSON in request body"`
 2. Błędy walidacji Zod (path parameter)
@@ -325,6 +348,7 @@ Error Flow:
    - Message: `"Invalid value for team_occupancy_threshold: must be between 0 and 100"`
 
 **Przykład**:
+
 ```json
 {
   "error": "Invalid request body",
@@ -335,10 +359,13 @@ Error Flow:
 ```
 
 ### 401 Unauthorized
+
 **Sytuacje**:
+
 - Brak autentykacji (przyszła implementacja)
 
 **Przykład**:
+
 ```json
 {
   "error": "Not authenticated"
@@ -346,10 +373,13 @@ Error Flow:
 ```
 
 ### 403 Forbidden
+
 **Sytuacje**:
+
 - User próbuje zaktualizować ustawienia bez roli HR
 
 **Przykład**:
+
 ```json
 {
   "error": "Only HR users can update settings"
@@ -357,11 +387,14 @@ Error Flow:
 ```
 
 ### 404 Not Found
+
 **Sytuacje**:
+
 1. GET /api/settings/:key - setting o podanym kluczu nie istnieje
 2. PUT /api/settings/:key - setting o podanym kluczu nie istnieje
 
 **Przykład**:
+
 ```json
 {
   "error": "Setting not found"
@@ -369,12 +402,15 @@ Error Flow:
 ```
 
 ### 500 Internal Server Error
+
 **Sytuacje**:
+
 1. Błędy bazy danych (connection issues, query errors)
 2. Nieoczekiwane błędy aplikacji
 3. Błąd przy pobieraniu profilu użytkownika
 
 **Logging**:
+
 ```typescript
 console.error("[GET /api/settings] Error:", {
   timestamp: new Date().toISOString(),
@@ -384,6 +420,7 @@ console.error("[GET /api/settings] Error:", {
 ```
 
 **Przykład**:
+
 ```json
 {
   "error": "Internal server error"
@@ -391,7 +428,9 @@ console.error("[GET /api/settings] Error:", {
 ```
 
 ### Performance Monitoring
+
 - Logowanie wolnych operacji (>1000ms):
+
 ```typescript
 if (duration > 1000) {
   console.warn("[PUT /api/settings/:key] Slow operation:", {
@@ -404,23 +443,24 @@ if (duration > 1000) {
 ## 8. Rozważania dotyczące wydajności
 
 ### Optymalizacje zapytań
-- **GET /api/settings**: 
+
+- **GET /api/settings**:
   - Pojedyncze zapytanie SELECT bez JOIN
   - ORDER BY key dla spójnego sortowania
   - Tabela settings jest mała (2-10 rekordów), więc performance nie jest problemem
-  
-- **GET /api/settings/:key**: 
+- **GET /api/settings/:key**:
   - Zapytanie z PRIMARY KEY (key)
   - Najszybsze możliwe zapytanie (O(1))
-  
-- **PUT /api/settings/:key**: 
+- **PUT /api/settings/:key**:
   - UPDATE z PRIMARY KEY
   - Najszybsza możliwa aktualizacja (O(1))
 
 ### Monitoring wydajności
+
 - Logowanie czasu wykonania wszystkich operacji
 - Warning dla operacji > 1000ms
 - Przykład:
+
 ```typescript
 const startTime = Date.now();
 const result = await updateSetting(locals.supabase, currentUserId, currentUserRole, key, validatedData);
@@ -435,21 +475,22 @@ if (duration > 1000) {
 ```
 
 ### Potencjalne wąskie gardła
+
 1. **JSONB parsing**: Konwersja JSONB ↔ number może być powolna dla dużych wartości
    - Mitigation: Nasze wartości to małe liczby całkowite, nie ma problemu
-   
 2. **Database connection**: Problemy z połączeniem do Supabase
    - Mitigation: Error handling + retry logic (przyszła implementacja)
-   
 3. **Concurrent updates**: Równoczesne aktualizacje tego samego ustawienia
    - Mitigation: PostgreSQL MVCC zapewnia isolation, ostatnia aktualizacja wygrywa
 
 ### Caching (przyszła optymalizacja)
+
 - Settings zmieniają się rzadko, idealny kandydat do cachowania
 - Możliwa implementacja: Redis lub in-memory cache
 - Invalidacja cache: Po każdym UPDATE
 
 ### Nie jest potrzebne:
+
 - Pagination: Tabela settings ma kilka rekordów
 - Eager/lazy loading: Brak relacji z innymi tabelami
 - Indexy: PRIMARY KEY (key) już jest zindeksowany
@@ -457,6 +498,7 @@ if (duration > 1000) {
 ## 9. Etapy wdrożenia
 
 ### Krok 1: Dodanie typów DTO do src/types.ts
+
 **Plik**: `src/types.ts`
 
 Dodaj na końcu pliku (przed końcowym komentarzem):
@@ -508,6 +550,7 @@ export interface UpdateSettingResponseDTO extends SettingDTO {}
 ```
 
 ### Krok 2: Utworzenie Zod schemas
+
 **Plik**: `src/lib/schemas/settings.schema.ts` (nowy plik)
 
 ```typescript
@@ -535,13 +578,12 @@ export const settingKeyParamSchema = z.object({
  * Value must be a non-negative integer
  */
 export const updateSettingSchema = z.object({
-  value: z.number()
-    .int("Value must be an integer")
-    .nonnegative("Value must be non-negative"),
+  value: z.number().int("Value must be an integer").nonnegative("Value must be non-negative"),
 });
 ```
 
 ### Krok 3: Utworzenie service layer
+
 **Plik**: `src/lib/services/settings.service.ts` (nowy plik)
 
 ```typescript
@@ -571,7 +613,7 @@ function mapToSettingDTO(row: {
 }): SettingDTO {
   // Parse JSONB value to number
   let numericValue: number;
-  
+
   if (typeof row.value === "number") {
     numericValue = row.value;
   } else if (typeof row.value === "string") {
@@ -598,9 +640,7 @@ function mapToSettingDTO(row: {
  * @returns Promise with all settings
  * @throws Error if database query fails
  */
-export async function getAllSettings(
-  supabase: SupabaseClient
-): Promise<GetAllSettingsResponseDTO> {
+export async function getAllSettings(supabase: SupabaseClient): Promise<GetAllSettingsResponseDTO> {
   // Fetch all settings ordered by key
   const { data: settings, error: queryError } = await supabase
     .from("settings")
@@ -631,16 +671,9 @@ export async function getAllSettings(
  * @returns Promise with setting data
  * @throws Error if setting not found or query fails
  */
-export async function getSettingByKey(
-  supabase: SupabaseClient,
-  key: string
-): Promise<GetSettingResponseDTO> {
+export async function getSettingByKey(supabase: SupabaseClient, key: string): Promise<GetSettingResponseDTO> {
   // Fetch setting by primary key
-  const { data: setting, error: queryError } = await supabase
-    .from("settings")
-    .select("*")
-    .eq("key", key)
-    .single();
+  const { data: setting, error: queryError } = await supabase.from("settings").select("*").eq("key", key).single();
 
   if (queryError) {
     // Check if error is "not found"
@@ -736,6 +769,7 @@ export async function updateSetting(
 ```
 
 ### Krok 4: Utworzenie GET /api/settings endpoint
+
 **Plik**: `src/pages/api/settings/index.ts` (nowy plik)
 
 ```typescript
@@ -814,6 +848,7 @@ export const GET: APIRoute = async ({ locals }) => {
 ```
 
 ### Krok 5: Utworzenie GET /api/settings/:key endpoint
+
 **Plik**: `src/pages/api/settings/[key].ts` (nowy plik)
 
 ```typescript
@@ -968,13 +1003,10 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
     try {
       body = await request.json();
     } catch {
-      return new Response(
-        JSON.stringify({ error: "Invalid JSON in request body" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Invalid JSON in request body" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const validationResult = updateSettingSchema.safeParse(body);
@@ -996,13 +1028,7 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
 
     // 5. Call service to update setting
     const startTime = Date.now();
-    const result = await updateSetting(
-      locals.supabase,
-      currentUserId,
-      currentUserRole,
-      key,
-      validatedData
-    );
+    const result = await updateSetting(locals.supabase, currentUserId, currentUserRole, key, validatedData);
     const duration = Date.now() - startTime;
 
     // Log slow operations
@@ -1064,6 +1090,7 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
 ### Krok 6: Testowanie
 
 #### Test GET /api/settings
+
 ```bash
 # Get all settings
 curl -X GET http://localhost:3000/api/settings
@@ -1088,6 +1115,7 @@ curl -X GET http://localhost:3000/api/settings
 ```
 
 #### Test GET /api/settings/:key
+
 ```bash
 # Get specific setting
 curl -X GET http://localhost:3000/api/settings/default_vacation_days
@@ -1110,6 +1138,7 @@ curl -X GET http://localhost:3000/api/settings/invalid_key
 ```
 
 #### Test PUT /api/settings/:key
+
 ```bash
 # Update default_vacation_days (DEFAULT_USER_ID must be HR)
 curl -X PUT http://localhost:3000/api/settings/default_vacation_days \
@@ -1185,16 +1214,19 @@ Przykładowa zawartość:
 # Settings API Documentation
 
 ## Overview
+
 Global application settings management endpoints.
 
 ## Endpoints
 
 ### GET /api/settings
+
 Get all global settings.
 
 **Authorization**: All authenticated users
 
 **Response (200 OK)**:
+
 ```json
 {
   "data": [
@@ -1209,14 +1241,17 @@ Get all global settings.
 ```
 
 ### GET /api/settings/:key
+
 Get specific setting by key.
 
 **Authorization**: All authenticated users
 
 **Parameters**:
+
 - `key` (path): Setting key
 
 **Response (200 OK)**:
+
 ```json
 {
   "key": "default_vacation_days",
@@ -1227,14 +1262,17 @@ Get specific setting by key.
 ```
 
 ### PUT /api/settings/:key
+
 Update specific setting value.
 
 **Authorization**: HR only
 
 **Parameters**:
+
 - `key` (path): Setting key
 
 **Request Body**:
+
 ```json
 {
   "value": 28
@@ -1242,6 +1280,7 @@ Update specific setting value.
 ```
 
 **Response (200 OK)**:
+
 ```json
 {
   "key": "default_vacation_days",
@@ -1292,4 +1331,3 @@ Poniższe funkcjonalności mogą być dodane w przyszłości:
 8. **Settings Import/Export**: Możliwość eksportu/importu ustawień (backup/restore)
 9. **Multi-tenancy**: Różne ustawienia dla różnych organizacji/tenantów
 10. **Settings Descriptions i18n**: Tłumaczenia opisów ustawień na różne języki
-

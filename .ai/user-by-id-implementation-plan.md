@@ -3,6 +3,7 @@
 ## 1. Przegląd punktu końcowego
 
 Endpoint służy do pobierania szczegółowych danych pojedynczego użytkownika na podstawie jego ID. Zwraca profil użytkownika wraz z listą zespołów, do których należy. Endpoint wspiera autoryzację opartą na rolach:
+
 - **Administratorzy** mogą pobierać dane wszystkich użytkowników (włącznie z soft-deleted)
 - **HR** może pobierać dane aktywnych użytkowników
 - **Pracownicy (EMPLOYEE)** mogą pobierać tylko własne dane
@@ -130,6 +131,7 @@ const userIdParamSchema = z.object({
 ```
 
 Zwracane gdy:
+
 - Pracownik (EMPLOYEE) próbuje pobrać dane innego użytkownika
 - HR próbuje pobrać dane soft-deleted użytkownika
 
@@ -173,7 +175,7 @@ Zwracane gdy:
 1. Wywołanie funkcji RPC `get_user_by_id_with_teams(p_user_id, p_current_user_id, p_current_user_role)`
 2. Funkcja RPC wykonuje:
    ```sql
-   SELECT 
+   SELECT
      prof.id,
      prof.first_name,
      prof.last_name,
@@ -256,10 +258,12 @@ Zwracane gdy:
 ### 7.1. Błędy walidacji (400 Bad Request)
 
 **Scenariusze**:
+
 - Nieprawidłowy format UUID w parametrze `:id`
 - Brak parametru `:id`
 
 **Obsługa**:
+
 ```typescript
 if (!validationResult.success) {
   return new Response(
@@ -277,16 +281,18 @@ if (!validationResult.success) {
 ### 7.2. Błędy autoryzacji (401 Unauthorized)
 
 **Scenariusze**:
+
 - Brak tokenu autentykacji (planowane, obecnie nie implementowane)
 - Nieprawidłowy lub wygasły token
 
 **Obsługa**:
+
 ```typescript
 if (!currentUserId) {
-  return new Response(
-    JSON.stringify({ error: "Authentication required" }),
-    { status: 401, headers: { "Content-Type": "application/json" } }
-  );
+  return new Response(JSON.stringify({ error: "Authentication required" }), {
+    status: 401,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 ```
 
@@ -297,17 +303,19 @@ if (!currentUserId) {
 ### 7.3. Błędy uprawnień (403 Forbidden)
 
 **Scenariusze**:
+
 - Pracownik próbuje pobrać dane innego użytkownika
 - HR próbuje pobrać soft-deleted użytkownika
 - Brak wymaganej roli
 
 **Obsługa**:
+
 ```typescript
 if (error.message.includes("Insufficient permissions")) {
-  return new Response(
-    JSON.stringify({ error: error.message }),
-    { status: 403, headers: { "Content-Type": "application/json" } }
-  );
+  return new Response(JSON.stringify({ error: error.message }), {
+    status: 403,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 ```
 
@@ -316,16 +324,18 @@ if (error.message.includes("Insufficient permissions")) {
 ### 7.4. Błędy nie znalezionego zasobu (404 Not Found)
 
 **Scenariusze**:
+
 - Użytkownik o podanym ID nie istnieje
 - Użytkownik jest soft-deleted i current user nie ma uprawnień
 
 **Obsługa**:
+
 ```typescript
 if (!userData) {
-  return new Response(
-    JSON.stringify({ error: "User not found" }),
-    { status: 404, headers: { "Content-Type": "application/json" } }
-  );
+  return new Response(JSON.stringify({ error: "User not found" }), {
+    status: 404,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 ```
 
@@ -334,11 +344,13 @@ if (!userData) {
 ### 7.5. Błędy serwera (500 Internal Server Error)
 
 **Scenariusze**:
+
 - Błąd połączenia z bazą danych
 - Błąd w funkcji RPC
 - Nieoczekiwany błąd w kodzie aplikacji
 
 **Obsługa**:
+
 ```typescript
 catch (error) {
   console.error("[GET /api/users/:id] Error:", {
@@ -348,7 +360,7 @@ catch (error) {
     error: error instanceof Error ? error.message : "Unknown error",
     stack: error instanceof Error ? error.stack : undefined,
   });
-  
+
   return new Response(
     JSON.stringify({ error: "Internal server error" }),
     { status: 500, headers: { "Content-Type": "application/json" } }
@@ -363,12 +375,14 @@ catch (error) {
 ### 8.1. Indeksy bazy danych
 
 **Istniejące** (z migracji `20260103000000_add_users_list_indexes.sql`):
+
 - `idx_profiles_role` na `profiles(role)`
 - `idx_profiles_deleted_at` na `profiles(deleted_at)`
 - `idx_team_members_user_id` na `team_members(user_id)`
 - `idx_team_members_team_id` na `team_members(team_id)`
 
 **Niezbędne dla tego endpointu**:
+
 - ✅ Primary key na `profiles(id)` (już istnieje)
 - ✅ Index na `team_members(user_id)` (już istnieje jako `idx_team_members_user_id`)
 
@@ -377,12 +391,14 @@ catch (error) {
 ### 8.2. Optymalizacja zapytań SQL
 
 **Strategia**:
+
 1. **Single query**: Wszystkie dane pobierane w jednym zapytaniu RPC (unikanie N+1)
 2. **JSON aggregation**: Użycie `json_agg()` do agregacji teams w pojedynczym wierszu
 3. **LEFT JOIN**: Użytkownik bez zespołów zwraca pustą tablicę zamiast NULL
 4. **FILTER clause**: `FILTER (WHERE t.id IS NOT NULL)` zapobiega dodawaniu NULL do tablicy teams
 
 **Analiza EXPLAIN ANALYZE** (oczekiwana):
+
 ```
 Index Scan using profiles_pkey on profiles (cost=0.28..8.30 rows=1) (actual time=0.05..0.05 rows=1)
   -> Nested Loop Left Join on team_members (cost=0.28..16.60 rows=5) (actual time=0.10..0.15 rows=2)
@@ -397,6 +413,7 @@ Index Scan using profiles_pkey on profiles (cost=0.28..8.30 rows=1) (actual time
 **Obecnie**: Brak cachowania
 
 **Rekomendacje**:
+
 1. **Response caching**: Cache-Control header dla niezmiennych danych
    ```typescript
    headers: {
@@ -410,6 +427,7 @@ Index Scan using profiles_pkey on profiles (cost=0.28..8.30 rows=1) (actual time
 ### 8.4. Monitoring wydajności
 
 **Implementacja**:
+
 ```typescript
 const startTime = Date.now();
 const result = await getUserById(locals.supabase, currentUserId, id);
@@ -425,6 +443,7 @@ if (duration > 500) {
 ```
 
 **Progi**:
+
 - < 100ms: Bardzo dobra
 - 100-500ms: Dobra
 - 500-1000ms: Warning
@@ -483,7 +502,8 @@ export interface GetUserByIdResponseDTO {
 }
 ```
 
-**Walidacja**: 
+**Walidacja**:
+
 - Uruchomić `npm run build` aby sprawdzić czy TypeScript kompiluje się bez błędów
 - Sprawdzić czy nie ma duplikatów nazw typów
 
@@ -566,6 +586,7 @@ grant execute on function get_user_by_id_with_teams to authenticated;
 ```
 
 **Walidacja**:
+
 - Uruchomić migrację: `npx supabase migration up` (lokalnie) lub deploy (produkcja)
 - Przetestować funkcję bezpośrednio w Supabase SQL Editor:
   ```sql
@@ -636,14 +657,15 @@ export async function getUserById(
 ```
 
 **Walidacja**:
+
 - Import nowych typów na początku pliku:
   ```typescript
-  import type { 
-    GetUsersQueryDTO, 
-    GetUsersResponseDTO, 
+  import type {
+    GetUsersQueryDTO,
+    GetUsersResponseDTO,
     UserListItemDTO,
     UserDetailsDTO,
-    TeamReferenceDTO 
+    TeamReferenceDTO,
   } from "@/types";
   ```
 - Uruchomić `npm run build` i sprawdzić błędy TypeScript
@@ -784,6 +806,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
 ```
 
 **Walidacja**:
+
 - Sprawdzić czy plik został utworzony w prawidłowej lokalizacji: `src/pages/api/users/[id].ts`
 - Uruchomić `npm run build` i sprawdzić błędy
 - Uruchomić `npm run dev` i sprawdzić czy endpoint jest dostępny
@@ -793,67 +816,81 @@ export const GET: APIRoute = async ({ params, locals }) => {
 **Narzędzia**: curl, Postman, lub Thunder Client (VS Code extension)
 
 **Test 1: Pobieranie istniejącego użytkownika**
+
 ```bash
 curl -X GET "http://localhost:4321/api/users/<valid-uuid>" \
   -H "Content-Type: application/json"
 ```
+
 **Oczekiwany wynik**: 200 OK z danymi użytkownika i listą zespołów
 
 **Test 2: Nieprawidłowy UUID**
+
 ```bash
 curl -X GET "http://localhost:4321/api/users/invalid-uuid" \
   -H "Content-Type: application/json"
 ```
+
 **Oczekiwany wynik**: 400 Bad Request z komunikatem walidacji
 
 **Test 3: Nieistniejący użytkownik**
+
 ```bash
 curl -X GET "http://localhost:4321/api/users/00000000-0000-0000-0000-000000000000" \
   -H "Content-Type: application/json"
 ```
+
 **Oczekiwany wynik**: 404 Not Found
 
 **Test 4: Użytkownik bez zespołów**
+
 - Utworzyć użytkownika bez przypisania do team_members
 - Wywołać endpoint
-**Oczekiwany wynik**: 200 OK z pustą tablicą teams: []
+  **Oczekiwany wynik**: 200 OK z pustą tablicą teams: []
 
 **Test 5: Użytkownik z wieloma zespołami**
+
 - Przypisać użytkownika do 3+ zespołów
 - Wywołać endpoint
-**Oczekiwany wynik**: 200 OK z posortowaną (alfabetycznie) tablicą teams
+  **Oczekiwany wynik**: 200 OK z posortowaną (alfabetycznie) tablicą teams
 
 **Test 6: Soft-deleted użytkownik (jako ADMINISTRATOR)**
+
 - Ustawić `deleted_at` na current timestamp dla użytkownika
 - Wywołać endpoint z DEFAULT_USER_ID jako ADMINISTRATOR
-**Oczekiwany wynik**: 200 OK z `deletedAt` zawierającym timestamp
+  **Oczekiwany wynik**: 200 OK z `deletedAt` zawierającym timestamp
 
 **Test 7: Soft-deleted użytkownik (jako HR)**
+
 - Zmienić rolę DEFAULT_USER_ID na HR
 - Wywołać endpoint dla soft-deleted użytkownika
-**Oczekiwany wynik**: 404 Not Found
+  **Oczekiwany wynik**: 404 Not Found
 
 **Test 8: Pobieranie danych innego użytkownika (jako EMPLOYEE)**
+
 - Zmienić rolę DEFAULT_USER_ID na EMPLOYEE
 - Wywołać endpoint z UUID innego użytkownika
-**Oczekiwany wynik**: 404 Not Found (z przyczyn bezpieczeństwa zwracamy 404 zamiast 403)
+  **Oczekiwany wynik**: 404 Not Found (z przyczyn bezpieczeństwa zwracamy 404 zamiast 403)
 
 ### Krok 6: Testowanie wydajności
 
 **Narzędzie**: Apache Bench (ab) lub wrk
 
 **Test obciążeniowy**:
+
 ```bash
 # 1000 zapytań, 10 współbieżnych połączeń
 ab -n 1000 -c 10 "http://localhost:4321/api/users/<valid-uuid>"
 ```
 
 **Oczekiwane metryki**:
+
 - **Średni czas odpowiedzi**: < 100ms
 - **99th percentile**: < 500ms
 - **Błędy**: 0%
 
 **Analiza**:
+
 - Sprawdzić logi pod kątem "Slow query detected"
 - Jeśli > 500ms, uruchomić EXPLAIN ANALYZE na funkcji RPC i sprawdzić plany wykonania
 
@@ -863,7 +900,7 @@ ab -n 1000 -c 10 "http://localhost:4321/api/users/<valid-uuid>"
 
 **Działanie**: Dodać dokumentację endpointu:
 
-```markdown
+````markdown
 ### GET /api/users/:id
 
 Retrieves a single user with their team memberships.
@@ -871,9 +908,11 @@ Retrieves a single user with their team memberships.
 **Authorization**: ADMINISTRATOR (all users), HR (active only), EMPLOYEE (self only)
 
 **Parameters**:
+
 - `id` (path, required): User UUID
 
 **Response 200 OK**:
+
 ```json
 {
   "data": {
@@ -885,19 +924,20 @@ Retrieves a single user with their team memberships.
     "deletedAt": null,
     "createdAt": "2026-01-01T00:00:00Z",
     "updatedAt": "2026-01-01T00:00:00Z",
-    "teams": [
-      { "id": "uuid", "name": "Engineering" }
-    ]
+    "teams": [{ "id": "uuid", "name": "Engineering" }]
   }
 }
 ```
+````
 
 **Error Responses**:
+
 - `400 Bad Request`: Invalid UUID format
 - `401 Unauthorized`: Not authenticated (future)
 - `403 Forbidden`: Insufficient permissions
 - `404 Not Found`: User not found or no access
 - `500 Internal Server Error`: Server error
+
 ```
 
 ### Krok 8: Code Review Checklist
@@ -948,3 +988,4 @@ Ten plan opisuje kompletną implementację endpointu GET /api/users/:id zgodnie 
 
 **Czas implementacji** (oszacowanie): 2-3 godziny (+ 1 godzina na testy)
 
+```

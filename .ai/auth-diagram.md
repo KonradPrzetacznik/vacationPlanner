@@ -23,7 +23,7 @@ sequenceDiagram
     User->>ReactForm: Wpisuje email i hasło
     User->>ReactForm: Klika "Zaloguj się"
     ReactForm->>APIEndpoint: POST /api/auth/login (z email i hasłem)
-    
+
     APIEndpoint->>SupabaseAuth: signInWithPassword(email, password)
     alt Poprawne dane
         SupabaseAuth-->>APIEndpoint: Sukces, sesja utworzona
@@ -64,7 +64,7 @@ sequenceDiagram
     User->>ReactForm: Wpisuje nowe hasło i je potwierdza
     User->>ReactForm: Klika "Ustaw hasło"
     ReactForm->>APIEndpoint: POST /api/auth/set-password (z hasłem i tokenem z URL)
-    
+
     APIEndpoint->>SupabaseAuth: verifyOtp() z tokenem
     SupabaseAuth-->>APIEndpoint: Token poprawny
     APIEndpoint->>SupabaseAuth: updateUser() z nowym hasłem

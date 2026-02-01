@@ -108,6 +108,7 @@ vacationPlanner/
 ## Przepływ danych
 
 ### 1. Login Flow
+
 ```
 User Input → LoginForm (client)
            → Zod Validation (auth-form.schema)
@@ -118,6 +119,7 @@ User Input → LoginForm (client)
 ```
 
 ### 2. Forgot Password Flow
+
 ```
 User Input → ForgotPasswordForm (client)
            → Zod Validation (auth-form.schema)
@@ -128,6 +130,7 @@ User Input → ForgotPasswordForm (client)
 ```
 
 ### 3. Set Password Flow
+
 ```
 Token from URL → SetPasswordForm (client)
 User Input     → Zod Validation (auth-form.schema)
@@ -139,6 +142,7 @@ User Input     → Zod Validation (auth-form.schema)
 ## Komponenty UI używane (shadcn/ui)
 
 Wszystkie formularze wykorzystują:
+
 - ✅ Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter
 - ✅ Form, FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription
 - ✅ Input (type="email", type="password")
@@ -147,18 +151,18 @@ Wszystkie formularze wykorzystują:
 
 ## Stan implementacji
 
-| Komponent | Status | Testy | Dokumentacja |
-|-----------|--------|-------|--------------|
-| LoginForm | ✅ | 🔜 | ✅ |
-| ForgotPasswordForm | ✅ | 🔜 | ✅ |
-| SetPasswordForm | ✅ | 🔜 | ✅ |
-| auth-form.schema | ✅ | 🔜 | ✅ |
-| login.astro | ✅ | 🔜 | ✅ |
-| forgot-password.astro | ✅ | 🔜 | ✅ |
-| set-password.astro | ✅ | 🔜 | ✅ |
-| API endpoints | 🔜 | 🔜 | ✅ |
-| Middleware | 🔜 | 🔜 | ✅ |
-| Supabase config | 🔜 | 🔜 | ✅ |
+| Komponent             | Status | Testy | Dokumentacja |
+| --------------------- | ------ | ----- | ------------ |
+| LoginForm             | ✅     | 🔜    | ✅           |
+| ForgotPasswordForm    | ✅     | 🔜    | ✅           |
+| SetPasswordForm       | ✅     | 🔜    | ✅           |
+| auth-form.schema      | ✅     | 🔜    | ✅           |
+| login.astro           | ✅     | 🔜    | ✅           |
+| forgot-password.astro | ✅     | 🔜    | ✅           |
+| set-password.astro    | ✅     | 🔜    | ✅           |
+| API endpoints         | 🔜     | 🔜    | ✅           |
+| Middleware            | 🔜     | 🔜    | ✅           |
+| Supabase config       | 🔜     | 🔜    | ✅           |
 
 ## Następne kroki
 

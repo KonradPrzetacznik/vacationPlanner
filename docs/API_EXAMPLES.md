@@ -45,11 +45,13 @@ This document provides practical examples of using the Vacation Planner API.
 **Base URL (Development):** `http://localhost:3000`
 
 **Prerequisites:**
+
 1. Start the development server: `npm run dev`
 2. Ensure Supabase is running: `supabase start`
 3. Database should be seeded: `./reset-db.sh`
 
 **Testing Tools:**
+
 - `curl` - Command-line HTTP client
 - `jq` - JSON processor (optional, for pretty printing)
 - Browser DevTools - For testing in web applications
@@ -63,11 +65,13 @@ This document provides practical examples of using the Vacation Planner API.
 #### Example 1: Get All Users (Default)
 
 **Request:**
+
 ```bash
 curl "http://localhost:3000/api/users"
 ```
 
 **Response:**
+
 ```json
 {
   "data": [
@@ -96,6 +100,7 @@ curl "http://localhost:3000/api/users"
 #### Example 2: Get Employees Only (Filtered by Role)
 
 **Request:**
+
 ```bash
 curl "http://localhost:3000/api/users?role=EMPLOYEE"
 ```
@@ -107,6 +112,7 @@ curl "http://localhost:3000/api/users?role=EMPLOYEE"
 #### Example 3: Pagination (Get 5 Users per Page)
 
 **Request:**
+
 ```bash
 # First page
 curl "http://localhost:3000/api/users?limit=5&offset=0"
@@ -119,19 +125,18 @@ curl "http://localhost:3000/api/users?limit=5&offset=10"
 ```
 
 **JavaScript Example:**
+
 ```javascript
 async function getUsers(page = 1, limit = 10) {
   const offset = (page - 1) * limit;
-  const response = await fetch(
-    `http://localhost:3000/api/users?limit=${limit}&offset=${offset}`
-  );
+  const response = await fetch(`http://localhost:3000/api/users?limit=${limit}&offset=${offset}`);
   const data = await response.json();
-  
+
   return {
     users: data.data,
     totalPages: Math.ceil(data.pagination.total / limit),
     currentPage: page,
-    total: data.pagination.total
+    total: data.pagination.total,
   };
 }
 
@@ -145,6 +150,7 @@ console.log(`Showing ${page1.users.length} of ${page1.total} users`);
 #### Example 4: Filter by Team
 
 **Request:**
+
 ```bash
 curl "http://localhost:3000/api/users?teamId=10000000-0000-0000-0000-000000000001"
 ```
@@ -156,6 +162,7 @@ curl "http://localhost:3000/api/users?teamId=10000000-0000-0000-0000-00000000000
 #### Example 5: Include Soft-Deleted Users (Admin Only)
 
 **Request:**
+
 ```bash
 curl "http://localhost:3000/api/users?includeDeleted=true"
 ```
@@ -169,6 +176,7 @@ curl "http://localhost:3000/api/users?includeDeleted=true"
 #### Example 6: Complex Query (HR View)
 
 **Request:**
+
 ```bash
 curl "http://localhost:3000/api/users?role=EMPLOYEE&limit=20&offset=0&teamId=10000000-0000-0000-0000-000000000001"
 ```
@@ -182,11 +190,13 @@ curl "http://localhost:3000/api/users?role=EMPLOYEE&limit=20&offset=0&teamId=100
 #### Example 7: Get User Profile
 
 **Request:**
+
 ```bash
 curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000010"
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -219,11 +229,13 @@ curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000010"
 #### Example 8: User with No Teams
 
 **Request:**
+
 ```bash
 curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000001"
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -247,6 +259,7 @@ curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000001"
 #### Example 9: React Component - User Profile
 
 **JavaScript/React Example:**
+
 ```typescript
 import { useState, useEffect } from 'react';
 
@@ -273,11 +286,11 @@ function UserProfile({ userId }: { userId: string }) {
     async function fetchUser() {
       try {
         const response = await fetch(`/api/users/${userId}`);
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const data = await response.json();
         setUser(data.data);
       } catch (err) {
@@ -299,7 +312,7 @@ function UserProfile({ userId }: { userId: string }) {
       <h1>{user.firstName} {user.lastName}</h1>
       <p>Email: {user.email}</p>
       <p>Role: {user.role}</p>
-      
+
       <h2>Teams</h2>
       {user.teams.length > 0 ? (
         <ul>
@@ -324,6 +337,7 @@ export default UserProfile;
 #### Example 10: Create Employee User
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:3000/api/users" \
   -H "Content-Type: application/json" \
@@ -336,6 +350,7 @@ curl -X POST "http://localhost:3000/api/users" \
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
@@ -351,6 +366,7 @@ curl -X POST "http://localhost:3000/api/users" \
 **Use Case:** Administrator creating a new employee account during onboarding.
 
 **Requirements:**
+
 - **Role Required:** ADMINISTRATOR
 - **Permissions:** Only administrators can create users
 
@@ -359,6 +375,7 @@ curl -X POST "http://localhost:3000/api/users" \
 #### Example 11: Create User with Specific Role
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:3000/api/users" \
   -H "Content-Type: application/json" \
@@ -372,6 +389,7 @@ curl -X POST "http://localhost:3000/api/users" \
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "id": "660e8400-e29b-41d4-a716-446655440001",
@@ -385,6 +403,7 @@ curl -X POST "http://localhost:3000/api/users" \
 ```
 
 **Available Roles:**
+
 - `EMPLOYEE` (default if not specified)
 - `HR`
 - `ADMINISTRATOR`
@@ -394,6 +413,7 @@ curl -X POST "http://localhost:3000/api/users" \
 #### Example 12: Create User Error - Duplicate Email
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:3000/api/users" \
   -H "Content-Type: application/json" \
@@ -406,6 +426,7 @@ curl -X POST "http://localhost:3000/api/users" \
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "User with this email already exists"
@@ -417,6 +438,7 @@ curl -X POST "http://localhost:3000/api/users" \
 #### Example 13: Create User Error - Validation Failed
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:3000/api/users" \
   -H "Content-Type: application/json" \
@@ -429,6 +451,7 @@ curl -X POST "http://localhost:3000/api/users" \
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "Validation failed",
@@ -447,6 +470,7 @@ curl -X POST "http://localhost:3000/api/users" \
 #### Example 14: Update User Name (Admin)
 
 **Request:**
+
 ```bash
 curl -X PATCH "http://localhost:3000/api/users/550e8400-e29b-41d4-a716-446655440000" \
   -H "Content-Type: application/json" \
@@ -457,6 +481,7 @@ curl -X PATCH "http://localhost:3000/api/users/550e8400-e29b-41d4-a716-446655440
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
@@ -471,6 +496,7 @@ curl -X PATCH "http://localhost:3000/api/users/550e8400-e29b-41d4-a716-446655440
 **Use Case:** Administrator or employee updating profile information.
 
 **Permissions:**
+
 - **ADMINISTRATOR:** Can update all fields (except email) for all users
 - **EMPLOYEE:** Can only update their own firstName and lastName
 
@@ -479,6 +505,7 @@ curl -X PATCH "http://localhost:3000/api/users/550e8400-e29b-41d4-a716-446655440
 #### Example 15: Update User Role (Admin Only)
 
 **Request:**
+
 ```bash
 curl -X PATCH "http://localhost:3000/api/users/550e8400-e29b-41d4-a716-446655440000" \
   -H "Content-Type: application/json" \
@@ -488,6 +515,7 @@ curl -X PATCH "http://localhost:3000/api/users/550e8400-e29b-41d4-a716-446655440
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
@@ -506,6 +534,7 @@ curl -X PATCH "http://localhost:3000/api/users/550e8400-e29b-41d4-a716-446655440
 #### Example 16: Update Multiple Fields at Once
 
 **Request:**
+
 ```bash
 curl -X PATCH "http://localhost:3000/api/users/550e8400-e29b-41d4-a716-446655440000" \
   -H "Content-Type: application/json" \
@@ -517,6 +546,7 @@ curl -X PATCH "http://localhost:3000/api/users/550e8400-e29b-41d4-a716-446655440
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
@@ -533,6 +563,7 @@ curl -X PATCH "http://localhost:3000/api/users/550e8400-e29b-41d4-a716-446655440
 #### Example 17: Update Error - Cannot Change Own Role
 
 **Request:**
+
 ```bash
 # Assuming current user is trying to change their own role
 curl -X PATCH "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000001" \
@@ -543,6 +574,7 @@ curl -X PATCH "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "Cannot change your own role"
@@ -554,6 +586,7 @@ curl -X PATCH "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000
 #### Example 18: Update Error - User Not Found
 
 **Request:**
+
 ```bash
 curl -X PATCH "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000999" \
   -H "Content-Type: application/json" \
@@ -563,6 +596,7 @@ curl -X PATCH "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000
 ```
 
 **Response (404 Not Found):**
+
 ```json
 {
   "error": "User not found"
@@ -574,6 +608,7 @@ curl -X PATCH "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000
 #### Example 19: Update Error - Insufficient Permissions
 
 **Request:**
+
 ```bash
 # Employee trying to update another user
 curl -X PATCH "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000010" \
@@ -584,6 +619,7 @@ curl -X PATCH "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000
 ```
 
 **Response (403 Forbidden):**
+
 ```json
 {
   "error": "Insufficient permissions: Cannot edit other users"
@@ -597,11 +633,13 @@ curl -X PATCH "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000
 #### Example 20: Soft-Delete User
 
 **Request:**
+
 ```bash
 curl -X DELETE "http://localhost:3000/api/users/550e8400-e29b-41d4-a716-446655440000"
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "message": "User deleted successfully",
@@ -614,10 +652,12 @@ curl -X DELETE "http://localhost:3000/api/users/550e8400-e29b-41d4-a716-44665544
 **Use Case:** Administrator deactivating user account and cancelling their pending vacation requests.
 
 **Requirements:**
+
 - **Role Required:** ADMINISTRATOR
 - **Permissions:** Only administrators can delete users
 
 **Behavior:**
+
 - Performs soft-delete (sets `deleted_at` timestamp)
 - Automatically cancels all future vacation requests
 - User can be viewed with `includeDeleted=true` parameter
@@ -628,11 +668,13 @@ curl -X DELETE "http://localhost:3000/api/users/550e8400-e29b-41d4-a716-44665544
 #### Example 21: Delete Error - User Not Found
 
 **Request:**
+
 ```bash
 curl -X DELETE "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000999"
 ```
 
 **Response (404 Not Found):**
+
 ```json
 {
   "error": "User not found"
@@ -644,12 +686,14 @@ curl -X DELETE "http://localhost:3000/api/users/00000000-0000-0000-0000-00000000
 #### Example 22: Delete Error - User Already Deleted
 
 **Request:**
+
 ```bash
 # Trying to delete the same user twice
 curl -X DELETE "http://localhost:3000/api/users/550e8400-e29b-41d4-a716-446655440000"
 ```
 
 **Response (404 Not Found):**
+
 ```json
 {
   "error": "User already deleted"
@@ -661,12 +705,14 @@ curl -X DELETE "http://localhost:3000/api/users/550e8400-e29b-41d4-a716-44665544
 #### Example 23: Delete Error - Insufficient Permissions
 
 **Request:**
+
 ```bash
 # Non-administrator trying to delete user
 curl -X DELETE "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000010"
 ```
 
 **Response (403 Forbidden):**
+
 ```json
 {
   "error": "Forbidden: Administrator role required"
@@ -678,6 +724,7 @@ curl -X DELETE "http://localhost:3000/api/users/00000000-0000-0000-0000-00000000
 #### Example 24: Verify Deleted User in List
 
 **Request:**
+
 ```bash
 # Get users without includeDeleted flag
 curl "http://localhost:3000/api/users"
@@ -703,6 +750,7 @@ Retrieves all vacation allowances for a user with optional year filtering.
 **Endpoint:** `GET /api/users/:userId/vacation-allowances`
 
 **Authorization:**
+
 - `EMPLOYEE`: Can only view their own allowances
 - `HR`: Can view allowances for active users only
 - `ADMINISTRATOR`: Can view all allowances including deleted users
@@ -720,11 +768,13 @@ Retrieves all vacation allowances for a user with optional year filtering.
 #### Example 25: Get All Vacation Allowances for User
 
 **Request:**
+
 ```bash
 curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000010/vacation-allowances"
 ```
 
 **Response (200):**
+
 ```json
 {
   "userId": "00000000-0000-0000-0000-000000000010",
@@ -756,11 +806,13 @@ curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000010/vacat
 #### Example 26: Filter Allowances by Year
 
 **Request:**
+
 ```bash
 curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000010/vacation-allowances?year=2025"
 ```
 
 **Response (200):**
+
 ```json
 {
   "userId": "00000000-0000-0000-0000-000000000010",
@@ -792,11 +844,13 @@ curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000010/vacat
 #### Example 27: Invalid User ID Format
 
 **Request:**
+
 ```bash
 curl "http://localhost:3000/api/users/invalid-uuid/vacation-allowances"
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "Invalid user ID format",
@@ -811,12 +865,14 @@ curl "http://localhost:3000/api/users/invalid-uuid/vacation-allowances"
 #### Example 28: Access Denied - Employee Viewing Others
 
 **Request:**
+
 ```bash
 # Employee trying to view another user's allowances
 curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000002/vacation-allowances"
 ```
 
 **Response (403 Forbidden):**
+
 ```json
 {
   "error": "Forbidden: You can only view your own vacation allowances"
@@ -828,11 +884,13 @@ curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000002/vacat
 #### Example 29: User Not Found
 
 **Request:**
+
 ```bash
 curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000099/vacation-allowances"
 ```
 
 **Response (404 Not Found):**
+
 ```json
 {
   "error": "User not found"
@@ -848,6 +906,7 @@ Retrieves a single vacation allowance for a specific year.
 **Endpoint:** `GET /api/users/:userId/vacation-allowances/:year`
 
 **Authorization:**
+
 - `EMPLOYEE`: Can only view their own allowances
 - `HR`: Can view allowances for active users only
 - `ADMINISTRATOR`: Can view all allowances including deleted users
@@ -861,11 +920,13 @@ Retrieves a single vacation allowance for a specific year.
 #### Example 30: Get Allowance for Specific Year
 
 **Request:**
+
 ```bash
 curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000010/vacation-allowances/2025"
 ```
 
 **Response (200):**
+
 ```json
 {
   "data": {
@@ -894,11 +955,13 @@ curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000010/vacat
 #### Example 31: Year Out of Range
 
 **Request:**
+
 ```bash
 curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000010/vacation-allowances/1999"
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "Invalid parameters",
@@ -913,11 +976,13 @@ curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000010/vacat
 #### Example 32: Allowance Not Found for Year
 
 **Request:**
+
 ```bash
 curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000010/vacation-allowances/2027"
 ```
 
 **Response (404 Not Found):**
+
 ```json
 {
   "error": "Vacation allowance for year 2027 not found"
@@ -949,16 +1014,19 @@ The API automatically calculates several fields based on approved vacation reque
 **Example:**
 
 User has:
+
 - 26 total days for 2025
 - 5 carry-over days from 2024
 - Total available: 31 days
 
 Vacation requests:
+
 1. Feb 15-19 (5 days) → Uses 5 carry-over days
 2. Apr 10-14 (5 days) → Uses 5 current year days (carry-over expired)
 3. Dec 20-31 (10 days) → Uses 10 current year days
 
 Result:
+
 - usedCarryoverDays: 5
 - usedCurrentYearDays: 15
 - remainingCarryoverDays: 0 (expired)
@@ -973,6 +1041,7 @@ Creates a new vacation allowance for a user. Only HR users can create allowances
 **Endpoint:** `POST /api/vacation-allowances`
 
 **Authorization:**
+
 - `HR`: Can create vacation allowances for any active user
 - `ADMINISTRATOR`: Cannot create vacation allowances
 - `EMPLOYEE`: Cannot create vacation allowances
@@ -986,6 +1055,7 @@ Creates a new vacation allowance for a user. Only HR users can create allowances
 | `carryoverDays` | number | Yes | Carry-over days from previous year (>= 0) |
 
 **Constraints:**
+
 - One allowance per user per year (unique constraint)
 - User must exist and not be soft-deleted
 - All numeric values must be non-negative integers
@@ -993,6 +1063,7 @@ Creates a new vacation allowance for a user. Only HR users can create allowances
 #### Example 33: Create Vacation Allowance
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:3000/api/vacation-allowances" \
   -H "Content-Type: application/json" \
@@ -1005,6 +1076,7 @@ curl -X POST "http://localhost:3000/api/vacation-allowances" \
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "id": "f1e2d3c4-b5a6-7890-cdef-1234567890ab",
@@ -1023,6 +1095,7 @@ curl -X POST "http://localhost:3000/api/vacation-allowances" \
 #### Example 34: Create Allowance - Duplicate Error
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:3000/api/vacation-allowances" \
   -H "Content-Type: application/json" \
@@ -1035,6 +1108,7 @@ curl -X POST "http://localhost:3000/api/vacation-allowances" \
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "Vacation allowance for this user and year already exists"
@@ -1046,6 +1120,7 @@ curl -X POST "http://localhost:3000/api/vacation-allowances" \
 #### Example 35: Create Allowance - Validation Errors
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:3000/api/vacation-allowances" \
   -H "Content-Type: application/json" \
@@ -1058,6 +1133,7 @@ curl -X POST "http://localhost:3000/api/vacation-allowances" \
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "Invalid request body",
@@ -1074,6 +1150,7 @@ curl -X POST "http://localhost:3000/api/vacation-allowances" \
 #### Example 36: Create Allowance - User Not Found
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:3000/api/vacation-allowances" \
   -H "Content-Type: application/json" \
@@ -1086,6 +1163,7 @@ curl -X POST "http://localhost:3000/api/vacation-allowances" \
 ```
 
 **Response (404 Not Found):**
+
 ```json
 {
   "error": "User not found"
@@ -1097,6 +1175,7 @@ curl -X POST "http://localhost:3000/api/vacation-allowances" \
 #### Example 37: Create Allowance - Permission Denied
 
 **Request:**
+
 ```bash
 # EMPLOYEE or ADMINISTRATOR trying to create allowance
 curl -X POST "http://localhost:3000/api/vacation-allowances" \
@@ -1110,6 +1189,7 @@ curl -X POST "http://localhost:3000/api/vacation-allowances" \
 ```
 
 **Response (403 Forbidden):**
+
 ```json
 {
   "error": "Only HR users can create vacation allowances"
@@ -1125,6 +1205,7 @@ Updates an existing vacation allowance. Only HR users can update allowances.
 **Endpoint:** `PATCH /api/vacation-allowances/:id`
 
 **Authorization:**
+
 - `HR`: Can update any vacation allowance
 - `ADMINISTRATOR`: Cannot update vacation allowances
 - `EMPLOYEE`: Cannot update vacation allowances
@@ -1141,12 +1222,14 @@ Updates an existing vacation allowance. Only HR users can update allowances.
 | `carryoverDays` | number | No | Updated carry-over days (>= 0) |
 
 **Constraints:**
+
 - At least one field must be provided
 - All numeric values must be non-negative integers
 
 #### Example 38: Update Total Days
 
 **Request:**
+
 ```bash
 curl -X PATCH "http://localhost:3000/api/vacation-allowances/f1e2d3c4-b5a6-7890-cdef-1234567890ab" \
   -H "Content-Type: application/json" \
@@ -1156,6 +1239,7 @@ curl -X PATCH "http://localhost:3000/api/vacation-allowances/f1e2d3c4-b5a6-7890-
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "f1e2d3c4-b5a6-7890-cdef-1234567890ab",
@@ -1174,6 +1258,7 @@ curl -X PATCH "http://localhost:3000/api/vacation-allowances/f1e2d3c4-b5a6-7890-
 #### Example 39: Update Both Fields
 
 **Request:**
+
 ```bash
 curl -X PATCH "http://localhost:3000/api/vacation-allowances/f1e2d3c4-b5a6-7890-cdef-1234567890ab" \
   -H "Content-Type: application/json" \
@@ -1184,6 +1269,7 @@ curl -X PATCH "http://localhost:3000/api/vacation-allowances/f1e2d3c4-b5a6-7890-
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "f1e2d3c4-b5a6-7890-cdef-1234567890ab",
@@ -1200,6 +1286,7 @@ curl -X PATCH "http://localhost:3000/api/vacation-allowances/f1e2d3c4-b5a6-7890-
 #### Example 40: Update Error - Allowance Not Found
 
 **Request:**
+
 ```bash
 curl -X PATCH "http://localhost:3000/api/vacation-allowances/00000000-0000-0000-0000-000000000999" \
   -H "Content-Type: application/json" \
@@ -1209,6 +1296,7 @@ curl -X PATCH "http://localhost:3000/api/vacation-allowances/00000000-0000-0000-
 ```
 
 **Response (404 Not Found):**
+
 ```json
 {
   "error": "Vacation allowance not found"
@@ -1269,12 +1357,12 @@ const VacationBalance: React.FC<VacationBalanceProps> = ({ userId, year }) => {
       try {
         const yearParam = year ? `?year=${year}` : '';
         const response = await fetch(`/api/users/${userId}/vacation-allowances${yearParam}`);
-        
+
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.error);
         }
-        
+
         const data = await response.json();
         setAllowances(data.allowances);
       } catch (err) {
@@ -1343,10 +1431,12 @@ export default VacationBalance;
 The Settings API manages global application configuration values. Settings control application-wide behavior like default vacation days and team occupancy thresholds.
 
 **Available Settings:**
+
 - `default_vacation_days` - Default number of vacation days per year for new users
 - `team_occupancy_threshold` - Percentage threshold (0-100) for maximum team members on vacation simultaneously
 
 **Authorization:**
+
 - **GET endpoints**: All authenticated users (EMPLOYEE, HR, ADMINISTRATOR)
 - **PUT endpoints**: Only HR users can update settings
 
@@ -1388,6 +1478,7 @@ curl "http://localhost:3000/api/settings"
 ```
 
 **Response Fields:**
+
 - `data` - Array of setting objects
   - `key` (string) - Unique setting identifier
   - `value` (number) - Current setting value (integer)
@@ -1395,6 +1486,7 @@ curl "http://localhost:3000/api/settings"
   - `updatedAt` (string) - ISO datetime of last update
 
 **Possible Errors:**
+
 - **500:** Internal server error
 
 **Use Case:** Display current system configuration in admin dashboard.
@@ -1410,6 +1502,7 @@ curl "http://localhost:3000/api/settings"
 **Authorization:** All authenticated users
 
 **URL Parameters:**
+
 - `key` (required) - Setting key (e.g., "default_vacation_days")
 
 **Request:**
@@ -1438,6 +1531,7 @@ curl "http://localhost:3000/api/settings/default_vacation_days"
 ```
 
 **Possible Errors:**
+
 - **400:** Invalid setting key format
 - **404:** Setting not found
 - **500:** Internal server error
@@ -1455,6 +1549,7 @@ curl "http://localhost:3000/api/settings/default_vacation_days"
 **Authorization:** HR only
 
 **URL Parameters:**
+
 - `key` (required) - Setting key to update
 
 **Request Body:**
@@ -1466,6 +1561,7 @@ curl "http://localhost:3000/api/settings/default_vacation_days"
 ```
 
 **Body Fields:**
+
 - `value` (required, integer) - New setting value (must be non-negative integer)
 
 **Request:**
@@ -1488,6 +1584,7 @@ curl -X PUT "http://localhost:3000/api/settings/default_vacation_days" \
 ```
 
 **Validation Rules:**
+
 - `value` must be a non-negative integer (≥ 0)
 - For `team_occupancy_threshold`: value must be between 0 and 100
 
@@ -1527,7 +1624,8 @@ curl -X PUT "http://localhost:3000/api/settings/default_vacation_days" \
 ```
 
 **Possible Errors:**
-- **400:** 
+
+- **400:**
   - Invalid JSON in request body
   - Validation failed (negative value, not an integer, float instead of integer)
   - Invalid value for team_occupancy_threshold (must be 0-100)
@@ -1596,6 +1694,7 @@ curl "http://localhost:3000/api/users?role=EMPLOYEE&limit=20&offset=0"
 ```
 
 **JavaScript Implementation:**
+
 ```javascript
 class UserDirectory {
   constructor(itemsPerPage = 20) {
@@ -1604,22 +1703,20 @@ class UserDirectory {
 
   async getPage(pageNumber) {
     const offset = (pageNumber - 1) * this.itemsPerPage;
-    const response = await fetch(
-      `/api/users?role=EMPLOYEE&limit=${this.itemsPerPage}&offset=${offset}`
-    );
+    const response = await fetch(`/api/users?role=EMPLOYEE&limit=${this.itemsPerPage}&offset=${offset}`);
     return response.json();
   }
 
   async getAllPages() {
     const firstPage = await this.getPage(1);
     const totalPages = Math.ceil(firstPage.pagination.total / this.itemsPerPage);
-    
+
     const allPages = [firstPage];
     for (let i = 2; i <= totalPages; i++) {
       allPages.push(await this.getPage(i));
     }
-    
-    return allPages.flatMap(page => page.data);
+
+    return allPages.flatMap((page) => page.data);
   }
 }
 
@@ -1640,6 +1737,7 @@ curl "http://localhost:3000/api/users?includeDeleted=true&limit=100"
 ```
 
 **Python Example:**
+
 ```python
 import requests
 
@@ -1652,7 +1750,7 @@ def get_all_users_for_audit():
             "limit": 100
         }
     )
-    
+
     if response.status_code == 200:
         data = response.json()
         return {
@@ -1661,7 +1759,7 @@ def get_all_users_for_audit():
             "deleted": len([u for u in data["data"] if u["deletedAt"] is not None]),
             "users": data["data"]
         }
-    
+
     raise Exception(f"API error: {response.status_code}")
 
 # Usage
@@ -1688,33 +1786,36 @@ curl "http://localhost:3000/api/users/YOUR_USER_ID"
 
 ### HTTP Status Codes Summary
 
-| Status Code | Meaning | Common Causes |
-|-------------|---------|---------------|
-| 200 | OK | Successful GET, PATCH, DELETE request |
-| 201 | Created | Successful POST request (user created) |
-| 400 | Bad Request | Invalid input, validation failed, business rule violation |
-| 403 | Forbidden | Insufficient permissions for the operation |
-| 404 | Not Found | User not found, already deleted, or access denied |
-| 500 | Internal Server Error | Server-side error, database issue |
+| Status Code | Meaning               | Common Causes                                             |
+| ----------- | --------------------- | --------------------------------------------------------- |
+| 200         | OK                    | Successful GET, PATCH, DELETE request                     |
+| 201         | Created               | Successful POST request (user created)                    |
+| 400         | Bad Request           | Invalid input, validation failed, business rule violation |
+| 403         | Forbidden             | Insufficient permissions for the operation                |
+| 404         | Not Found             | User not found, already deleted, or access denied         |
+| 500         | Internal Server Error | Server-side error, database issue                         |
 
 ---
 
 ### Error Codes by Endpoint
 
 #### GET /api/users
+
 - **400:** Invalid query parameters (e.g., invalid UUID for teamId)
 - **403:** Non-administrator trying to use `includeDeleted=true`
 - **404:** Team not found (when filtering by teamId)
 - **500:** Database connection error
 
 #### GET /api/users/:id
+
 - **400:** Invalid user ID format (not a valid UUID)
 - **403:** Insufficient permissions (Employee viewing other users)
 - **404:** User not found or soft-deleted
 - **500:** Database error
 
 #### POST /api/users
-- **400:** 
+
+- **400:**
   - Validation failed (missing fields, invalid email, password too short)
   - Email already exists
   - Invalid role value
@@ -1723,6 +1824,7 @@ curl "http://localhost:3000/api/users/YOUR_USER_ID"
 - **500:** Failed to create user account or profile
 
 #### PATCH /api/users/:id
+
 - **400:**
   - Invalid user ID format
   - Validation failed (empty fields, invalid values)
@@ -1734,6 +1836,7 @@ curl "http://localhost:3000/api/users/YOUR_USER_ID"
 - **500:** Failed to update user
 
 #### DELETE /api/users/:id
+
 - **400:** Invalid user ID format
 - **403:** Non-administrator trying to delete user
 - **404:** User not found or already deleted
@@ -1744,11 +1847,13 @@ curl "http://localhost:3000/api/users/YOUR_USER_ID"
 ### Error Example 1: Invalid UUID Format (400)
 
 **Request:**
+
 ```bash
 curl "http://localhost:3000/api/users/invalid-uuid"
 ```
 
 **Response:**
+
 ```json
 {
   "error": "Invalid user ID format",
@@ -1759,25 +1864,26 @@ curl "http://localhost:3000/api/users/invalid-uuid"
 ```
 
 **Handling in JavaScript:**
+
 ```javascript
 async function getUserSafely(userId) {
   try {
     const response = await fetch(`/api/users/${userId}`);
     const data = await response.json();
-    
+
     if (response.status === 400) {
-      console.error('Invalid user ID:', data.error);
+      console.error("Invalid user ID:", data.error);
       return null;
     }
-    
+
     if (response.status === 404) {
-      console.error('User not found');
+      console.error("User not found");
       return null;
     }
-    
+
     return data.data;
   } catch (error) {
-    console.error('Network error:', error);
+    console.error("Network error:", error);
     return null;
   }
 }
@@ -1788,11 +1894,13 @@ async function getUserSafely(userId) {
 ### Error Example 2: User Not Found (404)
 
 **Request:**
+
 ```bash
 curl "http://localhost:3000/api/users/00000000-0000-0000-0000-999999999999"
 ```
 
 **Response:**
+
 ```json
 {
   "error": "User not found"
@@ -1806,6 +1914,7 @@ curl "http://localhost:3000/api/users/00000000-0000-0000-0000-999999999999"
 **Scenario:** Employee trying to view another employee's profile.
 
 **Response:**
+
 ```json
 {
   "error": "Insufficient permissions to view this user"
@@ -1817,6 +1926,7 @@ curl "http://localhost:3000/api/users/00000000-0000-0000-0000-999999999999"
 ### Error Example 4: Server Error (500)
 
 **Response:**
+
 ```json
 {
   "error": "Internal server error"
@@ -1824,6 +1934,7 @@ curl "http://localhost:3000/api/users/00000000-0000-0000-0000-999999999999"
 ```
 
 **Handling:**
+
 - Retry the request after a delay
 - Show user-friendly error message
 - Log error for debugging
@@ -1836,7 +1947,7 @@ curl "http://localhost:3000/api/users/00000000-0000-0000-0000-999999999999"
 ### 1. Always Check Response Status
 
 ```javascript
-const response = await fetch('/api/users');
+const response = await fetch("/api/users");
 if (!response.ok) {
   throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 }
@@ -1850,7 +1961,7 @@ const totalPages = Math.ceil(pagination.total / pagination.limit);
 
 // Don't request beyond total pages
 if (currentPage > totalPages) {
-  console.warn('No more pages available');
+  console.warn("No more pages available");
 }
 ```
 
@@ -1863,10 +1974,10 @@ async function getUserWithCache(userId) {
   if (userCache.has(userId)) {
     return userCache.get(userId);
   }
-  
+
   const response = await fetch(`/api/users/${userId}`);
   const data = await response.json();
-  
+
   userCache.set(userId, data.data);
   return data.data;
 }
@@ -1881,7 +1992,7 @@ function isValidUUID(str) {
 }
 
 if (!isValidUUID(userId)) {
-  console.error('Invalid UUID format');
+  console.error("Invalid UUID format");
   return;
 }
 ```
@@ -1889,16 +2000,12 @@ if (!isValidUUID(userId)) {
 ### 5. Use TypeScript Types
 
 ```typescript
-import type { 
-  UserDetailsDTO, 
-  GetUsersResponseDTO,
-  TeamReferenceDTO 
-} from '@/types';
+import type { UserDetailsDTO, GetUsersResponseDTO, TeamReferenceDTO } from "@/types";
 
 async function getUser(id: string): Promise<UserDetailsDTO | null> {
   const response = await fetch(`/api/users/${id}`);
   if (!response.ok) return null;
-  
+
   const data: { data: UserDetailsDTO } = await response.json();
   return data.data;
 }
@@ -1913,11 +2020,13 @@ async function getUser(id: string): Promise<UserDetailsDTO | null> {
 #### Example 1: Get All Teams (Default)
 
 **Request:**
+
 ```bash
 curl "http://localhost:4321/api/teams"
 ```
 
 **Response:**
+
 ```json
 {
   "data": [
@@ -1943,6 +2052,7 @@ curl "http://localhost:4321/api/teams"
 ```
 
 **Response Fields:**
+
 - `data` - Array of team objects
 - `pagination.total` - Total number of teams
 - `pagination.limit` - Items per page
@@ -1953,11 +2063,13 @@ curl "http://localhost:4321/api/teams"
 #### Example 2: Get Teams with Member Count
 
 **Request:**
+
 ```bash
 curl "http://localhost:4321/api/teams?includeMemberCount=true"
 ```
 
 **Response:**
+
 ```json
 {
   "data": [
@@ -1984,11 +2096,13 @@ curl "http://localhost:4321/api/teams?includeMemberCount=true"
 #### Example 3: Paginated Teams List
 
 **Request:**
+
 ```bash
 curl "http://localhost:4321/api/teams?limit=10&offset=20"
 ```
 
 **Parameters:**
+
 - `limit` - Number of items per page (1-100, default: 50)
 - `offset` - Number of items to skip (min: 0, default: 0)
 - `includeMemberCount` - Include member count (boolean, default: false)
@@ -2000,11 +2114,13 @@ curl "http://localhost:4321/api/teams?limit=10&offset=20"
 #### Example 1: Get Team Details with Members
 
 **Request:**
+
 ```bash
 curl "http://localhost:4321/api/teams/123e4567-e89b-12d3-a456-426614174000"
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -2035,6 +2151,7 @@ curl "http://localhost:4321/api/teams/123e4567-e89b-12d3-a456-426614174000"
 ```
 
 **Response Fields:**
+
 - `data.id` - Team UUID
 - `data.name` - Team name
 - `data.members` - Array of team members with profile information
@@ -2045,11 +2162,13 @@ curl "http://localhost:4321/api/teams/123e4567-e89b-12d3-a456-426614174000"
 #### Example 2: Team Not Found
 
 **Request:**
+
 ```bash
 curl "http://localhost:4321/api/teams/00000000-0000-0000-0000-000000000099"
 ```
 
 **Response (404):**
+
 ```json
 {
   "error": "Team not found"
@@ -2061,11 +2180,13 @@ curl "http://localhost:4321/api/teams/00000000-0000-0000-0000-000000000099"
 #### Example 3: Invalid Team ID Format
 
 **Request:**
+
 ```bash
 curl "http://localhost:4321/api/teams/invalid-uuid"
 ```
 
 **Response (400):**
+
 ```json
 {
   "error": "Invalid team ID format",
@@ -2084,6 +2205,7 @@ curl "http://localhost:4321/api/teams/invalid-uuid"
 #### Example 1: Create Team Successfully
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:4321/api/teams" \
   -H "Content-Type: application/json" \
@@ -2093,6 +2215,7 @@ curl -X POST "http://localhost:4321/api/teams" \
 ```
 
 **Response (201):**
+
 ```json
 {
   "id": "123e4567-e89b-12d3-a456-426614174002",
@@ -2106,6 +2229,7 @@ curl -X POST "http://localhost:4321/api/teams" \
 #### Example 2: Team Name Already Exists
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:4321/api/teams" \
   -H "Content-Type: application/json" \
@@ -2115,6 +2239,7 @@ curl -X POST "http://localhost:4321/api/teams" \
 ```
 
 **Response (400):**
+
 ```json
 {
   "error": "Team name already exists"
@@ -2126,6 +2251,7 @@ curl -X POST "http://localhost:4321/api/teams" \
 #### Example 3: Validation Errors
 
 **Request (empty name):**
+
 ```bash
 curl -X POST "http://localhost:4321/api/teams" \
   -H "Content-Type: application/json" \
@@ -2135,6 +2261,7 @@ curl -X POST "http://localhost:4321/api/teams" \
 ```
 
 **Response (400):**
+
 ```json
 {
   "error": "Validation failed",
@@ -2145,6 +2272,7 @@ curl -X POST "http://localhost:4321/api/teams" \
 ```
 
 **Request (name too long):**
+
 ```bash
 curl -X POST "http://localhost:4321/api/teams" \
   -H "Content-Type: application/json" \
@@ -2154,6 +2282,7 @@ curl -X POST "http://localhost:4321/api/teams" \
 ```
 
 **Response (400):**
+
 ```json
 {
   "error": "Validation failed",
@@ -2168,6 +2297,7 @@ curl -X POST "http://localhost:4321/api/teams" \
 #### Example 4: Insufficient Permissions (EMPLOYEE)
 
 **Response (403):**
+
 ```json
 {
   "error": "Insufficient permissions"
@@ -2185,6 +2315,7 @@ curl -X POST "http://localhost:4321/api/teams" \
 #### Example 1: Update Team Name Successfully
 
 **Request:**
+
 ```bash
 curl -X PATCH "http://localhost:4321/api/teams/123e4567-e89b-12d3-a456-426614174000" \
   -H "Content-Type: application/json" \
@@ -2194,6 +2325,7 @@ curl -X PATCH "http://localhost:4321/api/teams/123e4567-e89b-12d3-a456-426614174
 ```
 
 **Response (200):**
+
 ```json
 {
   "id": "123e4567-e89b-12d3-a456-426614174000",
@@ -2207,6 +2339,7 @@ curl -X PATCH "http://localhost:4321/api/teams/123e4567-e89b-12d3-a456-426614174
 #### Example 2: Team Not Found
 
 **Request:**
+
 ```bash
 curl -X PATCH "http://localhost:4321/api/teams/00000000-0000-0000-0000-000000000099" \
   -H "Content-Type: application/json" \
@@ -2216,6 +2349,7 @@ curl -X PATCH "http://localhost:4321/api/teams/00000000-0000-0000-0000-000000000
 ```
 
 **Response (404):**
+
 ```json
 {
   "error": "Team not found"
@@ -2227,6 +2361,7 @@ curl -X PATCH "http://localhost:4321/api/teams/00000000-0000-0000-0000-000000000
 #### Example 3: Duplicate Team Name
 
 **Request:**
+
 ```bash
 curl -X PATCH "http://localhost:4321/api/teams/123e4567-e89b-12d3-a456-426614174000" \
   -H "Content-Type: application/json" \
@@ -2236,6 +2371,7 @@ curl -X PATCH "http://localhost:4321/api/teams/123e4567-e89b-12d3-a456-426614174
 ```
 
 **Response (400):**
+
 ```json
 {
   "error": "Team name already exists"
@@ -2253,11 +2389,13 @@ curl -X PATCH "http://localhost:4321/api/teams/123e4567-e89b-12d3-a456-426614174
 #### Example 1: Delete Team Successfully
 
 **Request:**
+
 ```bash
 curl -X DELETE "http://localhost:4321/api/teams/123e4567-e89b-12d3-a456-426614174000"
 ```
 
 **Response (200):**
+
 ```json
 {
   "message": "Team deleted successfully",
@@ -2270,11 +2408,13 @@ curl -X DELETE "http://localhost:4321/api/teams/123e4567-e89b-12d3-a456-42661417
 #### Example 2: Team Not Found
 
 **Request:**
+
 ```bash
 curl -X DELETE "http://localhost:4321/api/teams/00000000-0000-0000-0000-000000000099"
 ```
 
 **Response (404):**
+
 ```json
 {
   "error": "Team not found"
@@ -2289,25 +2429,25 @@ curl -X DELETE "http://localhost:4321/api/teams/00000000-0000-0000-0000-00000000
 
 ```javascript
 async function getAllTeams() {
-  const response = await fetch('http://localhost:4321/api/teams');
-  
+  const response = await fetch("http://localhost:4321/api/teams");
+
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
-  
+
   const data = await response.json();
   return data;
 }
 
 // Usage
 getAllTeams()
-  .then(result => {
+  .then((result) => {
     console.log(`Total teams: ${result.pagination.total}`);
-    result.data.forEach(team => {
+    result.data.forEach((team) => {
       console.log(`- ${team.name} (${team.id})`);
     });
   })
-  .catch(error => console.error('Error:', error));
+  .catch((error) => console.error("Error:", error));
 ```
 
 ---
@@ -2316,7 +2456,7 @@ getAllTeams()
 
 ```javascript
 async function getTeamsWithMembers() {
-  const response = await fetch('http://localhost:4321/api/teams?includeMemberCount=true');
+  const response = await fetch("http://localhost:4321/api/teams?includeMemberCount=true");
   const data = await response.json();
   return data.data;
 }
@@ -2329,28 +2469,28 @@ async function getTeamsWithMembers() {
 ```javascript
 async function getTeamById(teamId) {
   const response = await fetch(`http://localhost:4321/api/teams/${teamId}`);
-  
+
   if (!response.ok) {
     if (response.status === 404) {
-      throw new Error('Team not found');
+      throw new Error("Team not found");
     }
     throw new Error(`HTTP error! status: ${response.status}`);
   }
-  
+
   const data = await response.json();
   return data.data;
 }
 
 // Usage
-getTeamById('123e4567-e89b-12d3-a456-426614174000')
-  .then(team => {
+getTeamById("123e4567-e89b-12d3-a456-426614174000")
+  .then((team) => {
     console.log(`Team: ${team.name}`);
     console.log(`Members: ${team.members.length}`);
-    team.members.forEach(member => {
+    team.members.forEach((member) => {
       console.log(`  - ${member.firstName} ${member.lastName} (${member.role})`);
     });
   })
-  .catch(error => console.error('Error:', error));
+  .catch((error) => console.error("Error:", error));
 ```
 
 ---
@@ -2362,11 +2502,13 @@ getTeamById('123e4567-e89b-12d3-a456-426614174000')
 #### Example 1: Get All Vacation Requests (Default)
 
 **Request:**
+
 ```bash
 curl "http://localhost:4321/api/vacation-requests"
 ```
 
 **Response:**
+
 ```json
 {
   "data": [
@@ -2398,6 +2540,7 @@ curl "http://localhost:4321/api/vacation-requests"
 ```
 
 **Access Control:**
+
 - **EMPLOYEE:** Can only view their own vacation requests
 - **HR:** Can view requests from team members
 - **ADMINISTRATOR:** Can view all requests
@@ -2407,6 +2550,7 @@ curl "http://localhost:4321/api/vacation-requests"
 #### Example 2: Filter by Status
 
 **Request:**
+
 ```bash
 # Single status
 curl "http://localhost:4321/api/vacation-requests?status=SUBMITTED"
@@ -2418,6 +2562,7 @@ curl "http://localhost:4321/api/vacation-requests?status=SUBMITTED&status=APPROV
 **Use Case:** Display pending requests that need review.
 
 **Available Statuses:**
+
 - `SUBMITTED` - Request awaiting approval
 - `APPROVED` - Request approved by manager
 - `REJECTED` - Request rejected
@@ -2428,6 +2573,7 @@ curl "http://localhost:4321/api/vacation-requests?status=SUBMITTED&status=APPROV
 #### Example 3: Filter by Date Range
 
 **Request:**
+
 ```bash
 # Requests starting from specific date
 curl "http://localhost:4321/api/vacation-requests?startDate=2026-01-01"
@@ -2443,6 +2589,7 @@ curl "http://localhost:4321/api/vacation-requests?startDate=2026-01-01&endDate=2
 #### Example 4: Filter by User ID (Admin/HR)
 
 **Request:**
+
 ```bash
 curl "http://localhost:4321/api/vacation-requests?userId=223e4567-e89b-12d3-a456-426614174000"
 ```
@@ -2456,6 +2603,7 @@ curl "http://localhost:4321/api/vacation-requests?userId=223e4567-e89b-12d3-a456
 #### Example 5: Filter by Team ID (HR/Admin)
 
 **Request:**
+
 ```bash
 curl "http://localhost:4321/api/vacation-requests?teamId=323e4567-e89b-12d3-a456-426614174000"
 ```
@@ -2469,6 +2617,7 @@ curl "http://localhost:4321/api/vacation-requests?teamId=323e4567-e89b-12d3-a456
 #### Example 6: Pagination
 
 **Request:**
+
 ```bash
 # First page (5 items)
 curl "http://localhost:4321/api/vacation-requests?limit=5&offset=0"
@@ -2484,6 +2633,7 @@ curl "http://localhost:4321/api/vacation-requests?limit=5&offset=5"
 #### Example 7: Combined Filters
 
 **Request:**
+
 ```bash
 curl "http://localhost:4321/api/vacation-requests?status=SUBMITTED&startDate=2026-01-01&limit=10"
 ```
@@ -2497,11 +2647,13 @@ curl "http://localhost:4321/api/vacation-requests?status=SUBMITTED&startDate=202
 #### Invalid Limit
 
 **Request:**
+
 ```bash
 curl "http://localhost:4321/api/vacation-requests?limit=999"
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "Invalid query parameters",
@@ -2516,11 +2668,13 @@ curl "http://localhost:4321/api/vacation-requests?limit=999"
 #### Invalid UUID Format
 
 **Request:**
+
 ```bash
 curl "http://localhost:4321/api/vacation-requests?userId=invalid-uuid"
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "Invalid query parameters",
@@ -2535,11 +2689,13 @@ curl "http://localhost:4321/api/vacation-requests?userId=invalid-uuid"
 #### Invalid Date Format
 
 **Request:**
+
 ```bash
 curl "http://localhost:4321/api/vacation-requests?startDate=2026-13-45"
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "Invalid query parameters",
@@ -2554,11 +2710,13 @@ curl "http://localhost:4321/api/vacation-requests?startDate=2026-13-45"
 #### Invalid Status
 
 **Request:**
+
 ```bash
 curl "http://localhost:4321/api/vacation-requests?status=INVALID_STATUS"
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "Invalid query parameters",
@@ -2575,12 +2733,14 @@ curl "http://localhost:4321/api/vacation-requests?status=INVALID_STATUS"
 #### Employee Accessing Other User's Requests
 
 **Request:**
+
 ```bash
 # Assuming current user is EMPLOYEE with different ID
 curl "http://localhost:4321/api/vacation-requests?userId=other-user-id"
 ```
 
 **Response (403 Forbidden):**
+
 ```json
 {
   "error": "You can only view your own vacation requests"
@@ -2592,12 +2752,14 @@ curl "http://localhost:4321/api/vacation-requests?userId=other-user-id"
 #### HR Accessing Non-Member Team
 
 **Request:**
+
 ```bash
 # HR trying to access team they're not a member of
 curl "http://localhost:4321/api/vacation-requests?teamId=non-member-team-id"
 ```
 
 **Response (403 Forbidden):**
+
 ```json
 {
   "error": "You are not authorized to view this vacation request"
@@ -2613,11 +2775,13 @@ curl "http://localhost:4321/api/vacation-requests?teamId=non-member-team-id"
 #### Example 1: Get Detailed Information About a Vacation Request
 
 **Request:**
+
 ```bash
 curl "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000"
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "data": {
@@ -2647,6 +2811,7 @@ curl "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614
 ```
 
 **Access Control:**
+
 - **EMPLOYEE:** Can only view their own vacation requests
 - **HR:** Can view requests from team members (users in same team)
 - **ADMINISTRATOR:** Can view all requests
@@ -2658,11 +2823,13 @@ curl "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614
 #### Example 2: Invalid UUID Format
 
 **Request:**
+
 ```bash
 curl "http://localhost:4321/api/vacation-requests/invalid-uuid"
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "Invalid vacation request ID format"
@@ -2674,11 +2841,13 @@ curl "http://localhost:4321/api/vacation-requests/invalid-uuid"
 #### Example 3: Vacation Request Not Found
 
 **Request:**
+
 ```bash
 curl "http://localhost:4321/api/vacation-requests/00000000-0000-0000-0000-000000000000"
 ```
 
 **Response (404 Not Found):**
+
 ```json
 {
   "error": "Vacation request not found"
@@ -2690,12 +2859,14 @@ curl "http://localhost:4321/api/vacation-requests/00000000-0000-0000-0000-000000
 #### Example 4: Unauthorized Access (EMPLOYEE)
 
 **Request:**
+
 ```bash
 # Employee trying to view another employee's vacation request
 curl "http://localhost:4321/api/vacation-requests/other-user-request-id"
 ```
 
 **Response (403 Forbidden):**
+
 ```json
 {
   "error": "You can only view your own vacation requests"
@@ -2707,12 +2878,14 @@ curl "http://localhost:4321/api/vacation-requests/other-user-request-id"
 #### Example 5: Unauthorized Access (HR)
 
 **Request:**
+
 ```bash
 # HR trying to view request from user not in their team
 curl "http://localhost:4321/api/vacation-requests/non-team-member-request-id"
 ```
 
 **Response (403 Forbidden):**
+
 ```json
 {
   "error": "You are not authorized to view this vacation request"
@@ -2726,6 +2899,7 @@ curl "http://localhost:4321/api/vacation-requests/non-team-member-request-id"
 #### Example 1: Create New Vacation Request
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:4321/api/vacation-requests" \
   -H "Content-Type: application/json" \
@@ -2736,6 +2910,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests" \
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "id": "423e4567-e89b-12d3-a456-426614174000",
@@ -2749,6 +2924,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests" \
 ```
 
 **Business Rules:**
+
 - Start date must be in the future (not in the past)
 - Start and end dates cannot fall on weekends (Saturday/Sunday)
 - End date must be >= start date
@@ -2764,6 +2940,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests" \
 #### Example 2: Missing Required Field
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:4321/api/vacation-requests" \
   -H "Content-Type: application/json" \
@@ -2773,6 +2950,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests" \
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "Invalid request data",
@@ -2787,6 +2965,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests" \
 #### Example 3: Invalid Date Format
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:4321/api/vacation-requests" \
   -H "Content-Type: application/json" \
@@ -2797,6 +2976,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests" \
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "Invalid request data",
@@ -2811,6 +2991,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests" \
 #### Example 4: Date in the Past
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:4321/api/vacation-requests" \
   -H "Content-Type: application/json" \
@@ -2821,6 +3002,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests" \
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "Invalid request data",
@@ -2835,6 +3017,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests" \
 #### Example 5: Weekend Date
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:4321/api/vacation-requests" \
   -H "Content-Type: application/json" \
@@ -2845,6 +3028,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests" \
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "Vacation request must include at least one business day"
@@ -2858,6 +3042,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests" \
 #### Example 1: Approve Vacation Request Without Threshold Warning
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000/approve" \
   -H "Content-Type: application/json" \
@@ -2867,6 +3052,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "123e4567-e89b-12d3-a456-426614174000",
@@ -2878,6 +3064,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 ```
 
 **Access Control:**
+
 - Only **HR** users can approve vacation requests
 - HR cannot approve their own requests
 - HR must be a member of at least one team with the request owner
@@ -2889,6 +3076,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 #### Example 2: Approve With Threshold Warning (Requires Acknowledgment)
 
 **Request:**
+
 ```bash
 # First attempt without acknowledgment
 curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000/approve" \
@@ -2899,6 +3087,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "You must acknowledge the threshold warning to approve this request"
@@ -2906,6 +3095,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 ```
 
 **Request (with acknowledgment):**
+
 ```bash
 curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000/approve" \
   -H "Content-Type: application/json" \
@@ -2915,6 +3105,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "123e4567-e89b-12d3-a456-426614174000",
@@ -2937,6 +3128,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 #### Example 3: Approve Already Approved Request
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000/approve" \
   -H "Content-Type: application/json" \
@@ -2944,6 +3136,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "Request must be in SUBMITTED status"
@@ -2955,6 +3148,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 #### Example 4: Non-HR User Trying to Approve
 
 **Request:**
+
 ```bash
 # Current user is EMPLOYEE or ADMINISTRATOR
 curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000/approve" \
@@ -2963,6 +3157,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 ```
 
 **Response (403 Forbidden):**
+
 ```json
 {
   "error": "Only HR can approve vacation requests"
@@ -2974,6 +3169,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 #### Example 5: HR Trying to Approve Own Request
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:4321/api/vacation-requests/own-request-id/approve" \
   -H "Content-Type: application/json" \
@@ -2981,6 +3177,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/own-request-id/approve
 ```
 
 **Response (403 Forbidden):**
+
 ```json
 {
   "error": "You cannot approve your own vacation request"
@@ -2992,6 +3189,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/own-request-id/approve
 #### Example 6: HR Without Common Team
 
 **Request:**
+
 ```bash
 # HR trying to approve request from user not in their teams
 curl -X POST "http://localhost:4321/api/vacation-requests/other-team-request-id/approve" \
@@ -3000,6 +3198,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/other-team-request-id/
 ```
 
 **Response (403 Forbidden):**
+
 ```json
 {
   "error": "You are not authorized to approve this request"
@@ -3013,6 +3212,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/other-team-request-id/
 #### Example 1: Reject Vacation Request With Reason
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000/reject" \
   -H "Content-Type: application/json" \
@@ -3022,6 +3222,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "123e4567-e89b-12d3-a456-426614174000",
@@ -3032,6 +3233,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 ```
 
 **Access Control:**
+
 - Only **HR** users can reject vacation requests
 - HR cannot reject their own requests
 - HR must be a member of at least one team with the request owner
@@ -3044,6 +3246,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 #### Example 2: Reject Vacation Request Without Reason
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000/reject" \
   -H "Content-Type: application/json" \
@@ -3051,6 +3254,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "Reason is required"
@@ -3062,6 +3266,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 #### Example 3: Reject Vacation Request Reason Too Long
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000/reject" \
   -H "Content-Type: application/json" \
@@ -3071,6 +3276,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "Reason must be at most 500 characters"
@@ -3082,6 +3288,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 #### Example 4: Reject Already Rejected Request
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000/reject" \
   -H "Content-Type: application/json" \
@@ -3091,6 +3298,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "Request must be in SUBMITTED status"
@@ -3104,12 +3312,14 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 #### Example 1: Cancel SUBMITTED Request
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000/cancel" \
   -H "Content-Type: application/json"
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "123e4567-e89b-12d3-a456-426614174000",
@@ -3120,6 +3330,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 ```
 
 **Access Control:**
+
 - Any authenticated user can cancel their **own** vacation requests
 - Cannot cancel requests belonging to other users
 - Can only cancel requests with status SUBMITTED or APPROVED
@@ -3132,12 +3343,14 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 #### Example 2: Cancel APPROVED Request (Future Date)
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000/cancel" \
   -H "Content-Type: application/json"
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "123e4567-e89b-12d3-a456-426614174000",
@@ -3152,6 +3365,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a45
 #### Example 3: Cancel APPROVED Request (Started More Than 1 Day Ago)
 
 **Request:**
+
 ```bash
 # Trying to cancel vacation that started 2 days ago
 curl -X POST "http://localhost:4321/api/vacation-requests/old-approved-request-id/cancel" \
@@ -3159,6 +3373,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/old-approved-request-i
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "Cannot cancel vacation that started more than 1 day ago"
@@ -3170,12 +3385,14 @@ curl -X POST "http://localhost:4321/api/vacation-requests/old-approved-request-i
 #### Example 4: Cancel REJECTED Request
 
 **Request:**
+
 ```bash
 curl -X POST "http://localhost:4321/api/vacation-requests/rejected-request-id/cancel" \
   -H "Content-Type: application/json"
 ```
 
 **Response (400 Bad Request):**
+
 ```json
 {
   "error": "Only SUBMITTED or APPROVED requests can be cancelled"
@@ -3187,6 +3404,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/rejected-request-id/ca
 #### Example 5: Cancel Someone Else's Request
 
 **Request:**
+
 ```bash
 # Employee trying to cancel another employee's request
 curl -X POST "http://localhost:4321/api/vacation-requests/other-user-request-id/cancel" \
@@ -3194,6 +3412,7 @@ curl -X POST "http://localhost:4321/api/vacation-requests/other-user-request-id/
 ```
 
 **Response (403 Forbidden):**
+
 ```json
 {
   "error": "You can only cancel your own vacation requests"
@@ -3204,13 +3423,14 @@ curl -X POST "http://localhost:4321/api/vacation-requests/other-user-request-id/
 
 ### Vacation Request Actions Summary
 
-| Action | Endpoint | Method | Roles | Can Process Own Request |
-|--------|----------|--------|-------|------------------------|
-| Approve | `/api/vacation-requests/:id/approve` | POST | HR | No |
-| Reject | `/api/vacation-requests/:id/reject` | POST | HR | No |
-| Cancel | `/api/vacation-requests/:id/cancel` | POST | All (owner only) | Yes |
+| Action  | Endpoint                             | Method | Roles            | Can Process Own Request |
+| ------- | ------------------------------------ | ------ | ---------------- | ----------------------- |
+| Approve | `/api/vacation-requests/:id/approve` | POST   | HR               | No                      |
+| Reject  | `/api/vacation-requests/:id/reject`  | POST   | HR               | No                      |
+| Cancel  | `/api/vacation-requests/:id/cancel`  | POST   | All (owner only) | Yes                     |
 
 **Business Rules:**
+
 - **Approve/Reject**: Only for requests with status SUBMITTED
 - **Cancel**: For requests with status SUBMITTED or APPROVED
 - **Threshold Warning**: System calculates team occupancy and warns if threshold exceeded
@@ -3234,8 +3454,8 @@ curl -X POST "http://localhost:4321/api/vacation-requests/other-user-request-id/
 ## Support
 
 For issues or questions:
+
 1. Check [TESTING.md](../TESTING.md) for troubleshooting
 2. Review test scripts in `tests/api/` for working examples
 3. Check server logs in `/tmp/astro-test.log`
 4. Ensure Supabase is running: `supabase status`
-

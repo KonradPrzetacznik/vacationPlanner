@@ -21,11 +21,13 @@ npm run test:unit:coverage
 ## Current Tests
 
 ### Settings Service (10 tests)
+
 - `getAllSettings()` - 5 tests
 - `getSettingByKey()` - 2 tests
 - `updateSetting()` - 3 tests
 
 ### Example Tests (7 tests)
+
 - Date formatting
 - Email validation
 - Calculator class
@@ -44,6 +46,7 @@ Tests run automatically in GitHub Actions on Pull Requests to `master`, `main`, 
 ## Documentation
 
 See detailed documentation:
+
 - [tests/unit/UNIT_TESTS_DOCUMENTATION.md](./tests/unit/UNIT_TESTS_DOCUMENTATION.md)
 - [tests/unit/README.md](./tests/unit/README.md)
 

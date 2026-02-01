@@ -11,6 +11,7 @@ Zestaw pięciu endpointów REST API do zarządzania zespołami w systemie:
 5. **Delete Team** - usuwanie zespołu (wyłącznie dla HR)
 
 Endpointy implementują kontrolę dostępu opartą na rolach:
+
 - **HR i ADMINISTRATOR**: pełny dostęp do wszystkich operacji
 - **EMPLOYEE**: dostęp tylko do odczytu zespołów, do których należy
 
@@ -46,11 +47,13 @@ Endpointy implementują kontrolę dostępu opartą na rolach:
 - **Struktura URL**: `/api/teams`
 - **Parametry**: brak
 - **Request Body**:
+
 ```json
 {
   "name": "Engineering"
 }
 ```
+
 - **Walidacja body**:
   - `name`: wymagany, string, niepusty, max 100 znaków, unikalny
 - **Uwierzytelnienie**: wymagane (JWT token w cookie)
@@ -64,11 +67,13 @@ Endpointy implementują kontrolę dostępu opartą na rolach:
   - **Wymagane**:
     - `id` (UUID) - identyfikator zespołu w URL
 - **Request Body**:
+
 ```json
 {
   "name": "Engineering Team"
 }
 ```
+
 - **Walidacja body**:
   - `name`: wymagany, string, niepusty, max 100 znaków, unikalny
 - **Uwierzytelnienie**: wymagane (JWT token w cookie)
@@ -221,6 +226,7 @@ export interface DeleteTeamResponseDTO {
 ## 4. Szczegóły odpowiedzi
 
 ### 4.1. List Teams - 200 OK
+
 ```json
 {
   "data": [
@@ -241,6 +247,7 @@ export interface DeleteTeamResponseDTO {
 ```
 
 ### 4.2. Get Team - 200 OK
+
 ```json
 {
   "data": {
@@ -263,6 +270,7 @@ export interface DeleteTeamResponseDTO {
 ```
 
 ### 4.3. Create Team - 201 Created
+
 ```json
 {
   "id": "uuid",
@@ -272,6 +280,7 @@ export interface DeleteTeamResponseDTO {
 ```
 
 ### 4.4. Update Team - 200 OK
+
 ```json
 {
   "id": "uuid",
@@ -281,6 +290,7 @@ export interface DeleteTeamResponseDTO {
 ```
 
 ### 4.5. Delete Team - 200 OK
+
 ```json
 {
   "message": "Team deleted successfully",
@@ -291,6 +301,7 @@ export interface DeleteTeamResponseDTO {
 ### 4.6. Odpowiedzi błędów
 
 **400 Bad Request:**
+
 ```json
 {
   "success": false,
@@ -299,6 +310,7 @@ export interface DeleteTeamResponseDTO {
 ```
 
 **401 Unauthorized:**
+
 ```json
 {
   "success": false,
@@ -307,6 +319,7 @@ export interface DeleteTeamResponseDTO {
 ```
 
 **403 Forbidden:**
+
 ```json
 {
   "success": false,
@@ -315,6 +328,7 @@ export interface DeleteTeamResponseDTO {
 ```
 
 **404 Not Found:**
+
 ```json
 {
   "success": false,
@@ -323,6 +337,7 @@ export interface DeleteTeamResponseDTO {
 ```
 
 **500 Internal Server Error:**
+
 ```json
 {
   "success": false,
@@ -436,15 +451,16 @@ export interface DeleteTeamResponseDTO {
 
 **Kontrola dostępu oparta na rolach:**
 
-| Endpoint | ADMINISTRATOR | HR | EMPLOYEE |
-|----------|---------------|----|------------|
-| List Teams | Wszystkie zespoły | Wszystkie zespoły | Tylko swoje zespoły |
-| Get Team | Wszystkie zespoły | Wszystkie zespoły | Tylko swoje zespoły |
-| Create Team | ✓ | ✓ | ✗ (403) |
-| Update Team | ✓ | ✓ | ✗ (403) |
-| Delete Team | ✓ | ✓ | ✗ (403) |
+| Endpoint    | ADMINISTRATOR     | HR                | EMPLOYEE            |
+| ----------- | ----------------- | ----------------- | ------------------- |
+| List Teams  | Wszystkie zespoły | Wszystkie zespoły | Tylko swoje zespoły |
+| Get Team    | Wszystkie zespoły | Wszystkie zespoły | Tylko swoje zespoły |
+| Create Team | ✓                 | ✓                 | ✗ (403)             |
+| Update Team | ✓                 | ✓                 | ✗ (403)             |
+| Delete Team | ✓                 | ✓                 | ✗ (403)             |
 
 **Implementacja:**
+
 - Sprawdzenie roli w API route przed wywołaniem service
 - EMPLOYEE: dodatkowe sprawdzenie członkostwa w zespole
 - Return 403 Forbidden przy braku uprawnień
@@ -469,20 +485,24 @@ export interface DeleteTeamResponseDTO {
 ### 6.4. Zapobieganie atakom
 
 **SQL Injection:**
+
 - Używanie Supabase client z prepared statements
 - Parametryzowane zapytania
 - Walidacja UUID przed queries
 
 **IDOR (Insecure Direct Object Reference):**
+
 - Weryfikacja członkostwa dla EMPLOYEE przed zwróceniem danych
 - Sprawdzenie istnienia zasobu przed operacjami
 
 **Mass Assignment:**
+
 - Tylko pole `name` może być modyfikowane
 - Zod schemas zapewniają strict validation
 - Ignorowanie dodatkowych pól w request body
 
 **Information Disclosure:**
+
 - EMPLOYEE nie widzi zespołów, do których nie należy
 - Errory nie ujawniają szczegółów implementacji
 - Generic error messages dla użytkowników
@@ -499,11 +519,13 @@ export interface DeleteTeamResponseDTO {
 ### 7.1. Lista błędów według endpointu
 
 **List Teams:**
+
 - `400`: Nieprawidłowe parametry query (limit poza zakresem, offset ujemny, nieprawidłowy typ)
 - `401`: Brak tokenu autentykacji lub token wygasł
 - `500`: Błąd bazy danych, błąd serwera
 
 **Get Team:**
+
 - `400`: Nieprawidłowy UUID w parametrze id
 - `401`: Brak tokenu autentykacji lub token wygasł
 - `403`: EMPLOYEE próbuje dostać się do zespołu, do którego nie należy
@@ -511,12 +533,14 @@ export interface DeleteTeamResponseDTO {
 - `500`: Błąd bazy danych, błąd serwera
 
 **Create Team:**
+
 - `400`: Brak pola name, pusta nazwa, nazwa za długa (>100 znaków), nazwa już istnieje
 - `401`: Brak tokenu autentykacji lub token wygasł
 - `403`: Użytkownik nie ma roli HR ani ADMINISTRATOR
 - `500`: Błąd bazy danych, błąd serwera
 
 **Update Team:**
+
 - `400`: Nieprawidłowy UUID, brak pola name, pusta nazwa, nazwa za długa, nazwa już istnieje
 - `401`: Brak tokenu autentykacji lub token wygasł
 - `403`: Użytkownik nie ma roli HR ani ADMINISTRATOR
@@ -524,6 +548,7 @@ export interface DeleteTeamResponseDTO {
 - `500`: Błąd bazy danych, błąd serwera
 
 **Delete Team:**
+
 - `400`: Nieprawidłowy UUID w parametrze id
 - `401`: Brak tokenu autentykacji lub token wygasł
 - `403`: Użytkownik nie ma roli HR ani ADMINISTRATOR
@@ -533,6 +558,7 @@ export interface DeleteTeamResponseDTO {
 ### 7.2. Strategia obsługi błędów
 
 **W API Routes:**
+
 ```typescript
 try {
   // Walidacja Zod
@@ -541,42 +567,58 @@ try {
   // Return response
 } catch (error) {
   if (error instanceof z.ZodError) {
-    return new Response(JSON.stringify({
-      success: false,
-      error: "Invalid input data"
-    }), { status: 400 });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Invalid input data",
+      }),
+      { status: 400 }
+    );
   }
-  
+
   if (error.message === "Team not found") {
-    return new Response(JSON.stringify({
-      success: false,
-      error: "Team not found"
-    }), { status: 404 });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Team not found",
+      }),
+      { status: 404 }
+    );
   }
-  
+
   if (error.message === "Team name already exists") {
-    return new Response(JSON.stringify({
-      success: false,
-      error: "Team name already exists"
-    }), { status: 400 });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Team name already exists",
+      }),
+      { status: 400 }
+    );
   }
-  
+
   if (error.message === "Not a member of this team") {
-    return new Response(JSON.stringify({
-      success: false,
-      error: "Not a member of this team"
-    }), { status: 403 });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Not a member of this team",
+      }),
+      { status: 403 }
+    );
   }
-  
+
   console.error("Teams API error:", error);
-  return new Response(JSON.stringify({
-    success: false,
-    error: "Internal server error"
-  }), { status: 500 });
+  return new Response(
+    JSON.stringify({
+      success: false,
+      error: "Internal server error",
+    }),
+    { status: 500 }
+  );
 }
 ```
 
 **W Service:**
+
 - Rzucanie custom errors z opisowymi messages
 - Nie logowanie wrażliwych danych
 - Przekazywanie błędów Supabase z odpowiednim contextm
@@ -592,17 +634,20 @@ try {
 ### 8.1. Optymalizacje zapytań
 
 **List Teams:**
+
 - Index na `teams.name` dla sortowania
 - Conditional JOIN dla memberCount (tylko gdy includeMemberCount=true)
 - Limit query results (max 100)
-- COUNT(*) OVER() dla total bez dodatkowego query
+- COUNT(\*) OVER() dla total bez dodatkowego query
 
 **Get Team:**
+
 - Index na `team_members.team_id` dla szybkiego JOIN
 - Index na `team_members.user_id` dla sprawdzenia członkostwa
 - Single query z JOIN zamiast N+1 queries
 
 **Create/Update Team:**
+
 - Index na `teams.name` dla sprawdzenia unikalności (już istnieje UNIQUE constraint)
 
 ### 8.2. Caching
@@ -628,6 +673,7 @@ try {
 ### 8.5. Database Indexes
 
 Wymagane indexes (sprawdzić czy istnieją, jeśli nie - dodać w migracji):
+
 ```sql
 -- teams table
 CREATE INDEX IF NOT EXISTS idx_teams_name ON teams(name);
@@ -644,11 +690,13 @@ CREATE INDEX IF NOT EXISTS idx_team_members_team_user ON team_members(team_id, u
 ### Krok 1: Przygotowanie typów i schematów
 
 **1.1. Dodanie typów DTO do `src/types.ts`**
+
 - Dodać wszystkie typy z sekcji "3. Wykorzystywane typy"
 - Umieścić w sekcji "Teams DTOs" przed końcem pliku
 - Dodać komentarze opisujące połączenia z database entities
 
 **1.2. Utworzenie Zod schemas w `src/lib/schemas/teams.schema.ts`**
+
 ```typescript
 import { z } from "zod";
 
@@ -696,40 +744,34 @@ export async function getTeams(
   query: GetTeamsQueryDTO,
   userId: string,
   userRole: string
-): Promise<GetTeamsResponseDTO>
+): Promise<GetTeamsResponseDTO>;
 
 export async function getTeamById(
   supabase: SupabaseClient,
   teamId: string,
   userId: string,
   userRole: string
-): Promise<TeamDetailsDTO>
+): Promise<TeamDetailsDTO>;
 
-export async function createTeam(
-  supabase: SupabaseClient,
-  data: CreateTeamDTO
-): Promise<CreateTeamResponseDTO>
+export async function createTeam(supabase: SupabaseClient, data: CreateTeamDTO): Promise<CreateTeamResponseDTO>;
 
 export async function updateTeam(
   supabase: SupabaseClient,
   teamId: string,
   data: UpdateTeamDTO
-): Promise<UpdateTeamResponseDTO>
+): Promise<UpdateTeamResponseDTO>;
 
-export async function deleteTeam(
-  supabase: SupabaseClient,
-  teamId: string
-): Promise<DeleteTeamResponseDTO>
+export async function deleteTeam(supabase: SupabaseClient, teamId: string): Promise<DeleteTeamResponseDTO>;
 ```
 
 **Szczegóły implementacji:**
 
-- `getTeams`: 
+- `getTeams`:
   - Sprawdzenie roli: jeśli EMPLOYEE → query do team_members dla userId
   - Query do teams z filtrem (dla EMPLOYEE: WHERE id IN)
   - Optional LEFT JOIN + COUNT dla memberCount
   - Zastosowanie limit, offset
-  - COUNT(*) OVER() dla total
+  - COUNT(\*) OVER() dla total
   - Mapowanie do TeamListItemDTO[]
 
 - `getTeamById`:
@@ -737,25 +779,25 @@ export async function deleteTeam(
   - Jeśli nie znaleziono → throw Error("Team not found")
   - Jeśli EMPLOYEE → sprawdzenie członkostwa w team_members
   - Jeśli nie jest członkiem → throw Error("Not a member of this team")
-  - Query members: SELECT profiles.*, team_members.created_at FROM team_members JOIN profiles
+  - Query members: SELECT profiles.\*, team_members.created_at FROM team_members JOIN profiles
   - Mapowanie do TeamDetailsDTO
 
 - `createTeam`:
-  - Sprawdzenie unikalności: SELECT COUNT(*) FROM teams WHERE name = data.name
+  - Sprawdzenie unikalności: SELECT COUNT(\*) FROM teams WHERE name = data.name
   - Jeśli > 0 → throw Error("Team name already exists")
-  - INSERT INTO teams RETURNING *
+  - INSERT INTO teams RETURNING \*
   - Mapowanie do CreateTeamResponseDTO
 
 - `updateTeam`:
-  - Query SELECT * FROM teams WHERE id = teamId
+  - Query SELECT \* FROM teams WHERE id = teamId
   - Jeśli nie znaleziono → throw Error("Team not found")
-  - Sprawdzenie unikalności (wykluczając current): SELECT COUNT(*) WHERE name = data.name AND id != teamId
+  - Sprawdzenie unikalności (wykluczając current): SELECT COUNT(\*) WHERE name = data.name AND id != teamId
   - Jeśli > 0 → throw Error("Team name already exists")
-  - UPDATE teams SET name, updated_at RETURNING *
+  - UPDATE teams SET name, updated_at RETURNING \*
   - Mapowanie do UpdateTeamResponseDTO
 
 - `deleteTeam`:
-  - Query SELECT * FROM teams WHERE id = teamId
+  - Query SELECT \* FROM teams WHERE id = teamId
   - Jeśli nie znaleziono → throw Error("Team not found")
   - DELETE FROM teams WHERE id = teamId
   - Return DeleteTeamResponseDTO
@@ -763,6 +805,7 @@ export async function deleteTeam(
 ### Krok 3: Implementacja API routes
 
 **3.1. Utworzenie struktury folderów**
+
 ```
 src/pages/api/teams/
   ├── index.ts         (GET List, POST Create)
@@ -783,10 +826,13 @@ export const GET: APIRoute = async ({ request, locals }) => {
   try {
     // 1. Sprawdzenie autentykacji
     if (!locals.user) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: "Authentication required"
-      }), { status: 401 });
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Authentication required",
+        }),
+        { status: 401 }
+      );
     }
 
     // 2. Parsowanie i walidacja query params
@@ -800,12 +846,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
     const validatedQuery = getTeamsQuerySchema.parse(queryParams);
 
     // 3. Wywołanie service
-    const result = await getTeams(
-      locals.supabase,
-      validatedQuery,
-      locals.user.id,
-      locals.user.role
-    );
+    const result = await getTeams(locals.supabase, validatedQuery, locals.user.id, locals.user.role);
 
     // 4. Zwrócenie odpowiedzi
     return new Response(JSON.stringify(result), {
@@ -822,18 +863,24 @@ export const POST: APIRoute = async ({ request, locals }) => {
   try {
     // 1. Sprawdzenie autentykacji
     if (!locals.user) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: "Authentication required"
-      }), { status: 401 });
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Authentication required",
+        }),
+        { status: 401 }
+      );
     }
 
     // 2. Sprawdzenie autoryzacji
     if (locals.user.role !== "HR" && locals.user.role !== "ADMINISTRATOR") {
-      return new Response(JSON.stringify({
-        success: false,
-        error: "Insufficient permissions"
-      }), { status: 403 });
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Insufficient permissions",
+        }),
+        { status: 403 }
+      );
     }
 
     // 3. Parsowanie i walidacja body
@@ -908,6 +955,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
 **4.1. Utworzenie testów w `tests/api/`**
 
 Utworzyć następujące pliki testowe:
+
 - `teams-list.test.sh` - test GET /api/teams
 - `teams-get.test.sh` - test GET /api/teams/:id
 - `teams-create.test.sh` - test POST /api/teams
@@ -917,6 +965,7 @@ Utworzyć następujące pliki testowe:
 **4.2. Scenariusze testowe dla każdego endpointu**
 
 **List Teams:**
+
 - ✓ 200: Lista zespołów dla HR
 - ✓ 200: Lista zespołów dla EMPLOYEE (tylko swoje)
 - ✓ 200: Z includeMemberCount=true
@@ -926,6 +975,7 @@ Utworzyć następujące pliki testowe:
 - ✗ 401: Brak tokenu
 
 **Get Team:**
+
 - ✓ 200: Szczegóły zespołu dla HR
 - ✓ 200: Szczegóły zespołu dla EMPLOYEE (członek)
 - ✗ 400: Invalid UUID
@@ -934,6 +984,7 @@ Utworzyć następujące pliki testowe:
 - ✗ 404: Team not found
 
 **Create Team:**
+
 - ✓ 201: Utworzenie zespołu przez HR
 - ✗ 400: Pusta nazwa
 - ✗ 400: Nazwa już istnieje
@@ -942,6 +993,7 @@ Utworzyć następujące pliki testowe:
 - ✗ 403: EMPLOYEE próbuje utworzyć
 
 **Update Team:**
+
 - ✓ 200: Aktualizacja przez HR
 - ✗ 400: Invalid UUID
 - ✗ 400: Pusta nazwa
@@ -951,6 +1003,7 @@ Utworzyć następujące pliki testowe:
 - ✗ 404: Team not found
 
 **Delete Team:**
+
 - ✓ 200: Usunięcie przez HR
 - ✗ 400: Invalid UUID
 - ✗ 401: Brak tokenu
@@ -958,6 +1011,7 @@ Utworzyć następujące pliki testowe:
 - ✗ 404: Team not found
 
 **4.3. Dodanie do `tests/api/run-all.sh`**
+
 ```bash
 # Dodać wywołania nowych testów:
 ./tests/api/teams-list.test.sh
@@ -972,51 +1026,61 @@ Utworzyć następujące pliki testowe:
 **5.1. Aktualizacja `docs/API_EXAMPLES.md`**
 
 Dodać sekcję "Teams API" z przykładami:
+
 - Request/Response dla każdego endpointu
 - Przykłady błędów
 - Przykłady użycia curl
 
 **5.2. Przykładowa struktura dokumentacji**
+
 ```markdown
 ## Teams API
 
 ### List Teams
+
 GET /api/teams?limit=10&offset=0&includeMemberCount=true
 
 ### Get Team
+
 GET /api/teams/{team-id}
 
 ### Create Team
+
 POST /api/teams
 Content-Type: application/json
 {
-  "name": "Engineering"
+"name": "Engineering"
 }
 
 ### Update Team
+
 PATCH /api/teams/{team-id}
 Content-Type: application/json
 {
-  "name": "Engineering Team"
+"name": "Engineering Team"
 }
 
 ### Delete Team
+
 DELETE /api/teams/{team-id}
 ```
 
 ### Krok 6: Weryfikacja i optymalizacja
 
 **6.1. Sprawdzenie indexes w bazie danych**
+
 - Uruchomić query sprawdzający indexes na teams i team_members
 - Jeśli brakuje - utworzyć migrację (patrz sekcja 8.5)
 
 **6.2. Testowanie wydajności**
+
 - Test z 100+ teams
 - Test z teams z 50+ members
 - Zmierzyć czas response dla każdego endpointu
 - Cel: <200ms dla List, <100ms dla Get
 
 **6.3. Code review checklist**
+
 - [ ] Wszystkie endpointy zwracają poprawne status codes
 - [ ] Walidacja wszystkich inputs (params, query, body)
 - [ ] Autoryzacja implementowana zgodnie z requirements
@@ -1028,11 +1092,13 @@ DELETE /api/teams/{team-id}
 - [ ] Dokumentacja jest aktualna
 
 **6.4. Uruchomienie wszystkich testów**
+
 ```bash
 ./tests/api/run-all.sh
 ```
 
 **6.5. Sprawdzenie błędów TypeScript i Linter**
+
 ```bash
 npm run type-check
 npm run lint
@@ -1074,6 +1140,7 @@ npm run lint
 ### Database migrations
 
 Jeśli brakuje indexes, utworzyć migrację:
+
 ```sql
 -- migrations/YYYYMMDDHHMMSS_add_teams_indexes.sql
 
@@ -1086,4 +1153,3 @@ CREATE INDEX IF NOT EXISTS idx_team_members_created_at ON team_members(created_a
 -- Composite index dla frequent queries
 CREATE INDEX IF NOT EXISTS idx_team_members_team_user ON team_members(team_id, user_id);
 ```
-

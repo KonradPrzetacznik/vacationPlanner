@@ -5,6 +5,7 @@
 Ten plan obejmuje implementację dwóch endpointów API związanych z pojedynczymi wnioskami urlopowymi:
 
 ### GET /api/vacation-requests/:id
+
 Endpoint służy do pobierania szczegółowych informacji o pojedynczym wniosku urlopowym. Dostęp do danych jest kontrolowany przez system RBAC (Role-Based Access Control):
 
 - **EMPLOYEE**: Może przeglądać tylko swoje własne wnioski urlopowe
@@ -14,6 +15,7 @@ Endpoint służy do pobierania szczegółowych informacji o pojedynczym wniosku 
 Endpoint zwraca pełne informacje o wniosku, włączając dane użytkownika składającego wniosek oraz osoby, która go przetworzyła (jeśli dotyczy).
 
 ### POST /api/vacation-requests
+
 Endpoint służy do składania nowych wniosków urlopowych przez użytkowników. Endpoint:
 
 - Przyjmuje daty rozpoczęcia i zakończenia urlopu
@@ -27,18 +29,20 @@ Endpoint służy do składania nowych wniosków urlopowych przez użytkowników.
 ### GET /api/vacation-requests/:id
 
 #### Metoda HTTP
+
 `GET`
 
 #### Struktura URL
+
 ```
 /api/vacation-requests/:id
 ```
 
 #### Parametry URL
 
-| Parametr | Typ | Wymagany | Walidacja | Opis |
-|----------|-----|----------|-----------|------|
-| `id` | UUID | Tak | Format UUID | Identyfikator wniosku urlopowego |
+| Parametr | Typ  | Wymagany | Walidacja   | Opis                             |
+| -------- | ---- | -------- | ----------- | -------------------------------- |
+| `id`     | UUID | Tak      | Format UUID | Identyfikator wniosku urlopowego |
 
 #### Przykładowe żądania
 
@@ -47,9 +51,11 @@ GET /api/vacation-requests/123e4567-e89b-12d3-a456-426614174000
 ```
 
 #### Request Body
+
 Brak (metoda GET).
 
 #### Headers
+
 ```
 Authorization: Bearer <token>  # Będzie zaimplementowane wraz z pełną autentykacją
 ```
@@ -59,9 +65,11 @@ Authorization: Bearer <token>  # Będzie zaimplementowane wraz z pełną autenty
 ### POST /api/vacation-requests
 
 #### Metoda HTTP
+
 `POST`
 
 #### Struktura URL
+
 ```
 /api/vacation-requests
 ```
@@ -75,10 +83,10 @@ Authorization: Bearer <token>  # Będzie zaimplementowane wraz z pełną autenty
 }
 ```
 
-| Pole | Typ | Wymagane | Walidacja | Opis |
-|------|-----|----------|-----------|------|
-| `startDate` | string | Tak | YYYY-MM-DD, nie w przeszłości, nie weekend | Data rozpoczęcia urlopu |
-| `endDate` | string | Tak | YYYY-MM-DD, >= startDate, nie weekend | Data zakończenia urlopu |
+| Pole        | Typ    | Wymagane | Walidacja                                  | Opis                    |
+| ----------- | ------ | -------- | ------------------------------------------ | ----------------------- |
+| `startDate` | string | Tak      | YYYY-MM-DD, nie w przeszłości, nie weekend | Data rozpoczęcia urlopu |
+| `endDate`   | string | Tak      | YYYY-MM-DD, >= startDate, nie weekend      | Data zakończenia urlopu |
 
 #### Przykładowe żądania
 
@@ -93,6 +101,7 @@ Content-Type: application/json
 ```
 
 #### Headers
+
 ```
 Content-Type: application/json
 Authorization: Bearer <token>  # Będzie zaimplementowane wraz z pełną autentykacją
@@ -334,11 +343,9 @@ Request → API Endpoint → Validation Layer → Service Layer → Database →
    - Odbiera żądanie HTTP GET
    - Ekstrahuje `id` z params
    - Pobiera supabase client z `context.locals.supabase`
-   
 2. **Validation Layer** (Zod schema)
    - Waliduje format UUID parametru `id`
    - Zwraca błąd 400 jeśli nieprawidłowy format
-   
 3. **Service Layer** (`src/lib/services/vacation-requests.service.ts` - funkcja `getVacationRequestById()`)
    - **Krok 1**: Pobiera rolę bieżącego użytkownika z tabeli `profiles`
    - **Krok 2**: Pobiera wniosek urlopowy z bazy wraz z:
@@ -354,11 +361,9 @@ Request → API Endpoint → Validation Layer → Service Layer → Database →
      - **ADMINISTRATOR**: Brak ograniczeń
    - **Krok 5**: Mapuje wynik do DTO (snake_case → camelCase)
    - **Krok 6**: Zwraca sformatowaną odpowiedź
-   
 4. **Database Layer** (Supabase PostgreSQL)
    - Wykonuje zapytanie z JOINami
    - Zwraca wynik
-   
 5. **Response**
    - Serwis zwraca dane do endpointu
    - Endpoint serializuje do JSON
@@ -367,7 +372,7 @@ Request → API Endpoint → Validation Layer → Service Layer → Database →
 #### Interakcja z bazą danych (GET)
 
 ```sql
-SELECT 
+SELECT
   vr.id,
   vr.user_id,
   vr.start_date,
@@ -413,7 +418,6 @@ SELECT EXISTS(
    - Odbiera żądanie HTTP POST
    - Parsuje request body
    - Pobiera supabase client z `context.locals.supabase`
-   
 2. **Validation Layer** (Zod schema)
    - Waliduje format dat (YYYY-MM-DD)
    - Waliduje że daty są poprawne
@@ -422,7 +426,6 @@ SELECT EXISTS(
      - Sprawdza czy endDate >= startDate
      - Sprawdza czy daty nie przypadają w weekend
    - Zwraca błędy walidacji lub zwalidowane dane
-   
 3. **Service Layer** (`src/lib/services/vacation-requests.service.ts` - funkcja `createVacationRequest()`)
    - **Krok 1**: Pobiera dane bieżącego użytkownika (id, email)
    - **Krok 2**: Oblicza liczbę dni roboczych:
@@ -443,13 +446,11 @@ SELECT EXISTS(
      - Zwraca utworzony rekord
    - **Krok 6**: Mapuje wynik do DTO
    - **Krok 7**: Zwraca sformatowaną odpowiedź
-   
 4. **Database Layer** (Supabase PostgreSQL)
    - Wykonuje funkcję calculate_business_days
    - Wykonuje queries walidacyjne
    - Tworzy rekord vacation_request
    - Zwraca utworzony rekord
-   
 5. **Response**
    - Serwis zwraca dane do endpointu
    - Endpoint serializuje do JSON
@@ -458,11 +459,13 @@ SELECT EXISTS(
 #### Interakcja z bazą danych (POST)
 
 **1. Obliczenie dni roboczych:**
+
 ```sql
 SELECT calculate_business_days($startDate, $endDate) as business_days_count
 ```
 
 **2. Sprawdzenie dostępności dni urlopowych:**
+
 ```sql
 -- Pobierz pulę urlopową na bieżący rok
 SELECT total_days, carryover_days
@@ -479,6 +482,7 @@ WHERE user_id = $currentUserId
 ```
 
 **3. Sprawdzenie nakładających się wniosków:**
+
 ```sql
 SELECT EXISTS(
   SELECT 1
@@ -497,6 +501,7 @@ SELECT EXISTS(
 ```
 
 **4. Utworzenie wniosku:**
+
 ```sql
 INSERT INTO vacation_requests (
   user_id,
@@ -519,10 +524,12 @@ RETURNING *
 ### Autentykacja
 
 **Tymczasowa implementacja (development)**:
+
 - Używany jest `DEFAULT_USER_ID` z konfiguracji
 - Pozwala na testowanie funkcjonalności bez pełnej autentykacji
 
 **Docelowa implementacja**:
+
 - Autentykacja przez Supabase Auth
 - Token JWT w header `Authorization: Bearer <token>`
 - Weryfikacja tokenu w middleware
@@ -534,22 +541,26 @@ RETURNING *
 #### GET /api/vacation-requests/:id
 
 **EMPLOYEE**:
+
 - Może przeglądać tylko własne wnioski
 - Sprawdzenie: `request.user_id === currentUserId`
 - Błąd 403 jeśli próbuje zobaczyć cudzy wniosek
 
 **HR**:
+
 - Może przeglądać wnioski członków swoich zespołów
 - Sprawdzenie: czy user_id wniosku należy do tego samego zespołu co HR
 - Błąd 403 jeśli użytkownik nie należy do żadnego wspólnego zespołu
 
 **ADMINISTRATOR**:
+
 - Może przeglądać wszystkie wnioski
 - Brak ograniczeń
 
 #### POST /api/vacation-requests
 
 **Wszyscy uwierzytelnieni użytkownicy**:
+
 - Mogą składać wnioski tylko dla siebie
 - `user_id` wniosku jest automatycznie ustawiany na `currentUserId`
 - Nie można składać wniosków w imieniu innych użytkowników
@@ -557,11 +568,13 @@ RETURNING *
 ### Walidacja danych wejściowych
 
 #### GET /api/vacation-requests/:id
+
 - Walidacja UUID format dla `id`
 - Wykorzystanie Zod schema do type-safe validation
 - Sanityzacja input przez Supabase client (parametryzowane zapytania)
 
 #### POST /api/vacation-requests
+
 - Walidacja formatu dat (YYYY-MM-DD)
 - Walidacja że daty są poprawne kalendarzowo
 - Walidacja business rules:
@@ -575,26 +588,31 @@ RETURNING *
 ### Zapobieganie atakom
 
 **SQL Injection**:
+
 - Chronione przez Supabase client
 - Wszystkie zapytania używają parametryzacji
 - Brak bezpośredniej konkatenacji SQL
 
 **Information Disclosure**:
+
 - Zwracanie tylko niezbędnych danych w response
 - Email użytkownika tylko w GET (szczegóły), nie w listach
 - Brak zwracania wrażliwych informacji w error messages
 
 **Business Logic Bypass**:
+
 - Wszystkie walidacje wykonywane po stronie serwera
 - Nie polegamy na walidacji po stronie klienta
 - Sprawdzenie puli urlopowej w bazie danych
 
 **Race Conditions**:
+
 - Ryzyko przy jednoczesnym tworzeniu nakładających się wniosków
 - Rozwiązanie: sprawdzenie nakładających się wniosków bezpośrednio przed INSERT
 - Rozważyć transakcje dla atomowości operacji
 
 **Authorization Bypass**:
+
 - Sprawdzanie uprawnień w service layer dla każdego żądania
 - Nie polegamy na client-side authorization
 - Zawsze weryfikujemy `currentUserId` z sesji, nigdy z parametrów żądania
@@ -602,6 +620,7 @@ RETURNING *
 ### Rate Limiting
 
 **Przyszła implementacja**:
+
 - Ograniczenie liczby żądań na użytkownika/IP
 - Zapobieganie spam'owi wniosków urlopowych
 - Implementacja w Astro middleware
@@ -611,51 +630,51 @@ RETURNING *
 
 ### GET /api/vacation-requests/:id
 
-| Kod | Scenariusz | Komunikat | Szczegóły |
-|-----|-----------|-----------|-----------|
-| 400 | Nieprawidłowy format UUID | "Invalid vacation request ID format" | Parametr `id` nie jest poprawnym UUID |
-| 401 | Brak autentykacji | "Not authenticated" | Brak lub nieprawidłowy token (docelowo) |
-| 403 | Brak uprawnień (EMPLOYEE) | "You can only view your own vacation requests" | Próba dostępu do cudzego wniosku |
-| 403 | Brak uprawnień (HR) | "You are not authorized to view this vacation request" | User nie należy do zespołu HR-a |
-| 404 | Wniosek nie istnieje | "Vacation request not found" | Brak wniosku o podanym ID |
-| 500 | Błąd bazy danych | "Failed to fetch vacation request" | Błąd przy query do DB |
-| 500 | Błąd pobierania użytkownika | "Failed to verify user permissions" | Błąd przy pobieraniu danych użytkownika |
+| Kod | Scenariusz                  | Komunikat                                              | Szczegóły                               |
+| --- | --------------------------- | ------------------------------------------------------ | --------------------------------------- |
+| 400 | Nieprawidłowy format UUID   | "Invalid vacation request ID format"                   | Parametr `id` nie jest poprawnym UUID   |
+| 401 | Brak autentykacji           | "Not authenticated"                                    | Brak lub nieprawidłowy token (docelowo) |
+| 403 | Brak uprawnień (EMPLOYEE)   | "You can only view your own vacation requests"         | Próba dostępu do cudzego wniosku        |
+| 403 | Brak uprawnień (HR)         | "You are not authorized to view this vacation request" | User nie należy do zespołu HR-a         |
+| 404 | Wniosek nie istnieje        | "Vacation request not found"                           | Brak wniosku o podanym ID               |
+| 500 | Błąd bazy danych            | "Failed to fetch vacation request"                     | Błąd przy query do DB                   |
+| 500 | Błąd pobierania użytkownika | "Failed to verify user permissions"                    | Błąd przy pobieraniu danych użytkownika |
 
 ### POST /api/vacation-requests
 
-| Kod | Scenariusz | Komunikat | Szczegóły |
-|-----|-----------|-----------|-----------|
-| 400 | Nieprawidłowy format JSON | "Invalid request body" | Błąd parsowania JSON |
-| 400 | Nieprawidłowy format daty | "Invalid date format, expected YYYY-MM-DD" | Data nie w formacie YYYY-MM-DD |
-| 400 | Data w przeszłości | "Start date cannot be in the past" | startDate < dzisiaj |
-| 400 | Data w weekend | "Dates cannot fall on weekends" | startDate lub endDate jest sobotą/niedzielą |
-| 400 | Nieprawidłowy zakres dat | "End date must be after or equal to start date" | endDate < startDate |
-| 400 | Brak dni urlopowych | "Insufficient vacation days available" | Przekroczenie dostępnej puli urlopowej |
-| 401 | Brak autentykacji | "Not authenticated" | Brak lub nieprawidłowy token (docelowo) |
-| 409 | Nakładające się wnioski | "You already have a vacation request for overlapping dates" | Konflikt z istniejącym wnioskiem |
-| 500 | Błąd obliczania dni | "Failed to calculate business days" | Błąd wywołania funkcji DB |
-| 500 | Błąd sprawdzania puli | "Failed to check vacation allowance" | Błąd przy query vacation_allowances |
-| 500 | Błąd tworzenia wniosku | "Failed to create vacation request" | Błąd przy INSERT do DB |
+| Kod | Scenariusz                | Komunikat                                                   | Szczegóły                                   |
+| --- | ------------------------- | ----------------------------------------------------------- | ------------------------------------------- |
+| 400 | Nieprawidłowy format JSON | "Invalid request body"                                      | Błąd parsowania JSON                        |
+| 400 | Nieprawidłowy format daty | "Invalid date format, expected YYYY-MM-DD"                  | Data nie w formacie YYYY-MM-DD              |
+| 400 | Data w przeszłości        | "Start date cannot be in the past"                          | startDate < dzisiaj                         |
+| 400 | Data w weekend            | "Dates cannot fall on weekends"                             | startDate lub endDate jest sobotą/niedzielą |
+| 400 | Nieprawidłowy zakres dat  | "End date must be after or equal to start date"             | endDate < startDate                         |
+| 400 | Brak dni urlopowych       | "Insufficient vacation days available"                      | Przekroczenie dostępnej puli urlopowej      |
+| 401 | Brak autentykacji         | "Not authenticated"                                         | Brak lub nieprawidłowy token (docelowo)     |
+| 409 | Nakładające się wnioski   | "You already have a vacation request for overlapping dates" | Konflikt z istniejącym wnioskiem            |
+| 500 | Błąd obliczania dni       | "Failed to calculate business days"                         | Błąd wywołania funkcji DB                   |
+| 500 | Błąd sprawdzania puli     | "Failed to check vacation allowance"                        | Błąd przy query vacation_allowances         |
+| 500 | Błąd tworzenia wniosku    | "Failed to create vacation request"                         | Błąd przy INSERT do DB                      |
 
 ### Implementacja obsługi błędów
 
 **W API Endpoint**:
+
 ```typescript
 try {
   // Service call
 } catch (error) {
   console.error("[GET /api/vacation-requests/:id] Error:", error);
-  
+
   if (error instanceof Error) {
     // Authorization errors
-    if (error.message.includes("only view your own") || 
-        error.message.includes("not authorized")) {
+    if (error.message.includes("only view your own") || error.message.includes("not authorized")) {
       return new Response(JSON.stringify({ error: error.message }), {
         status: 403,
         headers: { "Content-Type": "application/json" },
       });
     }
-    
+
     // Not found errors
     if (error.message.includes("not found")) {
       return new Response(JSON.stringify({ error: error.message }), {
@@ -663,17 +682,19 @@ try {
         headers: { "Content-Type": "application/json" },
       });
     }
-    
+
     // Validation errors
-    if (error.message.includes("Invalid") || 
-        error.message.includes("cannot be in the past") ||
-        error.message.includes("weekend")) {
+    if (
+      error.message.includes("Invalid") ||
+      error.message.includes("cannot be in the past") ||
+      error.message.includes("weekend")
+    ) {
       return new Response(JSON.stringify({ error: error.message }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
     }
-    
+
     // Conflict errors
     if (error.message.includes("overlapping")) {
       return new Response(JSON.stringify({ error: error.message }), {
@@ -682,16 +703,17 @@ try {
       });
     }
   }
-  
+
   // Generic server error
-  return new Response(
-    JSON.stringify({ error: "Internal server error" }),
-    { status: 500, headers: { "Content-Type": "application/json" } }
-  );
+  return new Response(JSON.stringify({ error: "Internal server error" }), {
+    status: 500,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 ```
 
 **Logging**:
+
 - Wszystkie błędy logowane do console.error z kontekstem
 - Format: `[Endpoint] Error: message { context }`
 - Zawiera: userId, requestId, parametry żądania, stack trace
@@ -761,9 +783,10 @@ try {
 **Strategie optymalizacji**:
 
 1. **Indeksy bazodanowe** (do utworzenia):
+
    ```sql
    -- Dla szybkiego sprawdzania nakładających się wniosków
-   CREATE INDEX idx_vacation_requests_overlap 
+   CREATE INDEX idx_vacation_requests_overlap
    ON vacation_requests (user_id, status, start_date, end_date)
    WHERE status IN ('SUBMITTED', 'APPROVED');
    ```
@@ -795,11 +818,13 @@ try {
 ### Benchmarki docelowe
 
 **GET /api/vacation-requests/:id**:
+
 - p50: < 100ms
 - p95: < 250ms
 - p99: < 500ms
 
 **POST /api/vacation-requests**:
+
 - p50: < 200ms
 - p95: < 500ms
 - p99: < 1000ms
@@ -811,12 +836,14 @@ try {
 **Plik**: `src/types.ts`
 
 **Zadania**:
+
 1. Dodać `VacationRequestDetailsDTO` z pełnymi danymi użytkownika i processedBy
 2. Dodać `GetVacationRequestByIdResponseDTO`
 3. Dodać `CreateVacationRequestDTO`
 4. Dodać `CreateVacationRequestResponseDTO`
 
 **Kryteria akceptacji**:
+
 - Typy zgodne z API specification
 - Dokumentacja JSDoc dla każdego typu
 - Pola snake_case w DB → camelCase w DTO
@@ -831,6 +858,7 @@ try {
 **Zadania**:
 
 1. **Dodać schema dla GET /:id**:
+
    ```typescript
    export const GetVacationRequestByIdParamsSchema = z.object({
      id: z.string().uuid("Invalid vacation request ID format"),
@@ -838,44 +866,49 @@ try {
    ```
 
 2. **Dodać schema dla POST /**:
+
    ```typescript
-   export const CreateVacationRequestSchema = z.object({
-     startDate: DateStringSchema,
-     endDate: DateStringSchema,
-   }).refine(
-     (data) => {
-       const start = new Date(data.startDate);
-       const end = new Date(data.endDate);
-       return end >= start;
-     },
-     {
-       message: "End date must be after or equal to start date",
-       path: ["endDate"],
-     }
-   ).refine(
-     (data) => {
-       const start = new Date(data.startDate);
-       const today = new Date();
-       today.setHours(0, 0, 0, 0);
-       return start >= today;
-     },
-     {
-       message: "Start date cannot be in the past",
-       path: ["startDate"],
-     }
-   ).refine(
-     (data) => {
-       const start = new Date(data.startDate);
-       const end = new Date(data.endDate);
-       const startDay = start.getDay(); // 0 = Sunday, 6 = Saturday
-       const endDay = end.getDay();
-       return startDay !== 0 && startDay !== 6 && endDay !== 0 && endDay !== 6;
-     },
-     {
-       message: "Dates cannot fall on weekends",
-       path: ["startDate"],
-     }
-   );
+   export const CreateVacationRequestSchema = z
+     .object({
+       startDate: DateStringSchema,
+       endDate: DateStringSchema,
+     })
+     .refine(
+       (data) => {
+         const start = new Date(data.startDate);
+         const end = new Date(data.endDate);
+         return end >= start;
+       },
+       {
+         message: "End date must be after or equal to start date",
+         path: ["endDate"],
+       }
+     )
+     .refine(
+       (data) => {
+         const start = new Date(data.startDate);
+         const today = new Date();
+         today.setHours(0, 0, 0, 0);
+         return start >= today;
+       },
+       {
+         message: "Start date cannot be in the past",
+         path: ["startDate"],
+       }
+     )
+     .refine(
+       (data) => {
+         const start = new Date(data.startDate);
+         const end = new Date(data.endDate);
+         const startDay = start.getDay(); // 0 = Sunday, 6 = Saturday
+         const endDay = end.getDay();
+         return startDay !== 0 && startDay !== 6 && endDay !== 0 && endDay !== 6;
+       },
+       {
+         message: "Dates cannot fall on weekends",
+         path: ["startDate"],
+       }
+     );
    ```
 
 3. Dodać type exports:
@@ -885,6 +918,7 @@ try {
    ```
 
 **Kryteria akceptacji**:
+
 - Schema waliduje format UUID
 - Schema waliduje format dat
 - Refinements sprawdzają business rules
@@ -919,10 +953,11 @@ export async function getVacationRequestById(
   supabase: SupabaseClient,
   currentUserId: string,
   requestId: string
-): Promise<VacationRequestDetailsDTO>
+): Promise<VacationRequestDetailsDTO>;
 ```
 
 **Implementacja**:
+
 1. Pobierz rolę użytkownika z `profiles`
 2. Pobierz wniosek z JOINami (user, processedBy)
 3. Sprawdź czy wniosek istnieje
@@ -952,10 +987,11 @@ export async function createVacationRequest(
   supabase: SupabaseClient,
   currentUserId: string,
   data: CreateVacationRequestDTO
-): Promise<CreateVacationRequestResponseDTO>
+): Promise<CreateVacationRequestResponseDTO>;
 ```
 
 **Implementacja**:
+
 1. Oblicz business_days_count (funkcja DB)
 2. Sprawdź pulę urlopową:
    - Pobierz vacation_allowances dla bieżącego roku
@@ -966,6 +1002,7 @@ export async function createVacationRequest(
 5. Mapuj do DTO i zwróć
 
 **Kryteria akceptacji**:
+
 - Funkcje z pełną dokumentacją JSDoc
 - Error handling z szczegółowymi komunikatami
 - Logowanie błędów do console.error
@@ -996,17 +1033,17 @@ export const prerender = false;
 export const GET: APIRoute = async ({ params, locals }) => {
   try {
     const supabase = locals.supabase;
-    
+
     if (!supabase) {
       return new Response(JSON.stringify({ error: "Database not available" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
       });
     }
-    
+
     // Validate params
     const validationResult = GetVacationRequestByIdParamsSchema.safeParse(params);
-    
+
     if (!validationResult.success) {
       return new Response(
         JSON.stringify({
@@ -1015,13 +1052,13 @@ export const GET: APIRoute = async ({ params, locals }) => {
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
-    
+
     const { id } = validationResult.data;
     const currentUserId = DEFAULT_USER_ID; // TODO: Replace with actual auth
-    
+
     // Call service
     const result = await getVacationRequestById(supabase, currentUserId, id);
-    
+
     return new Response(JSON.stringify(result), {
       status: 200,
       headers: { "Content-Type": "application/json" },
@@ -1033,6 +1070,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
 ```
 
 **Kryteria akceptacji**:
+
 - Walidacja params przez Zod
 - Wywołanie service layer
 - Obsługa wszystkich kodów błędów (400, 401, 403, 404, 500)
@@ -1055,28 +1093,28 @@ export const GET: APIRoute = async ({ params, locals }) => {
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const supabase = locals.supabase;
-    
+
     if (!supabase) {
       return new Response(JSON.stringify({ error: "Database not available" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
       });
     }
-    
+
     // Parse request body
     let body;
     try {
       body = await request.json();
     } catch {
-      return new Response(
-        JSON.stringify({ error: "Invalid request body" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Invalid request body" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
-    
+
     // Validate body
     const validationResult = CreateVacationRequestSchema.safeParse(body);
-    
+
     if (!validationResult.success) {
       return new Response(
         JSON.stringify({
@@ -1086,13 +1124,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
-    
+
     const validatedData = validationResult.data;
     const currentUserId = DEFAULT_USER_ID; // TODO: Replace with actual auth
-    
+
     // Call service
     const result = await createVacationRequest(supabase, currentUserId, validatedData);
-    
+
     return new Response(JSON.stringify(result), {
       status: 201,
       headers: { "Content-Type": "application/json" },
@@ -1104,6 +1142,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 ```
 
 **Kryteria akceptacji**:
+
 - Parsowanie i walidacja JSON body
 - Walidacja przez Zod
 - Wywołanie service layer
@@ -1121,16 +1160,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
 ```sql
 -- Indeks dla optymalizacji sprawdzania nakładających się wniosków
-CREATE INDEX IF NOT EXISTS idx_vacation_requests_overlap 
+CREATE INDEX IF NOT EXISTS idx_vacation_requests_overlap
 ON vacation_requests (user_id, status, start_date, end_date)
 WHERE status IN ('SUBMITTED', 'APPROVED');
 
 -- Komentarz
-COMMENT ON INDEX idx_vacation_requests_overlap IS 
+COMMENT ON INDEX idx_vacation_requests_overlap IS
 'Optimizes overlap checking when creating new vacation requests';
 ```
 
 **Kryteria akceptacji**:
+
 - Migracja działa bez błędów
 - Indeks tworzony tylko dla aktywnych statusów
 - Performance improvement zweryfikowane (EXPLAIN ANALYZE)
@@ -1139,7 +1179,8 @@ COMMENT ON INDEX idx_vacation_requests_overlap IS
 
 ### Krok 7: Testy API
 
-**Pliki**: 
+**Pliki**:
+
 - `tests/api/vacation-request-get.test.sh`
 - `tests/api/vacation-request-create.test.sh`
 
@@ -1208,6 +1249,7 @@ COMMENT ON INDEX idx_vacation_requests_overlap IS
    - Expect: 409, error message "overlapping dates"
 
 **Kryteria akceptacji**:
+
 - Wszystkie testy przechodzą
 - Skrypty używają `test-helpers.sh`
 - Czytelne output z kolorami (pass/fail)
@@ -1225,7 +1267,7 @@ Dodać sekcje:
 
 #### GET /api/vacation-requests/:id
 
-```markdown
+````markdown
 ### Get Single Vacation Request
 
 **Endpoint**: `GET /api/vacation-requests/:id`
@@ -1233,16 +1275,20 @@ Dodać sekcje:
 **Description**: Retrieve detailed information about a specific vacation request.
 
 **Authorization**:
+
 - EMPLOYEE: Can only view their own requests
 - HR: Can view requests from team members
 - ADMINISTRATOR: Can view all requests
 
 **Example Request**:
+
 ```bash
 curl -X GET http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-426614174000
 ```
+````
 
 **Example Response** (200 OK):
+
 ```json
 {
   "id": "123e4567-e89b-12d3-a456-426614174000",
@@ -1268,7 +1314,8 @@ curl -X GET http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-
   "updatedAt": "2026-01-02T10:00:00Z"
 }
 ```
-```
+
+````
 
 #### POST /api/vacation-requests
 
@@ -1287,9 +1334,10 @@ curl -X GET http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-
   "startDate": "2026-01-10",
   "endDate": "2026-01-15"
 }
-```
+````
 
 **Validations**:
+
 - Dates must be in format YYYY-MM-DD
 - Dates cannot be in the past
 - Dates cannot fall on weekends
@@ -1298,6 +1346,7 @@ curl -X GET http://localhost:4321/api/vacation-requests/123e4567-e89b-12d3-a456-
 - No overlapping vacation requests
 
 **Example Request**:
+
 ```bash
 curl -X POST http://localhost:4321/api/vacation-requests \
   -H "Content-Type: application/json" \
@@ -1308,6 +1357,7 @@ curl -X POST http://localhost:4321/api/vacation-requests \
 ```
 
 **Example Response** (201 Created):
+
 ```json
 {
   "id": "uuid",
@@ -1321,12 +1371,16 @@ curl -X POST http://localhost:4321/api/vacation-requests \
 ```
 
 **Error Responses**:
+
 - `400`: Invalid dates or insufficient vacation days
 - `409`: Overlapping vacation request exists
+
 ```
+
 ```
 
 **Kryteria akceptacji**:
+
 - Dokumentacja zawiera wszystkie endpointy
 - Przykłady request/response są aktualne
 - Opisy błędów są szczegółowe
@@ -1348,24 +1402,31 @@ curl -X POST http://localhost:4321/api/vacation-requests \
    - [ ] Performance considerations zastosowane
 
 2. **Linting**:
+
    ```bash
    npm run lint
    ```
+
    - Naprawić wszystkie błędy i warningi
 
 3. **Type checking**:
+
    ```bash
    npm run type-check
    ```
+
    - Upewnić się że brak błędów TypeScript
 
 4. **Testing**:
+
    ```bash
    ./tests/api/run-all.sh
    ```
+
    - Wszystkie testy przechodzą
 
 **Kryteria akceptacji**:
+
 - Wszystkie punkty checklist zaznaczone
 - Brak błędów lintingu
 - Brak błędów typów
@@ -1385,10 +1446,11 @@ curl -X POST http://localhost:4321/api/vacation-requests \
    - Deployment przez CI/CD
 
 3. **Smoke tests na production**:
+
    ```bash
    # GET test
    curl https://api.vacationplanner.com/api/vacation-requests/:id
-   
+
    # POST test
    curl -X POST https://api.vacationplanner.com/api/vacation-requests \
      -H "Content-Type: application/json" \
@@ -1405,6 +1467,7 @@ curl -X POST http://localhost:4321/api/vacation-requests \
    - Poinformować zespół o nowych endpointach
 
 **Kryteria akceptacji**:
+
 - Migracje zastosowane bez błędów
 - Smoke tests przechodzą na production
 - Monitoring działa poprawnie
@@ -1470,4 +1533,3 @@ Krok 10 (Deployment)
 5. Implementacja email notifications
 6. Dodanie audit logs dla zmian statusu
 7. Implementacja bulk operations dla HR/ADMIN
-

@@ -20,6 +20,7 @@ UsersPage (Astro) - /src/pages/admin/users.astro
 ## Features Implemented
 
 ### ✅ Core Features
+
 - **User List Display**: Paginated table showing all users
 - **Search & Filter**: Text search (firstName, lastName, email) with 300ms debounce
 - **Role Filter**: Filter by ADMINISTRATOR, HR, or EMPLOYEE roles
@@ -27,18 +28,21 @@ UsersPage (Astro) - /src/pages/admin/users.astro
 - **Pagination**: Navigate through pages with customizable limit (default: 50)
 
 ### ✅ CRUD Operations
+
 - **Create User**: Add new user with temporary password
 - **Update User**: Edit user details (firstName, lastName, role)
 - **Delete User**: Soft-delete with automatic vacation cancellation
 - **View User**: Display user details with status badges
 
 ### ✅ Security & Authorization
+
 - **Role-Based Access**: Only ADMINISTRATOR can access this view
 - **Self-Edit Protection**: Users cannot change their own role
 - **Self-Delete Protection**: Users cannot delete themselves (UI disabled)
 - **Middleware Validation**: Route protected at middleware level
 
 ### ✅ UI/UX Features
+
 - **Real-time Validation**: Form validation with Zod schemas
 - **Toast Notifications**: Success/error messages using Sonner
 - **Loading States**: Spinners during async operations
@@ -69,34 +73,39 @@ The view integrates with the following endpoints:
 ## Custom Hooks
 
 ### useUsersManagement
+
 Encapsulates all state management and CRUD operations for users.
 
 **Features:**
+
 - Automatic data fetching on filter/pagination change
 - Client-side search filtering
 - CRUD operation wrappers with error handling
 - Toast notifications on success/error
 
 **Usage:**
+
 ```typescript
 const {
-  users,           // Filtered user list
-  pagination,      // Pagination state
-  filters,         // Current filters
-  isLoading,       // Loading state
-  updateFilters,   // Update filter values
-  updatePagination,// Change page
-  createUser,      // Create new user
-  updateUser,      // Update user
-  deleteUser,      // Delete user
-  refreshUsers,    // Manually refresh list
+  users, // Filtered user list
+  pagination, // Pagination state
+  filters, // Current filters
+  isLoading, // Loading state
+  updateFilters, // Update filter values
+  updatePagination, // Change page
+  createUser, // Create new user
+  updateUser, // Update user
+  deleteUser, // Delete user
+  refreshUsers, // Manually refresh list
 } = useUsersManagement(initialUsers, initialPagination, currentUserId);
 ```
 
 ### useDebounce
+
 Delays value updates to prevent excessive API calls during typing.
 
 **Usage:**
+
 ```typescript
 const debouncedSearchQuery = useDebounce(searchQuery, 300);
 ```
@@ -104,6 +113,7 @@ const debouncedSearchQuery = useDebounce(searchQuery, 300);
 ## Form Validation
 
 ### Create User Schema
+
 - **firstName**: Required, 1-100 chars, trimmed
 - **lastName**: Required, 1-100 chars, trimmed
 - **email**: Required, valid email format, lowercase, trimmed
@@ -111,6 +121,7 @@ const debouncedSearchQuery = useDebounce(searchQuery, 300);
 - **temporaryPassword**: Required, 8-100 chars
 
 ### Edit User Schema
+
 - **firstName**: Required, 1-100 chars, trimmed
 - **lastName**: Required, 1-100 chars, trimmed
 - **role**: Required, enum value (disabled for self-edit)
@@ -143,6 +154,7 @@ src/
 ## Testing Checklist
 
 ### Manual Testing
+
 - [x] Page loads without errors
 - [x] Users table displays correctly
 - [x] Search filter works with debounce
@@ -158,7 +170,9 @@ src/
 - [x] Loading states show during API calls
 
 ### API Testing
+
 To test the implementation, you can use the test scripts in `/tests/api/`:
+
 - `users-list.test.sh` - Test GET /api/users
 - `users-create.test.sh` - Test POST /api/users
 - `users-update.test.sh` - Test PATCH /api/users/:id
@@ -190,21 +204,25 @@ To test the implementation, you can use the test scripts in `/tests/api/`:
 ## Troubleshooting
 
 ### Users not loading
+
 - Check if Supabase connection is configured (env variables)
 - Check browser console for API errors
 - Verify DEFAULT_USER_ID exists in database and has ADMINISTRATOR role
 
 ### Cannot create users
+
 - Ensure email is unique (not already in database)
 - Check password meets minimum requirements (8 chars)
 - Verify current user has ADMINISTRATOR role
 
 ### Delete operation fails
+
 - Check if user is already deleted
 - Verify user exists in database
 - Check if current user is trying to delete themselves
 
 ### Middleware blocks access
+
 - Verify DEFAULT_USER_ID is set to Administrator user ID
 - Check user role in database (should be 'ADMINISTRATOR')
 - Clear browser cache and try again
@@ -212,7 +230,9 @@ To test the implementation, you can use the test scripts in `/tests/api/`:
 ## Development Notes
 
 ### Default User Configuration
+
 For development/testing, the application uses a hardcoded user ID:
+
 - File: `src/db/supabase.client.ts`
 - Constant: `DEFAULT_USER_ID`
 - Current value: `00000000-0000-0000-0000-000000000001` (Administrator)
@@ -220,7 +240,9 @@ For development/testing, the application uses a hardcoded user ID:
 This should be replaced with proper session management in production.
 
 ### Styling
+
 The view uses Tailwind CSS 4 and Shadcn/ui components. Custom styling follows the project's design system defined in `src/styles/global.css`.
 
 ### Type Safety
+
 All API interactions use TypeScript interfaces defined in `src/types.ts`. The view maintains full type safety throughout the component tree.

@@ -20,6 +20,7 @@ calendar/
 Główny komponent kontenera zarządzający stanem całego widoku.
 
 **Props:**
+
 - `teams: TeamListItemDTO[]` - Lista zespołów
 - `initialTeamId: string` - ID początkowego zespołu
 - `currentUser: User` - Aktualny użytkownik (zarezerwowane na przyszłość)
@@ -31,10 +32,12 @@ Główny komponent kontenera zarządzający stanem całego widoku.
 Komponent wyświetlający kalendarz z wykorzystaniem FullCalendar.
 
 **Props:**
+
 - `vacations: VacationRequestViewModel[]` - Lista urlopów do wyświetlenia
 - `onDateRangeChange: (startDate, endDate) => void` - Callback przy zmianie zakresu dat
 
 **Features:**
+
 - Polski interfejs
 - Widok miesięczny
 - Kolorowanie wydarzeń według statusu
@@ -48,6 +51,7 @@ Komponent wyświetlający kalendarz z wykorzystaniem FullCalendar.
 Komponent wyboru zespołu.
 
 **Props:**
+
 - `teams: TeamListItemDTO[]` - Lista zespołów
 - `selectedTeamId: string` - ID wybranego zespołu
 - `onTeamChange: (teamId) => void` - Callback przy zmianie zespołu
@@ -58,10 +62,12 @@ Komponent wyboru zespołu.
 Statyczny komponent wyświetlający legendę kolorów statusów.
 
 **Statusy na kalendarzu:**
+
 - 🟢 Zatwierdzony (APPROVED)
 - 🟡 Oczekujący (SUBMITTED)
 
 **Statusy widoczne tylko w liście poniżej:**
+
 - 🔴 Odrzucony (REJECTED)
 - ⚫ Anulowany (CANCELLED)
 
@@ -70,10 +76,12 @@ Statyczny komponent wyświetlający legendę kolorów statusów.
 Komponent wyświetlający listę wszystkich urlopów w wybranym okresie.
 
 **Props:**
+
 - `vacations: VacationRequestViewModel[]` - Lista urlopów do wyświetlenia
 - `onVacationClick?: (vacation) => void` - Callback przy kliknięciu na urlop
 
 **Features:**
+
 - Wyświetla wszystkie statusy (włącznie z REJECTED i CANCELLED)
 - Sortowanie według daty rozpoczęcia
 - Informacje: pracownik, daty, liczba dni, status
@@ -85,10 +93,12 @@ Komponent wyświetlający listę wszystkich urlopów w wybranym okresie.
 Tooltip ze szczegółami wniosku urlopowego.
 
 **Props:**
+
 - `vacation: VacationRequestViewModel` - Dane urlopu
 - `position: {x, y}` - Pozycja tooltipa
 
 **Wyświetlane informacje:**
+
 - Imię i nazwisko pracownika
 - Daty urlopu (od-do)
 - Liczba dni roboczych
@@ -99,11 +109,7 @@ Tooltip ze szczegółami wniosku urlopowego.
 ```tsx
 import { CalendarView } from "@/components/calendar/CalendarView";
 
-<CalendarView
-  teams={teams}
-  initialTeamId={teamId}
-  currentUser={user}
-/>
+<CalendarView teams={teams} initialTeamId={teamId} currentUser={user} />;
 ```
 
 ## Zależności
@@ -118,6 +124,7 @@ import { CalendarView } from "@/components/calendar/CalendarView";
 ## Style
 
 Style FullCalendar importowane bezpośrednio w komponencie Calendar:
+
 ```tsx
 import "@fullcalendar/core/index.css";
 import "@fullcalendar/daygrid/index.css";
@@ -128,6 +135,7 @@ Custom style zintegrowane z motywem aplikacji przez CSS-in-JS.
 ## API Integration
 
 Komponenty komunikują się z endpointem:
+
 ```
 GET /api/teams/:id/calendar
 ```

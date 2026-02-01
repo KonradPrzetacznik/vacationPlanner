@@ -11,6 +11,7 @@ Zaimplementowano pełny widok kalendarza zespołu zgodnie z planem implementacji
 ## Zaimplementowane komponenty
 
 ### 1. Strona główna
+
 - **Plik**: `src/pages/calendar.astro`
 - **Routing**: `/calendar`
 - **Funkcjonalność**:
@@ -22,17 +23,20 @@ Zaimplementowano pełny widok kalendarza zespołu zgodnie z planem implementacji
 ### 2. Komponenty React
 
 #### CalendarView (`src/components/calendar/CalendarView.tsx`)
+
 - Główny komponent kontenera
 - Zarządza stanem całego widoku poprzez hook `useTeamCalendar`
 - Koordynuje interakcje między komponentami podrzędnymi
 - Obsługuje stany ładowania i błędów
 
 #### TeamSelector (`src/components/calendar/TeamSelector.tsx`)
+
 - Selektor zespołu wykorzystujący Shadcn/ui Select
 - Obsługuje zmianę wybranego zespołu
 - Wspiera stan disabled podczas ładowania
 
 #### Calendar (`src/components/calendar/Calendar.tsx`)
+
 - Główny komponent kalendarza z integracją FullCalendar
 - Wyświetla urlopy jako wydarzenia w kalendarzu
 - Kolorowanie wydarzeń według statusu
@@ -41,17 +45,20 @@ Zaimplementowano pełny widok kalendarza zespołu zgodnie z planem implementacji
 - Polska lokalizacja
 
 #### VacationDetailsTooltip (`src/components/calendar/VacationDetailsTooltip.tsx`)
+
 - Wyświetla szczegóły wniosku urlopowego w tooltipie
 - Pokazuje: nazwisko, daty, liczbę dni, status
 - Pozycjonowanie absolutne
 
 #### VacationLegend (`src/components/calendar/VacationLegend.tsx`)
+
 - Legenda kolorów dla statusów urlopów
 - Statusy: Zatwierdzony, Oczekujący, Odrzucony, Anulowany
 
 ### 3. Custom Hook
 
 #### useTeamCalendar (`src/components/hooks/useTeamCalendar.ts`)
+
 - Zarządzanie stanem kalendarza
 - Pobieranie danych z API `/api/teams/:id/calendar`
 - Transformacja danych z DTO na ViewModel
@@ -78,12 +85,14 @@ export interface TeamCalendarViewModel
 ## Biblioteki zewnętrzne
 
 Zainstalowane:
+
 - `@fullcalendar/react` - główna biblioteka kalendarza
 - `@fullcalendar/core` - rdzeń FullCalendar
 - `@fullcalendar/daygrid` - widok miesięczny
 - `@fullcalendar/interaction` - interakcje użytkownika
 
 Dodano do Shadcn/ui:
+
 - `tooltip` - komponent tooltipa
 
 ## Stylowanie
@@ -132,6 +141,7 @@ Dodano link "Kalendarz" w głównej nawigacji (`Navigation.astro`)
 ## Testowanie
 
 ### Ręczne testy do wykonania:
+
 1. ✓ Dostęp tylko dla HR i ADMINISTRATOR
 2. ✓ Wyświetlanie listy zespołów
 3. ✓ Zmiana wybranego zespołu
@@ -152,6 +162,7 @@ Przewodnik wdrożenia na produkcję: `docs/CALENDAR_VIEW_DEPLOYMENT.md`
 ## Pliki zmodyfikowane/utworzone
 
 ### Utworzone:
+
 - `src/pages/calendar.astro`
 - `src/components/calendar/CalendarView.tsx`
 - `src/components/calendar/Calendar.tsx`
@@ -161,6 +172,7 @@ Przewodnik wdrożenia na produkcję: `docs/CALENDAR_VIEW_DEPLOYMENT.md`
 - `src/components/hooks/useTeamCalendar.ts`
 
 ### Zmodyfikowane:
+
 - `src/types.ts` - dodano typy ViewModel
 - `src/components/Navigation.astro` - dodano link do kalendarza
 - `src/styles/global.css` - dodano import stylów FullCalendar
@@ -183,19 +195,21 @@ Wymagane uprawnienia: HR lub ADMINISTRATOR
 ## Rozwiązane problemy
 
 ### ✅ Problem 1: CSS FullCalendar
+
 - **Symptom:** `Missing "./index.css" specifier`
 - **Rozwiązanie:** Załadowanie CSS z CDN w Layout.astro
 - **Dokumentacja:** `docs/CALENDAR_CSS_FIX.md`
 
 ### ✅ Problem 2: Nieskończona pętla requestów
+
 - **Symptom:** Setki requestów do API
 - **Przyczyna:** Błędny dependency array w useEffect
 - **Rozwiązanie:** Usunięcie `fetchCalendarData` z dependencies, użycie `dateRange.start/end`
 - **Dokumentacja:** `docs/CALENDAR_API_TIMEOUT_FIX.md`
 
 ### ✅ Problem 3: Duplikaty requestów przy zmianie miesiąca
+
 - **Symptom:** 2 requesty przy kliknięciu strzałki
 - **Przyczyna:** FullCalendar wywołuje `datesSet` wielokrotnie
 - **Rozwiązanie:** Deduplikacja przez useRef + porównanie parametrów
 - **Dokumentacja:** `docs/DUPLICATE_REQUESTS_FIX.md` i `docs/CALENDAR_API_TIMEOUT_FIX.md`
-

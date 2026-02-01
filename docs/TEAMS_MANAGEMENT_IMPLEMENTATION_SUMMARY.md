@@ -13,6 +13,7 @@ Zaimplementowano pełnofunkcjonalny widok zarządzania zespołami w aplikacji Va
 ## ✅ Zrealizowane funkcjonalności
 
 ### 1. Zarządzanie zespołami (US-009)
+
 - ✅ Tworzenie nowych zespołów z walidacją
 - ✅ Wyświetlanie listy wszystkich zespołów
 - ✅ Edycja nazwy zespołu
@@ -20,6 +21,7 @@ Zaimplementowano pełnofunkcjonalny widok zarządzania zespołami w aplikacji Va
 - ✅ Wyświetlanie liczby członków dla każdego zespołu
 
 ### 2. Zarządzanie członkami zespołu (US-010)
+
 - ✅ Dodawanie użytkowników do zespołu (bulk operation)
 - ✅ Usuwanie użytkowników z zespołu
 - ✅ Wyświetlanie listy członków z informacjami (imię, nazwisko, email, rola, data dołączenia)
@@ -27,6 +29,7 @@ Zaimplementowano pełnofunkcjonalny widok zarządzania zespołami w aplikacji Va
 - ✅ Wielokrotna selekcja użytkowników
 
 ### 3. Interfejs użytkownika (US-011)
+
 - ✅ Layout master-detail (lista zespołów + szczegóły)
 - ✅ Responsywny design (desktop, tablet, mobile)
 - ✅ Intuicyjna nawigacja i interakcje
@@ -39,11 +42,13 @@ Zaimplementowano pełnofunkcjonalny widok zarządzania zespołami w aplikacji Va
 ## 📁 Utworzone pliki
 
 ### Strony (1)
+
 ```
 src/pages/teams.astro
 ```
 
 ### Komponenty React (7)
+
 ```
 src/components/teams/
 ├── TeamsManagementView.tsx      # Główny komponent orkiestrujący
@@ -57,18 +62,21 @@ src/components/teams/
 ```
 
 ### Custom Hooks (1)
+
 ```
 src/components/hooks/
 └── useTeamsManagement.ts        # Hook zarządzania stanem i API
 ```
 
 ### Komponenty pomocnicze (1)
+
 ```
 src/components/
 └── Navigation.astro             # Nawigacja globalna
 ```
 
 ### Dokumentacja (2)
+
 ```
 docs/
 ├── TEAMS_MANAGEMENT_VIEW.md                    # Pełna dokumentacja
@@ -78,6 +86,7 @@ docs/
 ## 🛠️ Stack technologiczny
 
 ### Frontend
+
 - **Astro 5** - Framework do stron i routingu
 - **React 19** - Komponenty interaktywne
 - **TypeScript 5** - Typowanie statyczne
@@ -85,20 +94,24 @@ docs/
 - **Shadcn/ui** - Biblioteka komponentów UI
 
 ### Zarządzanie formularzami i walidacja
+
 - **React Hook Form** - Zarządzanie stanem formularzy
 - **Zod** - Walidacja schematów
 
 ### Biblioteki pomocnicze
+
 - **Lucide React** - Ikony SVG
 - **Sonner** - System toastów/notyfikacji
 
 ### Custom hooks
+
 - **useTeamsManagement** - Zarządzanie stanem zespołów i operacje API
 - **useDebounce** - Opóźnianie wyszukiwania (już istniejący)
 
 ## 🏗️ Architektura komponentów
 
 ### Hierarchia komponentów
+
 ```
 TeamsManagementView (orchestrator)
 ├── Header (inline)
@@ -127,6 +140,7 @@ TeamsManagementView (orchestrator)
 ```
 
 ### Przepływ danych
+
 ```
 TeamsManagementView
   │
@@ -151,24 +165,27 @@ TeamsManagementView
 ## 🔌 Integracja z API
 
 ### Wykorzystane endpointy
-| Metoda | Endpoint | Użycie |
-|--------|----------|--------|
-| GET | `/api/teams?includeMemberCount=true` | Pobieranie listy zespołów |
-| GET | `/api/teams/:id` | Pobieranie szczegółów zespołu |
-| POST | `/api/teams` | Tworzenie nowego zespołu |
-| PATCH | `/api/teams/:id` | Aktualizacja nazwy zespołu |
-| DELETE | `/api/teams/:id` | Usuwanie zespołu |
-| POST | `/api/teams/:id/members` | Dodawanie członków (bulk) |
-| DELETE | `/api/teams/:id/members/:userId` | Usuwanie pojedynczego członka |
-| GET | `/api/users` | Pobieranie listy użytkowników (dla modala) |
+
+| Metoda | Endpoint                             | Użycie                                     |
+| ------ | ------------------------------------ | ------------------------------------------ |
+| GET    | `/api/teams?includeMemberCount=true` | Pobieranie listy zespołów                  |
+| GET    | `/api/teams/:id`                     | Pobieranie szczegółów zespołu              |
+| POST   | `/api/teams`                         | Tworzenie nowego zespołu                   |
+| PATCH  | `/api/teams/:id`                     | Aktualizacja nazwy zespołu                 |
+| DELETE | `/api/teams/:id`                     | Usuwanie zespołu                           |
+| POST   | `/api/teams/:id/members`             | Dodawanie członków (bulk)                  |
+| DELETE | `/api/teams/:id/members/:userId`     | Usuwanie pojedynczego członka              |
+| GET    | `/api/users`                         | Pobieranie listy użytkowników (dla modala) |
 
 ### Obsługa błędów
+
 - **Błędy sieciowe**: Toast z komunikatem + console.error
 - **Błędy walidacji**: Wyświetlanie pod polami formularza
 - **Błędy 403**: Toast o braku uprawnień (teoretycznie nie wystąpi)
 - **Błędy 404**: Toast o nieznalezionym zasobie
 
 ### Strategie odświeżania
+
 - **Po CREATE**: Odświeżenie listy zespołów
 - **Po UPDATE**: Odświeżenie listy + szczegółów (jeśli wybrany)
 - **Po DELETE**: Odświeżenie listy + wyczyszczenie szczegółów
@@ -177,47 +194,56 @@ TeamsManagementView
 ## 🎨 Wzorce projektowe
 
 ### 1. Custom Hook Pattern
+
 **Hook:** `useTeamsManagement`
+
 - Enkapsulacja logiki biznesowej
 - Separacja concerns (UI vs logika)
 - Reużywalność
 - Łatwiejsze testowanie
 
 ### 2. Master-Detail Pattern
+
 - Lista elementów w panelu głównym
 - Szczegóły w panelu bocznym
 - Intuicyjna nawigacja
 - Efektywne wykorzystanie przestrzeni
 
 ### 3. Modal Dialog Pattern
+
 - Izolacja formularzy od głównego widoku
 - Focus management
 - Escape to close
 - Backdrop click to close
 
 ### 4. Confirmation Dialog Pattern
+
 - Zabezpieczenie przed przypadkowym usunięciem
 - Jasne komunikaty o konsekwencjach
 - Dwie opcje: Anuluj / Potwierdź
 
 ### 5. Optimistic UI (planowane)
+
 - Obecnie: Pesymistyczne aktualizacje (czekanie na server)
 - Przyszłość: Natychmiastowa aktualizacja UI + rollback przy błędzie
 
 ## ✨ UX Features
 
 ### Loading States
+
 - Spinner podczas ładowania listy zespołów
 - Spinner podczas ładowania szczegółów
 - Disabled buttons podczas operacji
 - Loading indicator w przycisku submit
 
 ### Empty States
+
 - "Brak zespołów" z call-to-action
 - "Brak członków" z przyciskiem dodawania
 - "Nie znaleziono użytkowników" w wyszukiwarce
 
 ### Success Feedback
+
 - Toast po utworzeniu zespołu
 - Toast po aktualizacji zespołu
 - Toast po usunięciu zespołu
@@ -225,12 +251,14 @@ TeamsManagementView
 - Toast po usunięciu członka
 
 ### Error Handling
+
 - Toast przy błędach API
 - Komunikaty walidacji w formularzach
 - Alert box dla błędów serwera w modalach
 - Console.error dla debugowania
 
 ### Accessibility
+
 - Keyboard navigation (Tab, Enter, Escape)
 - Focus-visible styles
 - ARIA labels and roles
@@ -240,6 +268,7 @@ TeamsManagementView
 ## 📊 Statystyki implementacji
 
 ### Liczba plików: 11
+
 - Strony Astro: 1
 - Komponenty React: 7
 - Custom Hooks: 1
@@ -247,12 +276,14 @@ TeamsManagementView
 - Dokumentacja: 2 (razem z tym plikiem)
 
 ### Linie kodu (przybliżone):
+
 - Komponenty: ~1,800 linii
 - Hooks: ~260 linii
 - Dokumentacja: ~450 linii
 - **Łącznie: ~2,510 linii**
 
 ### Typy TypeScript użyte:
+
 - `TeamListItemDTO`
 - `TeamDetailsDTO`
 - `TeamMemberDTO`
@@ -270,6 +301,7 @@ TeamsManagementView
 - `GetUsersResponseDTO`
 
 ### Komponenty Shadcn/ui użyte:
+
 - Dialog
 - AlertDialog
 - Card
@@ -283,6 +315,7 @@ TeamsManagementView
 ## 🧪 Testowanie
 
 ### Testy manualne wykonane:
+
 - ✅ Wyświetlanie listy zespołów
 - ✅ Tworzenie nowego zespołu
 - ✅ Walidacja formularza tworzenia
@@ -300,6 +333,7 @@ TeamsManagementView
 - ✅ Empty states
 
 ### Przypadki brzegowe przetestowane:
+
 - ✅ Pusta lista zespołów
 - ✅ Zespół bez członków
 - ✅ Długie nazwy zespołów
@@ -309,6 +343,7 @@ TeamsManagementView
 ## 🚀 Gotowość do produkcji
 
 ### ✅ Ukończone
+
 - [x] Wszystkie komponenty UI
 - [x] Integracja z API
 - [x] Walidacja formularzy
@@ -319,6 +354,7 @@ TeamsManagementView
 - [x] Dokumentacja
 
 ### ⏳ Do rozważenia (Nice-to-have)
+
 - [ ] Testy jednostkowe (Jest/Vitest)
 - [ ] Testy E2E (Playwright/Cypress)
 - [ ] Animacje transitions
@@ -332,6 +368,7 @@ TeamsManagementView
 ## 📝 Wnioski i rekomendacje
 
 ### Co poszło dobrze
+
 1. **Struktura komponentów** - Czytelny podział odpowiedzialności
 2. **Custom hook** - Doskonała enkapsulacja logiki biznesowej
 3. **Typeowanie** - Pełne pokrycie TypeScriptem
@@ -339,12 +376,14 @@ TeamsManagementView
 5. **Walidacja Zod** - Przejrzyste i reużywalne schematy
 
 ### Lekcje wyniesione
+
 1. **Props drilling** - Przy większej liczbie poziomów rozważyć Context API lub Zustand
 2. **Debounce** - Kluczowe dla wyszukiwania w czasie rzeczywistym
 3. **Loading states** - Użytkownik musi wiedzieć co się dzieje
 4. **Empty states** - Nie zostawiać użytkownika z pustym ekranem
 
 ### Rekomendacje dla przyszłych implementacji
+
 1. Rozważyć Context API dla globalnego stanu użytkownika/sesji
 2. Dodać interceptory dla API calls (retry logic, timeout)
 3. Zaimplementować Error Boundary dla React
@@ -363,15 +402,16 @@ TeamsManagementView
 **Ścieżka:** `/teams`
 
 **Uprawnienia wymagane:**
+
 - ADMINISTRATOR ✅
 - HR ✅
 - EMPLOYEE ❌ (redirect do `/`)
 
 ## 📅 Historia zmian
 
-| Data | Wersja | Zmiany |
-|------|--------|--------|
-| 2026-01-31 | 1.0.0 | Początkowa implementacja widoku |
+| Data       | Wersja | Zmiany                          |
+| ---------- | ------ | ------------------------------- |
+| 2026-01-31 | 1.0.0  | Początkowa implementacja widoku |
 
 ---
 

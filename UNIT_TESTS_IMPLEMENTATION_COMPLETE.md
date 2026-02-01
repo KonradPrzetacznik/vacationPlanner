@@ -3,6 +3,7 @@
 ## Data: 2026-02-01
 
 ## Cel
+
 Przeniesienie testów API z shell script (`settings-list.test.sh`) na testy jednostkowe (unit tests) używając Vitest, a następnie weryfikacja integracji z GitHub Actions.
 
 ## Wykonane Zadania
@@ -10,6 +11,7 @@ Przeniesienie testów API z shell script (`settings-list.test.sh`) na testy jedn
 ### 1. ✅ Instalacja Zależności
 
 Zainstalowano następujące pakiety:
+
 ```bash
 npm install -D vitest @vitest/ui @vitest/coverage-v8
 npm install -D @testing-library/react @testing-library/jest-dom jsdom
@@ -17,6 +19,7 @@ npm install -D @vitejs/plugin-react
 ```
 
 **Zainstalowane wersje:**
+
 - vitest: ^4.0.18
 - @vitest/ui: ^4.0.18
 - @vitest/coverage-v8: ^4.0.18
@@ -30,6 +33,7 @@ npm install -D @vitejs/plugin-react
 **Plik:** `vitest.config.ts`
 
 Skopiowano z `vitest.config.example.ts` i dostosowano:
+
 - Włączono plugin React
 - Skonfigurowano środowisko jsdom
 - Ustawiono aliasy ścieżek (@, @components, @lib, @db)
@@ -45,6 +49,7 @@ Skopiowano z `vitest.config.example.ts` i dostosowano:
 **Plik:** `tests/unit/setup.ts`
 
 Skopiowano z `tests/unit/setup.example.ts`:
+
 - Import @testing-library/jest-dom
 - Mock window.matchMedia
 - Mock IntersectionObserver
@@ -57,6 +62,7 @@ Skopiowano z `tests/unit/setup.example.ts`:
 Utworzono 10 testów jednostkowych pokrywających:
 
 #### Settings Service - getAllSettings (5 testów)
+
 - ✅ should return all settings successfully
 - ✅ should return empty array when no settings exist
 - ✅ should throw error when database query fails
@@ -64,15 +70,18 @@ Utworzono 10 testów jednostkowych pokrywających:
 - ✅ should verify setting structure has all required fields
 
 #### Settings Service - getSettingByKey (2 testy)
+
 - ✅ should return specific setting by key
 - ✅ should throw error when setting not found
 
 #### Settings Service - updateSetting (3 testy)
+
 - ✅ should update setting successfully
 - ✅ should throw error when user is not authorized
 - ✅ should throw error when update fails
 
 **Techniki użyte w testach:**
+
 - Mockowanie Supabase client używając `vi.fn()`
 - Wzorzec AAA (Arrange-Act-Assert)
 - Testowanie edge cases (błędy, puste dane, autoryzacja)
@@ -81,6 +90,7 @@ Utworzono 10 testów jednostkowych pokrywających:
 ### 5. ✅ Aktualizacja package.json
 
 **Zaktualizowane skrypty:**
+
 ```json
 {
   "test:unit": "vitest run",
@@ -95,12 +105,14 @@ Utworzono 10 testów jednostkowych pokrywających:
 **Plik:** `.github/workflows/pull-request.yml`
 
 Zaktualizowano job `unit-tests`:
+
 - Zamieniono placeholder na prawdziwe uruchomienie testów
 - Dodano `npm run test:unit`
 - Dodano `npm run test:unit:coverage`
 - Dodano upload artefaktu z raportem coverage
 
 **Przed:**
+
 ```yaml
 - name: Run unit tests
   run: |
@@ -109,6 +121,7 @@ Zaktualizowano job `unit-tests`:
 ```
 
 **Po:**
+
 ```yaml
 - name: Run unit tests
   run: npm run test:unit
@@ -138,6 +151,7 @@ Utworzono kompleksową dokumentację:
 **Plik:** `tests/unit/UNIT_TESTS_DOCUMENTATION.md` (NOWY)
 
 Zawiera:
+
 - Przegląd testów jednostkowych
 - Instrukcje uruchamiania
 - Dokumentację istniejących testów
@@ -160,6 +174,7 @@ npm run test:unit
 ```
 
 **Rezultat:**
+
 ```
 ✓ tests/unit/example.test.ts (7 tests) 51ms
 ✓ tests/unit/settings.service.test.ts (10 tests) 31ms
@@ -176,6 +191,7 @@ npm run test:unit:coverage
 ```
 
 **Rezultat:**
+
 ```
 File                % Stmts  % Branch  % Funcs  % Lines
 All files             70.83     63.63      100    70.83
@@ -187,6 +203,7 @@ settings.service.ts   70.83     63.63      100    70.83
 ## Porównanie: Shell Tests vs Unit Tests
 
 ### Shell Tests (Stare)
+
 - ❌ Testują całą ścieżkę (API endpoint + service + database)
 - ❌ Wymagają działającego serwera
 - ❌ Wolne wykonanie
@@ -195,6 +212,7 @@ settings.service.ts   70.83     63.63      100    70.83
 - ✅ Testują integrację
 
 ### Unit Tests (Nowe)
+
 - ✅ Testują izolowane funkcje serwisowe
 - ✅ Szybkie wykonanie (~2-3s dla 17 testów)
 - ✅ Łatwe mockowanie zależności
@@ -204,6 +222,7 @@ settings.service.ts   70.83     63.63      100    70.83
 - ❌ Nie testują integracji (to pozostaje w shell testach API)
 
 **Wniosek:** Oba typy testów są potrzebne:
+
 - Unit tests → logika biznesowa
 - API tests (shell) → integracja i end-to-end
 
@@ -212,11 +231,13 @@ settings.service.ts   70.83     63.63      100    70.83
 ### Workflow CI/CD
 
 Testy jednostkowe będą uruchamiane automatycznie przy:
+
 - Pull Request do `master`, `main`, `develop`
 - Po przejściu lintingu
 - Równolegle z testami API
 
 ### Kroki w CI:
+
 1. Checkout kodu
 2. Setup Node.js 20
 3. Install dependencies (`npm ci`)
@@ -257,11 +278,13 @@ vacationPlanner/
 ## Następne Kroki (Opcjonalne)
 
 ### Krótkoterminowe
+
 1. ✅ Testy działają lokalnie
 2. ✅ Testy zintegrowane z CI/CD
 3. ⏳ Czekaj na następny PR aby zweryfikować uruchomienie w GitHub Actions
 
 ### Długoterminowe (Przyszłość)
+
 1. Dodać więcej testów jednostkowych dla innych serwisów
 2. Zwiększyć pokrycie kodu do 80%+
 3. Dodać testy dla komponentów React
@@ -273,6 +296,7 @@ vacationPlanner/
 ✅ **ZADANIE ZAKOŃCZONE SUKCESEM**
 
 Testy shell zostały przeniesione na testy jednostkowe:
+
 - ✅ Vitest skonfigurowany
 - ✅ 10 nowych testów dla Settings Service
 - ✅ Wszystkie testy przechodzą lokalnie

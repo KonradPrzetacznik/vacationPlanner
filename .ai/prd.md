@@ -295,7 +295,8 @@ Poniższe funkcjonalności i cechy NIE wchodzą w zakres wersji MVP (Minimum Via
   - Użytkownik może się wylogować z systemu poprzez przycisk w prawym górnym rogu w głównym @Layout.astro.
   - Nie korzystamy z zewnętrznych serwisów logowania (np. Google, GitHub).
   - Odzyskiwanie hasła powinno być możliwe.
-  - 
+  -
+
 ## 6. Metryki sukcesu
 
 - 100% użytkowników firmy korzysta z VacationPlanner do definiowania urlopów.

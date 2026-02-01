@@ -12,7 +12,7 @@ Automatyczny workflow uruchamiany przy każdym Pull Requestcie.
 lint (lintowanie kodu)
   ↓
 ├─→ unit-tests (testy jednostkowe)
-├─→ api-tests (testy integracyjne API)  
+├─→ api-tests (testy integracyjne API)
 └─→ e2e-tests (testy E2E Playwright)
   ↓
 status-comment (komentarz z podsumowaniem)
@@ -47,6 +47,7 @@ npm install -D vitest @vitest/ui @vitest/coverage-v8
 ```
 
 Dodaj do `package.json`:
+
 ```json
 "scripts": {
   "test:unit": "vitest run --coverage"
@@ -65,6 +66,7 @@ npx playwright install --with-deps
 Utwórz `playwright.config.ts` - przykładowa konfiguracja znajduje się w pliku `playwright.config.example.ts`.
 
 Dodaj do `package.json`:
+
 ```json
 "scripts": {
   "test:e2e": "playwright test"

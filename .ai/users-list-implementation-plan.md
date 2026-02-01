@@ -5,6 +5,7 @@
 Endpoint `GET /api/users` służy do pobierania listy użytkowników systemu z uwzględnieniem autoryzacji opartej na rolach. Administratorzy mogą przeglądać wszystkich użytkowników, w tym soft-deleted, podczas gdy użytkownicy HR i EMPLOYEE widzą tylko aktywne konta. Endpoint obsługuje paginację, filtrowanie według roli i przynależności do zespołu.
 
 **Cel:**
+
 - Dostarczenie listy użytkowników z metadanymi paginacji
 - Kontrola dostępu oparta na rolach (RBAC)
 - Elastyczne filtrowanie i paginacja wyników
@@ -12,9 +13,11 @@ Endpoint `GET /api/users` służy do pobierania listy użytkowników systemu z u
 ## 2. Szczegóły żądania
 
 ### Metoda HTTP
+
 `GET`
 
 ### Struktura URL
+
 ```
 /api/users
 ```
@@ -22,24 +25,27 @@ Endpoint `GET /api/users` służy do pobierania listy użytkowników systemu z u
 ### Query Parameters
 
 #### Wymagane
+
 Brak - wszystkie parametry są opcjonalne z wartościami domyślnymi.
 
 #### Opcjonalne
 
-| Parametr | Typ | Domyślna wartość | Walidacja | Opis |
-|----------|-----|------------------|-----------|------|
-| `limit` | number | 50 | min: 1, max: 100 | Liczba wyników na stronę |
-| `offset` | number | 0 | min: 0 | Przesunięcie paginacji (indeks startowy) |
-| `role` | string | - | enum: 'ADMINISTRATOR', 'HR', 'EMPLOYEE' | Filtrowanie według roli użytkownika |
-| `includeDeleted` | boolean | false | boolean | Czy uwzględnić soft-deleted użytkowników (tylko dla ADMINISTRATOR) |
-| `teamId` | string | - | UUID format | Filtrowanie według przynależności do zespołu |
+| Parametr         | Typ     | Domyślna wartość | Walidacja                               | Opis                                                               |
+| ---------------- | ------- | ---------------- | --------------------------------------- | ------------------------------------------------------------------ |
+| `limit`          | number  | 50               | min: 1, max: 100                        | Liczba wyników na stronę                                           |
+| `offset`         | number  | 0                | min: 0                                  | Przesunięcie paginacji (indeks startowy)                           |
+| `role`           | string  | -                | enum: 'ADMINISTRATOR', 'HR', 'EMPLOYEE' | Filtrowanie według roli użytkownika                                |
+| `includeDeleted` | boolean | false            | boolean                                 | Czy uwzględnić soft-deleted użytkowników (tylko dla ADMINISTRATOR) |
+| `teamId`         | string  | -                | UUID format                             | Filtrowanie według przynależności do zespołu                       |
 
 ### Request Headers
+
 ```
 Authorization: Bearer <access_token>
 ```
 
 ### Przykład żądania
+
 ```
 GET /api/users?limit=20&offset=0&role=EMPLOYEE&teamId=123e4567-e89b-12d3-a456-426614174000
 ```
@@ -49,6 +55,7 @@ GET /api/users?limit=20&offset=0&role=EMPLOYEE&teamId=123e4567-e89b-12d3-a456-42
 ### Typy do utworzenia w `src/types.ts`
 
 #### Query DTO
+
 ```typescript
 /**
  * Get users query parameters DTO
@@ -57,13 +64,14 @@ GET /api/users?limit=20&offset=0&role=EMPLOYEE&teamId=123e4567-e89b-12d3-a456-42
 export interface GetUsersQueryDTO {
   limit?: number;
   offset?: number;
-  role?: 'ADMINISTRATOR' | 'HR' | 'EMPLOYEE';
+  role?: "ADMINISTRATOR" | "HR" | "EMPLOYEE";
   includeDeleted?: boolean;
   teamId?: string;
 }
 ```
 
 #### Response DTOs
+
 ```typescript
 /**
  * User list item DTO
@@ -75,7 +83,7 @@ export interface UserListItemDTO {
   firstName: string;
   lastName: string;
   email: string;
-  role: 'ADMINISTRATOR' | 'HR' | 'EMPLOYEE';
+  role: "ADMINISTRATOR" | "HR" | "EMPLOYEE";
   deletedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -105,12 +113,12 @@ export interface GetUsersResponseDTO {
 Utworzyć w `src/pages/api/users/index.ts`:
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 const getUsersQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).optional().default(50),
   offset: z.coerce.number().int().min(0).optional().default(0),
-  role: z.enum(['ADMINISTRATOR', 'HR', 'EMPLOYEE']).optional(),
+  role: z.enum(["ADMINISTRATOR", "HR", "EMPLOYEE"]).optional(),
   includeDeleted: z.coerce.boolean().optional().default(false),
   teamId: z.string().uuid().optional(),
 });
@@ -155,6 +163,7 @@ const getUsersQuerySchema = z.object({
 ### Error Responses
 
 #### 400 Bad Request - Nieprawidłowe parametry
+
 ```json
 {
   "error": "Invalid query parameters",
@@ -166,6 +175,7 @@ const getUsersQuerySchema = z.object({
 ```
 
 #### 401 Unauthorized - Brak autoryzacji
+
 ```json
 {
   "error": "Unauthorized - authentication required"
@@ -173,6 +183,7 @@ const getUsersQuerySchema = z.object({
 ```
 
 #### 403 Forbidden - Niewystarczające uprawnienia
+
 ```json
 {
   "error": "Forbidden - only administrators can view deleted users"
@@ -180,6 +191,7 @@ const getUsersQuerySchema = z.object({
 ```
 
 #### 500 Internal Server Error - Błąd serwera
+
 ```json
 {
   "error": "Internal server error"
@@ -225,8 +237,9 @@ const getUsersQuerySchema = z.object({
 ### Interakcje z bazą danych
 
 #### Główne zapytanie (bez teamId)
+
 ```sql
-SELECT 
+SELECT
   p.id,
   p.first_name,
   p.last_name,
@@ -248,8 +261,9 @@ LIMIT $limit OFFSET $offset;
 ```
 
 #### Zapytanie z filtrem teamId
+
 ```sql
-SELECT 
+SELECT
   p.id,
   p.first_name,
   p.last_name,
@@ -272,19 +286,21 @@ LIMIT $limit OFFSET $offset;
 ## 6. Względy bezpieczeństwa
 
 ### Uwierzytelnianie
+
 - **Middleware sprawdza sesję** przed dotarciem do endpointa
 - Brak sesji → 401 Unauthorized
 - Wykorzystanie `context.locals.supabase` zamiast bezpośredniego importu klienta
 
 ### Autoryzacja oparta na rolach (RBAC)
 
-| Rola | Uprawnienia |
-|------|-------------|
+| Rola          | Uprawnienia                                                       |
+| ------------- | ----------------------------------------------------------------- |
 | ADMINISTRATOR | Widzi wszystkich użytkowników, może ustawić `includeDeleted=true` |
-| HR | Widzi tylko aktywnych użytkowników (deleted_at IS NULL) |
-| EMPLOYEE | Widzi tylko aktywnych użytkowników (deleted_at IS NULL) |
+| HR            | Widzi tylko aktywnych użytkowników (deleted_at IS NULL)           |
+| EMPLOYEE      | Widzi tylko aktywnych użytkowników (deleted_at IS NULL)           |
 
 ### Walidacja danych wejściowych
+
 1. **Zod schema** waliduje wszystkie query parameters
 2. **UUID validation** dla teamId
 3. **Range validation** dla limit (1-100) i offset (≥0)
@@ -293,27 +309,32 @@ LIMIT $limit OFFSET $offset;
 ### Ochrona przed atakami
 
 #### SQL Injection
+
 - Użycie parametryzowanych zapytań Supabase
 - Walidacja UUID przed użyciem w zapytaniu
 
 #### Information Disclosure
+
 - Nie zwracamy wrażliwych danych (hashe haseł)
 - Email pobierany z auth.users (dostępny tylko dla zalogowanych)
 - Soft-deleted użytkownicy widoczni tylko dla adminów
 
 #### Rate Limiting
+
 - Rozważyć implementację w middleware (future enhancement)
 - Limit max 100 wyników na stronę zapobiega przeciążeniu
 
 #### Authorization Bypass
+
 ```typescript
 // Sprawdzenie w service
-if (includeDeleted && currentUser.role !== 'ADMINISTRATOR') {
-  throw new Error('Only administrators can view deleted users');
+if (includeDeleted && currentUser.role !== "ADMINISTRATOR") {
+  throw new Error("Only administrators can view deleted users");
 }
 ```
 
 ### Row Level Security (RLS)
+
 - Można rozważyć implementację RLS policies w Supabase
 - Obecnie logika autoryzacji w application layer (service)
 
@@ -321,14 +342,14 @@ if (includeDeleted && currentUser.role !== 'ADMINISTRATOR') {
 
 ### Katalog błędów
 
-| Kod | Scenariusz | Przyczyna | Obsługa |
-|-----|-----------|-----------|---------|
-| 400 | Bad Request | Nieprawidłowe query parameters (np. limit > 100, zły UUID) | Walidacja Zod, zwrócenie szczegółów błędów |
-| 401 | Unauthorized | Brak sesji/tokenu | Middleware sprawdza sesję, zwraca 401 |
-| 403 | Forbidden | Użytkownik nie-admin próbuje ustawić includeDeleted=true | Service sprawdza rolę, rzuca błąd |
-| 403 | Forbidden | Brak dostępu do zasobu | Service sprawdza uprawnienia |
-| 404 | Not Found | Zespół (teamId) nie istnieje | Service sprawdza istnienie zespołu przed zapytaniem |
-| 500 | Internal Server Error | Błąd bazy danych, nieoczekiwany błąd | Try-catch w route, logowanie błędu, generyczna wiadomość |
+| Kod | Scenariusz            | Przyczyna                                                  | Obsługa                                                  |
+| --- | --------------------- | ---------------------------------------------------------- | -------------------------------------------------------- |
+| 400 | Bad Request           | Nieprawidłowe query parameters (np. limit > 100, zły UUID) | Walidacja Zod, zwrócenie szczegółów błędów               |
+| 401 | Unauthorized          | Brak sesji/tokenu                                          | Middleware sprawdza sesję, zwraca 401                    |
+| 403 | Forbidden             | Użytkownik nie-admin próbuje ustawić includeDeleted=true   | Service sprawdza rolę, rzuca błąd                        |
+| 403 | Forbidden             | Brak dostępu do zasobu                                     | Service sprawdza uprawnienia                             |
+| 404 | Not Found             | Zespół (teamId) nie istnieje                               | Service sprawdza istnienie zespołu przed zapytaniem      |
+| 500 | Internal Server Error | Błąd bazy danych, nieoczekiwany błąd                       | Try-catch w route, logowanie błędu, generyczna wiadomość |
 
 ### Implementacja obsługi błędów
 
@@ -339,25 +360,28 @@ export const GET: APIRoute = async ({ request, locals }) => {
     // 1. Walidacja query params
     const url = new URL(request.url);
     const queryParams = Object.fromEntries(url.searchParams);
-    
+
     const validatedParams = getUsersQuerySchema.safeParse(queryParams);
     if (!validatedParams.success) {
       return new Response(
         JSON.stringify({
-          error: 'Invalid query parameters',
+          error: "Invalid query parameters",
           details: validatedParams.error.flatten().fieldErrors,
         }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
     // 2. Sprawdzenie sesji
-    const { data: { user }, error: authError } = await locals.supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await locals.supabase.auth.getUser();
     if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized - authentication required' }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: "Unauthorized - authentication required" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // 3. Wywołanie service
@@ -366,34 +390,33 @@ export const GET: APIRoute = async ({ request, locals }) => {
     // 4. Zwrócenie wyniku
     return new Response(JSON.stringify(result), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
-
   } catch (error) {
-    console.error('[GET /api/users] Error:', error);
+    console.error("[GET /api/users] Error:", error);
 
     // Obsługa znanych błędów
     if (error instanceof Error) {
-      if (error.message.includes('Only administrators')) {
-        return new Response(
-          JSON.stringify({ error: error.message }),
-          { status: 403, headers: { 'Content-Type': 'application/json' } }
-        );
+      if (error.message.includes("Only administrators")) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
       }
-      
-      if (error.message.includes('Team not found')) {
-        return new Response(
-          JSON.stringify({ error: error.message }),
-          { status: 404, headers: { 'Content-Type': 'application/json' } }
-        );
+
+      if (error.message.includes("Team not found")) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
       }
     }
 
     // Generyczny błąd serwera
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 };
 ```
@@ -402,7 +425,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
 ```typescript
 // Struktura logowania
-console.error('[GET /api/users] Error:', {
+console.error("[GET /api/users] Error:", {
   timestamp: new Date().toISOString(),
   userId: user?.id,
   queryParams: validatedParams.data,
@@ -423,7 +446,7 @@ console.error('[GET /api/users] Error:', {
    - Problem: Może spowolnić zapytanie przy dużej liczbie użytkowników
    - Rozwiązanie: Rozważyć denormalizację (przechowywanie email w profiles)
 
-3. **COUNT(*) OVER()**
+3. **COUNT(\*) OVER()**
    - Problem: Może być kosztowne przy milionach rekordów
    - Rozwiązanie: Cache'owanie total count lub przybliżona wartość
 
@@ -444,6 +467,7 @@ CREATE INDEX IF NOT EXISTS idx_team_members_team_user ON team_members(team_id, u
 ### Cache'owanie
 
 **Strategia cache'owania (future enhancement):**
+
 - Cache total count na 5 minut (zmienia się rzadko)
 - Cache listy użytkowników na 1 minutę dla popularnych filtrów
 - Invalidacja cache po utworzeniu/aktualizacji użytkownika
@@ -463,7 +487,7 @@ await redis.setex(cacheKey, 60, JSON.stringify(result));
 
 1. **Selectywne pobieranie kolumn** - tylko potrzebne pola
 2. **LIMIT/OFFSET zamiast ładowania wszystkiego**
-3. **COUNT(*) OVER() zamiast osobnego zapytania COUNT**
+3. **COUNT(\*) OVER() zamiast osobnego zapytania COUNT**
 
 ### Monitorowanie wydajności
 
@@ -473,8 +497,9 @@ const startTime = Date.now();
 const result = await usersService.getUsers(/* ... */);
 const duration = Date.now() - startTime;
 
-if (duration > 1000) { // > 1 sekunda
-  console.warn('[GET /api/users] Slow query:', {
+if (duration > 1000) {
+  // > 1 sekunda
+  console.warn("[GET /api/users] Slow query:", {
     duration,
     queryParams: validatedParams.data,
   });
@@ -484,6 +509,7 @@ if (duration > 1000) { // > 1 sekunda
 ## 9. Kroki implementacji
 
 ### Krok 1: Przygotowanie typów
+
 **Plik:** `src/types.ts`
 
 1. Dodać nowe typy DTO:
@@ -495,6 +521,7 @@ if (duration > 1000) { // > 1 sekunda
 **Szacowany czas:** 15 minut
 
 ### Krok 2: Utworzenie serwisu użytkowników
+
 **Plik:** `src/lib/services/users.service.ts` (nowy plik)
 
 1. Utworzyć strukturę serwisu z funkcją `getUsers()`
@@ -510,23 +537,25 @@ if (duration > 1000) { // > 1 sekunda
    - WHERE clauses dla filtrów
    - ORDER BY created_at DESC
    - LIMIT i OFFSET
-   - COUNT(*) OVER() dla total
+   - COUNT(\*) OVER() dla total
 5. Wykonać zapytanie i obsłużyć błędy
 6. Zmapować wyniki z snake_case na camelCase
 7. Zwrócić sformatowaną odpowiedź
 
 **Struktura funkcji:**
+
 ```typescript
 export async function getUsers(
   supabase: SupabaseClient,
   currentUserId: string,
   query: GetUsersQueryDTO
-): Promise<GetUsersResponseDTO>
+): Promise<GetUsersResponseDTO>;
 ```
 
 **Szacowany czas:** 60-90 minut
 
 ### Krok 3: Utworzenie endpointa API
+
 **Plik:** `src/pages/api/users/index.ts` (nowy plik)
 
 1. Dodać `export const prerender = false`
@@ -549,44 +578,53 @@ export async function getUsers(
 **Szacowany czas:** 45-60 minut
 
 ### Krok 4: Testowanie manualne
+
 **Narzędzia:** Postman, curl, lub browser
 
 1. Test podstawowy - pobieranie listy użytkowników:
+
    ```bash
    GET /api/users
    ```
 
 2. Test paginacji:
+
    ```bash
    GET /api/users?limit=10&offset=10
    ```
 
 3. Test filtrowania po roli:
+
    ```bash
    GET /api/users?role=EMPLOYEE
    ```
 
 4. Test includeDeleted (jako admin):
+
    ```bash
    GET /api/users?includeDeleted=true
    ```
 
 5. Test includeDeleted (jako nie-admin) - powinno zwrócić 403:
+
    ```bash
    GET /api/users?includeDeleted=true
    ```
 
 6. Test filtrowania po teamId:
+
    ```bash
    GET /api/users?teamId=<valid-uuid>
    ```
 
 7. Test walidacji - nieprawidłowy limit:
+
    ```bash
    GET /api/users?limit=999
    ```
 
 8. Test walidacji - nieprawidłowy UUID:
+
    ```bash
    GET /api/users?teamId=invalid-uuid
    ```
@@ -599,6 +637,7 @@ export async function getUsers(
 **Szacowany czas:** 30-45 minut
 
 ### Krok 5: Optymalizacja bazy danych
+
 **Narzędzie:** Supabase Dashboard lub migracje
 
 1. Utworzyć plik migracji: `supabase/migrations/YYYYMMDDHHMMSS_add_users_indexes.sql`
@@ -615,6 +654,7 @@ export async function getUsers(
 **Szacowany czas:** 15-30 minut
 
 ### Krok 6: Dokumentacja
+
 **Plik:** `README.md` lub osobny plik dokumentacji API
 
 1. Dodać dokumentację endpointa:
@@ -627,6 +667,7 @@ export async function getUsers(
 **Szacowany czas:** 20-30 minut
 
 ### Krok 7: Code review i refaktoryzacja
+
 1. Przegląd kodu pod kątem:
    - Zgodności z zasadami projektu
    - Bezpieczeństwa
@@ -642,32 +683,37 @@ export async function getUsers(
 ## 10. Podsumowanie
 
 ### Pliki do utworzenia:
+
 1. `src/lib/services/users.service.ts` - serwis logiki biznesowej
 2. `src/pages/api/users/index.ts` - endpoint API
 3. `supabase/migrations/YYYYMMDDHHMMSS_add_users_indexes.sql` - indeksy
 
 ### Pliki do modyfikacji:
+
 1. `src/types.ts` - dodanie nowych typów DTO
 
 ### Całkowity szacowany czas implementacji:
+
 **3.5 - 5 godzin** (włącznie z testowaniem i dokumentacją)
 
 ### Priorytety:
+
 1. **Krytyczne:** Kroki 1-3 (typy, service, endpoint)
 2. **Wysokie:** Krok 4 (testowanie)
 3. **Średnie:** Krok 5 (optymalizacja)
 4. **Niskie:** Kroki 6-7 (dokumentacja, review)
 
 ### Zależności:
+
 - Middleware musi być skonfigurowany do wstrzykiwania Supabase client
 - Tabele profiles, auth.users, teams i team_members muszą istnieć w bazie
 - Użytkownicy muszą mieć możliwość zalogowania się (auth endpoint)
 
 ### Kolejne kroki (future enhancements):
+
 1. Implementacja sortowania (sort_by, sort_order)
 2. Implementacja wyszukiwania po imieniu/nazwisku/emailu
 3. Cache'owanie wyników
 4. Rate limiting
 5. Testy jednostkowe i integracyjne
 6. Row Level Security policies w Supabase
-

@@ -1,5 +1,6 @@
 <conversation_summary>
 <decisions>
+
 1.  Role użytkowników (`ADMINISTRATOR`, `HR`, `EMPLOYEE`) będą przechowywane jako typ `ENUM` w PostgreSQL.
 2.  Mechanizm "soft-delete" dla użytkowników zostanie zaimplementowany za pomocą kolumny `deleted_at` (`TIMESTAMPTZ`) w tabeli `profiles`.
 3.  Relacja wiele-do-wielu między użytkownikami a zespołami zostanie zrealizowana przez tabelę łączącą `team_members`.
@@ -23,6 +24,7 @@
     </decisions>
 
 <matched_recommendations>
+
 1.  Zdefiniuj niestandardowy typ `ENUM` w PostgreSQL o nazwie `user_role` z wartościami `ADMINISTRATOR`, `HR` i `EMPLOYEE`.
 2.  W tabeli `profiles` dodaj kolumnę `deleted_at` typu `TIMESTAMPTZ`, która domyślnie jest `NULL`. Zasady RLS powinny filtrować wiersze dla ról innych niż `ADMINISTRATOR`.
 3.  Utwórz tabelę łączącą `team_members` z kluczami obcymi `team_id` i `user_id`.
@@ -47,21 +49,24 @@ Na podstawie przeprowadzonych dyskusji, schemat bazy danych PostgreSQL dla aplik
 Schemat będzie zorientowany na obsługę trzech ról użytkowników, zarządzanie zespołami oraz proces składania i akceptacji wniosków urlopowych. Kluczowe jest zapewnienie integralności danych poprzez użycie typów `ENUM` dla ról i statusów, a także odpowiednich ograniczeń (`CHECK`, `UNIQUE`). Wszystkie tabele będą używać `UUID` jako kluczy głównych w celu zachowania spójności z systemem autentykacji Supabase.
 
 **Kluczowe encje i ich relacje:**
--   `profiles`: Przechowuje dane użytkowników (imię, nazwisko, rola) i jest połączona relacją jeden-do-jednego z tabelą `auth.users` od Supabase. Zawiera kolumnę `deleted_at` do obsługi "soft-delete".
--   `teams`: Przechowuje nazwy zespołów.
--   `team_members`: Tabela łącząca, realizująca relację wiele-do-wielu między `profiles` a `teams`.
--   `vacation_requests`: Główna tabela transakcyjna przechowująca wnioski urlopowe. Posiada relacje do `profiles` (kto złożył wniosek i kto go przetworzył), zawiera daty, status (`ENUM`) oraz pre-kalkulowaną liczbę dni roboczych.
--   `vacation_allowances`: Śledzi roczne pule urlopowe dla każdego użytkownika, w tym dni przeniesione z poprzedniego roku.
--   `settings`: Tabela klucz-wartość (`JSONB`) do przechowywania globalnych konfiguracji.
+
+- `profiles`: Przechowuje dane użytkowników (imię, nazwisko, rola) i jest połączona relacją jeden-do-jednego z tabelą `auth.users` od Supabase. Zawiera kolumnę `deleted_at` do obsługi "soft-delete".
+- `teams`: Przechowuje nazwy zespołów.
+- `team_members`: Tabela łącząca, realizująca relację wiele-do-wielu między `profiles` a `teams`.
+- `vacation_requests`: Główna tabela transakcyjna przechowująca wnioski urlopowe. Posiada relacje do `profiles` (kto złożył wniosek i kto go przetworzył), zawiera daty, status (`ENUM`) oraz pre-kalkulowaną liczbę dni roboczych.
+- `vacation_allowances`: Śledzi roczne pule urlopowe dla każdego użytkownika, w tym dni przeniesione z poprzedniego roku.
+- `settings`: Tabela klucz-wartość (`JSONB`) do przechowywania globalnych konfiguracji.
 
 **Bezpieczeństwo i skalowalność:**
--   **Bezpieczeństwo:** Dostęp do danych będzie ściśle kontrolowany za pomocą polityk RLS (Row-Level Security) w PostgreSQL. Polityki te zapewnią, że pracownicy widzą tylko swoje dane i kalendarze swoich zespołów, HR ma dostęp do zarządzania urlopami i zespołami, a Administrator zarządza tylko profilami użytkowników.
--   **Skalowalność:** Użycie `UUID` jako kluczy głównych jest dobrym rozwiązaniem pod kątem przyszłego rozproszenia systemu. Automatyzacja procesów rocznych (tworzenie uprawnień, zerowanie dni zaległych) za pomocą `pg_cron` odciąży aplikację i zapewni wydajność. Pre-kalkulacja liczby dni roboczych we wnioskach oraz tworzenie dedykowanych funkcji (np. `get_team_occupancy`) zoptymalizuje często wykonywane zapytania.
+
+- **Bezpieczeństwo:** Dostęp do danych będzie ściśle kontrolowany za pomocą polityk RLS (Row-Level Security) w PostgreSQL. Polityki te zapewnią, że pracownicy widzą tylko swoje dane i kalendarze swoich zespołów, HR ma dostęp do zarządzania urlopami i zespołami, a Administrator zarządza tylko profilami użytkowników.
+- **Skalowalność:** Użycie `UUID` jako kluczy głównych jest dobrym rozwiązaniem pod kątem przyszłego rozproszenia systemu. Automatyzacja procesów rocznych (tworzenie uprawnień, zerowanie dni zaległych) za pomocą `pg_cron` odciąży aplikację i zapewni wydajność. Pre-kalkulacja liczby dni roboczych we wnioskach oraz tworzenie dedykowanych funkcji (np. `get_team_occupancy`) zoptymalizuje często wykonywane zapytania.
 
 </database_planning_summary>
 
 <unresolved_issues>
--   Brak zdefiniowanego mechanizmu obsługi scenariusza, w którym ostatni użytkownik z rolą `HR` zostaje usunięty. Zgodnie z decyzją, MVP zakłada, że taka sytuacja nie będzie miała miejsca i jest to reguła biznesowa do obsłużenia proceduralnie.
--   Brak zdefiniowanego mechanizmu obsługi kaskadowych zmian uprawnień po zmianie roli użytkownika. Zgodnie z decyzją, dla MVP nie jest to obsługiwane, a dostęp jest dynamicznie kontrolowany przez RLS na podstawie aktualnej roli.
-    </unresolved_issues>
-    </conversation_summary>
+
+- Brak zdefiniowanego mechanizmu obsługi scenariusza, w którym ostatni użytkownik z rolą `HR` zostaje usunięty. Zgodnie z decyzją, MVP zakłada, że taka sytuacja nie będzie miała miejsca i jest to reguła biznesowa do obsłużenia proceduralnie.
+- Brak zdefiniowanego mechanizmu obsługi kaskadowych zmian uprawnień po zmianie roli użytkownika. Zgodnie z decyzją, dla MVP nie jest to obsługiwane, a dostęp jest dynamicznie kontrolowany przez RLS na podstawie aktualnej roli.
+  </unresolved_issues>
+  </conversation_summary>

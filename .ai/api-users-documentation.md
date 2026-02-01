@@ -17,19 +17,20 @@ Wymaga zalogowanego użytkownika (token JWT w cookies/headers).
 ## Request
 
 ### Metoda HTTP
+
 ```
 GET /api/users
 ```
 
 ### Query Parameters
 
-| Parametr | Typ | Wymagany | Domyślna wartość | Opis |
-|----------|-----|----------|------------------|------|
-| `limit` | number | Nie | 50 | Liczba wyników na stronę (1-100) |
-| `offset` | number | Nie | 0 | Przesunięcie paginacji (indeks startowy) |
-| `role` | string | Nie | - | Filtrowanie według roli: `ADMINISTRATOR`, `HR`, `EMPLOYEE` |
-| `includeDeleted` | boolean | Nie | false | Czy uwzględnić soft-deleted użytkowników (tylko ADMINISTRATOR) |
-| `teamId` | string | Nie | - | UUID zespołu do filtrowania |
+| Parametr         | Typ     | Wymagany | Domyślna wartość | Opis                                                           |
+| ---------------- | ------- | -------- | ---------------- | -------------------------------------------------------------- |
+| `limit`          | number  | Nie      | 50               | Liczba wyników na stronę (1-100)                               |
+| `offset`         | number  | Nie      | 0                | Przesunięcie paginacji (indeks startowy)                       |
+| `role`           | string  | Nie      | -                | Filtrowanie według roli: `ADMINISTRATOR`, `HR`, `EMPLOYEE`     |
+| `includeDeleted` | boolean | Nie      | false            | Czy uwzględnić soft-deleted użytkowników (tylko ADMINISTRATOR) |
+| `teamId`         | string  | Nie      | -                | UUID zespołu do filtrowania                                    |
 
 ### Przykłady żądań
 
@@ -92,6 +93,7 @@ GET /api/users?limit=10&role=HR&teamId=550e8400-e29b-41d4-a716-446655440000
 ### Errors
 
 #### 400 Bad Request - Nieprawidłowe parametry
+
 ```json
 {
   "error": "Invalid query parameters",
@@ -103,6 +105,7 @@ GET /api/users?limit=10&role=HR&teamId=550e8400-e29b-41d4-a716-446655440000
 ```
 
 #### 401 Unauthorized - Brak autoryzacji
+
 ```json
 {
   "error": "Unauthorized - authentication required"
@@ -110,6 +113,7 @@ GET /api/users?limit=10&role=HR&teamId=550e8400-e29b-41d4-a716-446655440000
 ```
 
 #### 403 Forbidden - Niewystarczające uprawnienia
+
 ```json
 {
   "error": "Only administrators can view deleted users"
@@ -117,6 +121,7 @@ GET /api/users?limit=10&role=HR&teamId=550e8400-e29b-41d4-a716-446655440000
 ```
 
 #### 404 Not Found - Zespół nie istnieje
+
 ```json
 {
   "error": "Team not found"
@@ -124,6 +129,7 @@ GET /api/users?limit=10&role=HR&teamId=550e8400-e29b-41d4-a716-446655440000
 ```
 
 #### 500 Internal Server Error - Błąd serwera
+
 ```json
 {
   "error": "Internal server error"
@@ -151,6 +157,7 @@ GET /api/users?limit=10&role=HR&teamId=550e8400-e29b-41d4-a716-446655440000
 ### Funkcja RPC
 
 Endpoint używa funkcji PostgreSQL `get_users_with_emails()`, która:
+
 - Bezpiecznie łączy tabelę `profiles` z `auth.users`
 - Wykonuje filtrowanie po stronie bazy danych
 - Zwraca użytkowników z emailami i metadane paginacji
@@ -203,18 +210,18 @@ curl -X GET http://localhost:3000/api/users
 
 ### Scenariusze testowe
 
-| # | Scenariusz | Oczekiwany wynik |
-|---|------------|------------------|
-| 1 | GET /api/users bez parametrów | 200, pierwszych 50 użytkowników |
-| 2 | GET /api/users?limit=10 | 200, pierwszych 10 użytkowników |
-| 3 | GET /api/users?role=HR | 200, tylko użytkownicy z rolą HR |
-| 4 | GET /api/users?teamId={valid-uuid} | 200, tylko członkowie zespołu |
-| 5 | GET /api/users?includeDeleted=true (jako admin) | 200, wszyscy użytkownicy |
-| 6 | GET /api/users?includeDeleted=true (jako HR) | 403, brak uprawnień |
-| 7 | GET /api/users?limit=999 | 400, walidacja limit max 100 |
-| 8 | GET /api/users?teamId=invalid | 400, nieprawidłowy UUID |
-| 9 | GET /api/users (bez tokenu) | 401, brak autoryzacji |
-| 10 | GET /api/users?teamId={non-existent-uuid} | 404, zespół nie istnieje |
+| #   | Scenariusz                                      | Oczekiwany wynik                 |
+| --- | ----------------------------------------------- | -------------------------------- |
+| 1   | GET /api/users bez parametrów                   | 200, pierwszych 50 użytkowników  |
+| 2   | GET /api/users?limit=10                         | 200, pierwszych 10 użytkowników  |
+| 3   | GET /api/users?role=HR                          | 200, tylko użytkownicy z rolą HR |
+| 4   | GET /api/users?teamId={valid-uuid}              | 200, tylko członkowie zespołu    |
+| 5   | GET /api/users?includeDeleted=true (jako admin) | 200, wszyscy użytkownicy         |
+| 6   | GET /api/users?includeDeleted=true (jako HR)    | 403, brak uprawnień              |
+| 7   | GET /api/users?limit=999                        | 400, walidacja limit max 100     |
+| 8   | GET /api/users?teamId=invalid                   | 400, nieprawidłowy UUID          |
+| 9   | GET /api/users (bez tokenu)                     | 401, brak autoryzacji            |
+| 10  | GET /api/users?teamId={non-existent-uuid}       | 404, zespół nie istnieje         |
 
 ## Bezpieczeństwo
 
@@ -240,4 +247,3 @@ curl -X GET http://localhost:3000/api/users
 4. Rate limiting w middleware
 5. Testy jednostkowe i integracyjne
 6. OpenAPI/Swagger dokumentacja
-

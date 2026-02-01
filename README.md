@@ -94,6 +94,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 The project uses Supabase for database management. To work with the database locally:
 
 1. **Start Supabase**:
+
    ```sh
    supabase start
    ```
@@ -102,17 +103,18 @@ The project uses Supabase for database management. To work with the database loc
    Open [http://localhost:54323](http://localhost:54323) to manage the database via web interface.
 
 3. **Reset Database** (delete all data and reapply migrations):
-   
+
    **Linux/macOS**:
+
    ```sh
    ./reset-db.sh
    ```
-   
+
    This script will:
    - Clear all existing data
    - Apply all migrations from `supabase/migrations/`
    - Seed the database with sample data
-   
+
    **Test accounts** (password: `test123`):
    - Admin: `admin@vacationplanner.com`
    - HR: `hr1@vacationplanner.com`, `hr2@vacationplanner.com`
@@ -142,12 +144,14 @@ In the project directory, you can run:
 
 Retrieves a paginated and filtered list of users.
 
-**Authorization:** 
+**Authorization:**
+
 - ADMINISTRATOR: Full access to all users (including soft-deleted)
 - HR: Access to active users only
 - EMPLOYEE: Access to own profile and team members
 
 **Query Parameters:**
+
 - `limit` (optional): Number of results (1-100, default: 50)
 - `offset` (optional): Pagination offset (default: 0)
 - `role` (optional): Filter by role (ADMINISTRATOR | HR | EMPLOYEE)
@@ -155,6 +159,7 @@ Retrieves a paginated and filtered list of users.
 - `teamId` (optional): Filter by team UUID
 
 **Response (200 OK):**
+
 ```json
 {
   "data": [
@@ -178,6 +183,7 @@ Retrieves a paginated and filtered list of users.
 ```
 
 **Examples:**
+
 ```bash
 # Get all users (first 50)
 curl "http://localhost:3000/api/users"
@@ -199,14 +205,17 @@ curl "http://localhost:3000/api/users?includeDeleted=true"
 Retrieves detailed information about a single user, including their team memberships.
 
 **Authorization:**
+
 - ADMINISTRATOR: Can view all users (including soft-deleted)
 - HR: Can view active users only
 - EMPLOYEE: Can view only themselves (active only)
 
 **Parameters:**
+
 - `id` (path, required): User UUID
 
 **Response (200 OK):**
+
 ```json
 {
   "data": {
@@ -233,12 +242,14 @@ Retrieves detailed information about a single user, including their team members
 ```
 
 **Error Responses:**
+
 - `400 Bad Request`: Invalid UUID format
 - `403 Forbidden`: Insufficient permissions
 - `404 Not Found`: User not found or no access
 - `500 Internal Server Error`: Server error
 
 **Examples:**
+
 ```bash
 # Get user by ID
 curl "http://localhost:3000/api/users/00000000-0000-0000-0000-000000000001"
@@ -251,6 +262,7 @@ curl "http://localhost:3000/api/users/uuid" | jq .
 ```
 
 **Use Cases:**
+
 - Display user profile page with team information
 - Show user details in admin panel
 - Fetch current user data for dashboard
@@ -265,6 +277,7 @@ curl "http://localhost:3000/api/users/uuid" | jq .
 **Content Type:** All endpoints return `application/json`
 
 **Error Format:**
+
 ```json
 {
   "error": "Error message",
@@ -288,12 +301,14 @@ curl "http://localhost:3000/api/users/uuid" | jq .
 
 Retrieves all global application settings.
 
-**Authorization:** 
+**Authorization:**
+
 - ADMINISTRATOR: Can view all settings
 - HR: Can view all settings
 - EMPLOYEE: Can view all settings
 
 **Response (200 OK):**
+
 ```json
 {
   "data": [
@@ -314,6 +329,7 @@ Retrieves all global application settings.
 ```
 
 **Example:**
+
 ```bash
 curl "http://localhost:3000/api/settings"
 ```
@@ -324,24 +340,28 @@ curl "http://localhost:3000/api/settings"
 
 Updates multiple settings at once (bulk update).
 
-**Authorization:** 
+**Authorization:**
+
 - ADMINISTRATOR: Can update settings
 - HR: Can update settings
 - EMPLOYEE: Cannot update settings (403)
 
 **Request Body:**
+
 ```json
 [
-  {"key": "default_vacation_days", "value": 28},
-  {"key": "team_occupancy_threshold", "value": 80}
+  { "key": "default_vacation_days", "value": 28 },
+  { "key": "team_occupancy_threshold", "value": 80 }
 ]
 ```
 
 **Validation Rules:**
+
 - `default_vacation_days`: Must be integer between 1-365
 - `team_occupancy_threshold`: Must be integer between 0-100
 
 **Response (200 OK):**
+
 ```json
 {
   "data": [
@@ -362,12 +382,14 @@ Updates multiple settings at once (bulk update).
 ```
 
 **Error Responses:**
+
 - `400 Bad Request`: Validation error (value out of range)
 - `403 Forbidden`: Unauthorized (not HR or ADMINISTRATOR)
 - `404 Not Found`: Setting key doesn't exist
 - `500 Internal Server Error`: Server error
 
 **Example:**
+
 ```bash
 curl -X POST "http://localhost:3000/api/settings" \
   -H "Content-Type: application/json" \
@@ -385,6 +407,7 @@ curl -X POST "http://localhost:3000/api/settings" \
 The project includes automated test scripts for all API endpoints.
 
 **Test Structure:**
+
 ```
 tests/
 └── api/
@@ -399,18 +422,21 @@ tests/
 ```
 
 **Quick Start:**
+
 ```bash
 # Interactive test guide
 ./QUICK-TEST-GUIDE.sh
 ```
 
 **Run All Tests:**
+
 ```bash
 # Run complete test suite
 ./tests/api/run-all.sh
 ```
 
 **Run Individual Tests:**
+
 ```bash
 # Test users list endpoint
 ./tests/api/users-list.test.sh
@@ -425,6 +451,7 @@ tests/
 ```
 
 **Test Coverage:**
+
 - ✅ GET /api/users - List users with various filters
 - ✅ GET /api/users/:id - Get user details with teams
 - ✅ POST /api/vacation-requests/:id/approve - Approve requests (HR only)
@@ -459,14 +486,17 @@ curl "http://localhost:3000/api/users/invalid-uuid" | jq .
 After running `./reset-db.sh`, the following test accounts are available (password: `test123`):
 
 **Administrator:**
+
 - Email: `admin.user@vacationplanner.pl`
 - ID: `00000000-0000-0000-0000-000000000001`
 
 **HR:**
+
 - Email: `ferdynand.kiepski@vacationplanner.pl`
 - ID: `00000000-0000-0000-0000-000000000002`
 
 **Employees:**
+
 - Email: `kazimierz.pawlak@vacationplanner.pl` (in 2 teams)
 - ID: `00000000-0000-0000-0000-000000000010`
 
@@ -480,29 +510,30 @@ The current scope is focused on delivering a Minimum Viable Product (MVP) with e
 
 ### MVP Features
 
--   **User Roles**:
-    -   **ADMINISTRATOR**: Manages users and their roles.
-    -   **HR**: Manages teams, defines leave policies, approves/rejects requests, and views team schedules.
-    -   **EMPLOYEE**: Requests leave, views personal leave balance, and sees their team's vacation schedule.
--   **Leave Management**:
-    -   Request leave with a date range.
-    -   Weekends are automatically excluded from the leave day calculation.
-    -   Annual leave allowance is configurable by HR.
--   **Dedicated Pages**:
-    -   User, Team, and Leave Management pages for HR and Admins.
-    -   "My Vacation" page for employees to track their requests.
--   **UI/UX**:
-    -   A responsive and intuitive user interface.
-    -   A horizontal calendar view to easily compare team members' leave schedules.
+- **User Roles**:
+  - **ADMINISTRATOR**: Manages users and their roles.
+  - **HR**: Manages teams, defines leave policies, approves/rejects requests, and views team schedules.
+  - **EMPLOYEE**: Requests leave, views personal leave balance, and sees their team's vacation schedule.
+- **Leave Management**:
+  - Request leave with a date range.
+  - Weekends are automatically excluded from the leave day calculation.
+  - Annual leave allowance is configurable by HR.
+- **Dedicated Pages**:
+  - User, Team, and Leave Management pages for HR and Admins.
+  - "My Vacation" page for employees to track their requests.
+- **UI/UX**:
+  - A responsive and intuitive user interface.
+  - A horizontal calendar view to easily compare team members' leave schedules.
 
 ### Out of Scope for MVP
 
 The following features are planned for future releases and are not part of the current MVP:
--   Defining substitutes for employees on leave.
--   Email notifications for leave request status changes.
--   Integration with external calendars (Google Calendar, Outlook).
--   Advanced reporting and analytics.
--   Support for different types of leave (e.g., sick leave, unpaid leave).
+
+- Defining substitutes for employees on leave.
+- Email notifications for leave request status changes.
+- Integration with external calendars (Google Calendar, Outlook).
+- Advanced reporting and analytics.
+- Support for different types of leave (e.g., sick leave, unpaid leave).
 
 ## Project Status
 
@@ -511,4 +542,3 @@ The following features are planned for future releases and are not part of the c
 ## License
 
 This project is licensed under the MIT License. See the `LICENSE` file for more information.
-

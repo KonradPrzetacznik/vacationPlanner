@@ -1,9 +1,11 @@
 # Widok Ustawień (Settings View)
 
 ## Opis
+
 Widok "Ustawienia" umożliwia administratorom i HR zarządzanie globalnymi parametrami aplikacji.
 
 ## Dostęp
+
 - **URL:** `/admin/settings`
 - **Uprawnienia:** ADMINISTRATOR, HR
 - **Metoda dostępu:** Przez przeglądarkę internetową
@@ -13,12 +15,14 @@ Widok "Ustawienia" umożliwia administratorom i HR zarządzanie globalnymi param
 ### Edytowalne ustawienia
 
 #### 1. Domyślna liczba dni urlopowych (default_vacation_days)
+
 - **Opis:** Domyślna liczba dni urlopowych przyznawana nowym pracownikom
 - **Zakres wartości:** 1-365
 - **Typ:** Liczba całkowita
 - **Domyślna wartość:** 26
 
 #### 2. Próg obłożenia zespołu (team_occupancy_threshold)
+
 - **Opis:** Maksymalny procent członków zespołu, którzy mogą być nieobecni jednocześnie
 - **Zakres wartości:** 0-100
 - **Typ:** Liczba całkowita (procent)
@@ -27,13 +31,17 @@ Widok "Ustawienia" umożliwia administratorom i HR zarządzanie globalnymi param
 ## Walidacja
 
 ### Walidacja po stronie klienta
+
 Formularz wykorzystuje `react-hook-form` z `zod` do walidacji:
+
 - Wartości muszą być liczbami całkowitymi
 - Wartości muszą mieścić się w określonym zakresie
 - Błędy walidacji są wyświetlane pod odpowiednimi polami
 
 ### Walidacja po stronie serwera
+
 Serwis `settings.service.ts` wykonuje dodatkową walidację:
+
 - `default_vacation_days`: 1-365
 - `team_occupancy_threshold`: 0-100
 - Tylko użytkownicy z rolą HR lub ADMINISTRATOR mogą aktualizować ustawienia
@@ -41,11 +49,13 @@ Serwis `settings.service.ts` wykonuje dodatkową walidację:
 ## Integracja API
 
 ### Pobieranie ustawień (GET)
+
 ```bash
 GET /api/settings
 ```
 
 **Odpowiedź:**
+
 ```json
 {
   "data": [
@@ -66,6 +76,7 @@ GET /api/settings
 ```
 
 ### Aktualizacja ustawień (POST)
+
 ```bash
 POST /api/settings
 Content-Type: application/json
@@ -77,6 +88,7 @@ Content-Type: application/json
 ```
 
 **Odpowiedź (sukces - 200):**
+
 ```json
 {
   "data": [
@@ -97,6 +109,7 @@ Content-Type: application/json
 ```
 
 **Odpowiedź (błąd walidacji - 400):**
+
 ```json
 {
   "error": "Invalid value for team_occupancy_threshold: must be between 0 and 100"
@@ -104,6 +117,7 @@ Content-Type: application/json
 ```
 
 **Odpowiedź (brak uprawnień - 403):**
+
 ```json
 {
   "error": "Unauthorized"
@@ -132,7 +146,9 @@ src/
 ```
 
 ## Komponenty UI
+
 Widok wykorzystuje następujące komponenty z `shadcn/ui`:
+
 - `Card` - kontener formularza
 - `Form` - wrapper formularza z react-hook-form
 - `FormField`, `FormItem`, `FormLabel`, `FormControl`, `FormDescription`, `FormMessage` - elementy pól formularza
@@ -143,16 +159,19 @@ Widok wykorzystuje następujące komponenty z `shadcn/ui`:
 ## Interakcje użytkownika
 
 ### 1. Ładowanie widoku
+
 - System pobiera aktualne wartości ustawień z API
 - Formularz jest wypełniany pobranymi wartościami
 - W przypadku błędu wyświetlany jest komunikat błędu
 
 ### 2. Edycja wartości
+
 - Użytkownik może modyfikować wartości w polach numerycznych
 - Walidacja jest uruchamiana na bieżąco (przy utracie fokusa pola)
 - Błędy walidacji są wyświetlane pod odpowiednimi polami
 
 ### 3. Zapisywanie zmian
+
 1. Użytkownik klika przycisk "Zapisz ustawienia"
 2. Przycisk zostaje zablokowany, tekst zmienia się na "Zapisywanie..."
 3. Walidacja formularza:
@@ -166,15 +185,18 @@ Widok wykorzystuje następujące komponenty z `shadcn/ui`:
 ## Obsługa błędów
 
 ### Błędy walidacji klienta
+
 - Wyświetlane pod odpowiednimi polami formularza
 - Czerwona ramka wokół pola z błędem
 - Formularz nie może być wysłany
 
 ### Błędy sieciowe
+
 - Toast z komunikatem "Wystąpił błąd podczas zapisywania ustawień"
 - Błąd jest logowany w konsoli przeglądarki
 
 ### Błędy serwera
+
 - Toast z komunikatem błędu z API (jeśli dostępny)
 - Różne kody statusu:
   - **400:** Błąd walidacji
@@ -185,9 +207,11 @@ Widok wykorzystuje następujące komponenty z `shadcn/ui`:
 ## Testowanie
 
 ### Testy manualne
+
 Otwórz widok w przeglądarce: `http://localhost:3000/admin/settings`
 
 ### Testy API
+
 ```bash
 # Uruchom test bulk update
 cd tests/api
@@ -195,6 +219,7 @@ cd tests/api
 ```
 
 ### Scenariusze testowe
+
 1. ✅ Edycja obu wartości z poprawnymi danymi
 2. ✅ Wartość > maksymalna (powinna zostać odrzucona)
 3. ✅ Wartość < minimalna (powinna zostać odrzucona)
@@ -205,16 +230,19 @@ cd tests/api
 ## Bezpieczeństwo
 
 ### Autoryzacja
+
 - Tylko użytkownicy z rolą **ADMINISTRATOR** lub **HR** mogą aktualizować ustawienia
 - Weryfikacja roli odbywa się w serwisie `settings.service.ts`
 - Nieautoryzowane żądania zwracają status 403
 
 ### Walidacja danych
+
 - Dwupoziomowa walidacja: klient + serwer
 - Zabezpieczenie przed SQL injection (używamy Supabase ORM)
 - Zabezpieczenie przed nieprawidłowymi wartościami
 
 ## Przyszłe usprawnienia
+
 - [ ] Dodanie middleware do zabezpieczenia trasy `/admin/settings`
 - [ ] Dodanie historii zmian ustawień (audit log)
 - [ ] Dodanie możliwości przywracania poprzednich wartości
