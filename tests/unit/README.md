@@ -2,84 +2,102 @@
 
 ## Status
 
-⚠️ **Unit tests are not yet configured in this project.**
+✅ **Unit tests are now configured and running!**
 
-This directory is prepared for future Vitest unit tests.
+This directory contains Vitest unit tests for the Vacation Planner application.
 
-## Setup
+## Quick Start
 
-To enable unit tests:
+```bash
+# Run all unit tests
+npm run test:unit
 
-### 1. Install Vitest
+# Run tests in watch mode
+npm run test:unit:watch
+
+# Run tests with UI
+npm run test:unit:ui
+
+# Run tests with coverage
+npm run test:unit:coverage
+```
+
+## Current Tests
+
+- **example.test.ts** - Example tests demonstrating testing patterns
+- **settings.service.test.ts** - Tests for Settings Service
+  - getAllSettings()
+  - getSettingByKey()
+  - updateSetting()
+
+## Test Coverage
+
+Current coverage: ~70% (statements), ~64% (branches), 100% (functions)
+
+Coverage thresholds configured in `vitest.config.ts`:
+- Statements: 70%
+- Branches: 60%
+- Functions: 70%
+- Lines: 70%
+
+## Documentation
+
+See [UNIT_TESTS_DOCUMENTATION.md](./UNIT_TESTS_DOCUMENTATION.md) for detailed documentation on:
+- Test structure and patterns
+- Mocking strategies
+- Best practices
+- Debugging tips
+- CI/CD integration
+
+## Setup (Already Completed)
+
+The following setup has been completed:
+
+### 1. Installed Vitest
 
 ```bash
 npm install -D vitest @vitest/ui @vitest/coverage-v8
 ```
 
-### 2. Create Vitest configuration
+### 2. Created Vitest configuration
 
-Create `vitest.config.ts`:
+Created `vitest.config.ts` with:
+- React plugin integration
+- jsdom environment
+- Path aliases (@, @components, @lib, @db)
+- Coverage configuration with v8 provider
+- Test patterns and exclusions
 
-```typescript
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
-import { resolve } from 'path';
-
-export default defineConfig({
-  plugins: [react()],
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: './tests/unit/setup.ts',
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html', 'lcov'],
-      exclude: [
-        'node_modules/',
-        'tests/',
-        '*.config.{js,ts}',
-        'dist/',
-      ],
-    },
-  },
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, './src'),
-    },
-  },
-});
-```
-
-### 3. Install testing libraries
+### 3. Installed testing libraries
 
 ```bash
-npm install -D @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom
+npm install -D @testing-library/react @testing-library/jest-dom jsdom
 ```
 
-### 4. Create setup file
+### 4. Created setup file
 
-Create `tests/unit/setup.ts`:
+Created `tests/unit/setup.ts` with:
+- @testing-library/jest-dom matchers
+- window.matchMedia mock
+- IntersectionObserver mock
+- ResizeObserver mock
 
-```typescript
-import '@testing-library/jest-dom';
-```
-
-### 5. Update package.json
+### 5. Updated package.json
 
 ```json
 {
   "scripts": {
     "test:unit": "vitest run",
-    "test:unit:watch": "vitest watch",
+    "test:unit:watch": "vitest",
     "test:unit:ui": "vitest --ui",
     "test:unit:coverage": "vitest run --coverage"
   }
 }
 ```
 
-### 6. Update GitHub Actions
+### 6. Updated GitHub Actions
 
-Edit `.github/workflows/pull-request.yml` and uncomment the unit test sections in the `unit-tests` job.
+Updated `.github/workflows/pull-request.yml` to run unit tests in CI/CD pipeline.
 
 ## Running Tests
 

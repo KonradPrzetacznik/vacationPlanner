@@ -60,19 +60,18 @@ jobs:
         run: npm ci
 
       - name: Run unit tests
-        run: |
-          echo "⚠️  Unit tests not yet configured"
-          echo "To enable unit tests, add Vitest or Jest to package.json"
-          echo "Example: npm run test:unit -- --coverage"
-          exit 0
+        run: npm run test:unit
 
-      # Placeholder for future unit test coverage
-      # - name: Upload unit test coverage
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: unit-coverage
-      #     path: coverage/
-      #     retention-days: 7
+      - name: Run unit tests with coverage
+        run: npm run test:unit:coverage
+
+      - name: Upload unit test coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-coverage
+          path: coverage/
+          retention-days: 7
 
   # ============================================
   # Job 3: API Tests (parallel with unit tests)
