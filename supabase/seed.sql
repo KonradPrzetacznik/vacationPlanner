@@ -218,6 +218,65 @@ insert into vacation_requests (
   now()
 );
 
+-- Admin User (DEFAULT_USER_ID) - submitted request for testing
+insert into vacation_requests (
+  id,
+  user_id,
+  start_date,
+  end_date,
+  business_days_count,
+  status
+) values (
+  '20000000-0000-0000-0000-000000000005',
+  '00000000-0000-0000-0000-000000000001', -- Admin User
+  '2026-03-02', -- Monday
+  '2026-03-06', -- Friday
+  calculate_business_days('2026-03-02', '2026-03-06'),
+  'SUBMITTED'
+);
+
+-- Admin User - approved request for testing cancellation
+insert into vacation_requests (
+  id,
+  user_id,
+  start_date,
+  end_date,
+  business_days_count,
+  status,
+  processed_by_user_id,
+  processed_at
+) values (
+  '20000000-0000-0000-0000-000000000006',
+  '00000000-0000-0000-0000-000000000001', -- Admin User
+  '2026-04-07', -- Monday
+  '2026-04-10', -- Friday (was Saturday, fixed)
+  calculate_business_days('2026-04-07', '2026-04-10'),
+  'APPROVED',
+  '00000000-0000-0000-0000-000000000002', -- Approved by HR1 (Ferdynand Kiepski)
+  now()
+);
+
+-- Admin User - past approved request (cannot be cancelled)
+insert into vacation_requests (
+  id,
+  user_id,
+  start_date,
+  end_date,
+  business_days_count,
+  status,
+  processed_by_user_id,
+  processed_at
+) values (
+  '20000000-0000-0000-0000-000000000007',
+  '00000000-0000-0000-0000-000000000001', -- Admin User
+  '2026-01-05', -- Monday (in the past)
+  '2026-01-09', -- Friday
+  calculate_business_days('2026-01-05', '2026-01-09'),
+  'APPROVED',
+  '00000000-0000-0000-0000-000000000002', -- Approved by HR1
+  now()
+);
+
 -- =====================================================
 -- 7. CREATE SAMPLE PUBLIC HOLIDAYS (for future use)
 -- =====================================================

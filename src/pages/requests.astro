@@ -1,0 +1,72 @@
+---
+/**
+ * Page: /requests
+ * Employee view for managing own vacation requests
+ */
+import Layout from "@/layouts/Layout.astro";
+import MyRequestsView from "@/components/requests/MyRequestsView.tsx";
+import type { GetVacationRequestsResponseDTO } from "@/types";
+import { DEFAULT_USER_ID } from "@/db/supabase.client";
+
+export const prerender = false;
+
+// Fetch initial data from API
+const supabase = Astro.locals.supabase;
+
+// Use DEFAULT_USER_ID for development (points to ADMINISTRATOR user)
+const currentUserId = DEFAULT_USER_ID;
+
+// Fetch user's vacation requests
+const requestsResponse = await fetch(
+  `${Astro.url.origin}/api/vacation-requests?userId=${currentUserId}`,
+  {
+    headers: {
+      cookie: Astro.request.headers.get("cookie") || "",
+    },
+  }
+);
+
+let initialRequests: GetVacationRequestsResponseDTO["data"] = [];
+if (requestsResponse.ok) {
+  const data: GetVacationRequestsResponseDTO = await requestsResponse.json();
+  initialRequests = data.data;
+}
+
+// Fetch user's teams for calendar display
+const { data: userTeams, error: teamsError } = await supabase
+  .from("team_members")
+  .select(`
+    team_id,
+    teams:team_id (
+      id,
+      name
+    )
+  `)
+  .eq("user_id", currentUserId);
+
+const userTeamsList = userTeams?.map(tm => ({
+  id: (tm.teams as any).id,
+  name: (tm.teams as any).name,
+})) || [];
+
+// TODO: Fetch user's vacation allowance when endpoint is ready
+// For now, use mock data
+const mockAllowance = {
+  totalDays: 26,
+  usedDays: 10,
+  remainingDays: 16,
+  fromPreviousYear: {
+    total: 5,
+    utilizationDeadline: "2026-03-31",
+  },
+};
+---
+
+<Layout title="Moje Wnioski">
+  <MyRequestsView
+    client:load
+    initialRequests={initialRequests}
+    initialAllowance={mockAllowance}
+    userTeams={userTeamsList}
+  />
+</Layout>

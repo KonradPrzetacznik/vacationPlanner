@@ -1,0 +1,14 @@
+---
+/**
+ * Page: /requests/new
+ * Form for creating new vacation request
+ */
+import Layout from "@/layouts/Layout.astro";
+import { NewRequestView } from "@/components/requests/NewRequestView.tsx";
+
+export const prerender = false;
+---
+
+<Layout title="Nowy Wniosek Urlopowy">
+  <NewRequestView client:load />
+</Layout>

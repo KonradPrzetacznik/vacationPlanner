@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import Navigation from "../components/Navigation.astro";
+import { ToasterProvider } from "../components/ToasterProvider.tsx";
 
 interface Props {
   title?: string;
@@ -25,6 +26,7 @@ const { title = "VacationPlanner", showNavigation = true } = Astro.props;
   <body>
     {showNavigation && <Navigation />}
     <slot />
+    <ToasterProvider client:load />
   </body>
 </html>
 
