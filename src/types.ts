@@ -1132,3 +1132,51 @@ export interface UpdateSettingDTO {
  * Returned after successful setting update
  */
 export interface UpdateSettingResponseDTO extends SettingDTO {}
+
+// ============================================================================
+// Calendar View Models (Frontend-specific types)
+// ============================================================================
+
+/**
+ * Vacation Request View Model for Calendar
+ * Frontend representation of vacation request for calendar display
+ * Based on VacationRequestListItemDTO and TeamCalendarVacationDTO
+ */
+export interface VacationRequestViewModel {
+  id: string;
+  startDate: string; // ISO date
+  endDate: string; // ISO date
+  businessDaysCount: number;
+  status: "SUBMITTED" | "APPROVED" | "REJECTED" | "CANCELLED";
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+}
+
+/**
+ * Team Member View Model for Calendar
+ * Frontend representation of team member with their vacations
+ * Based on TeamCalendarMemberDTO
+ */
+export interface TeamMemberViewModel {
+  id: string;
+  firstName: string;
+  lastName: string;
+  vacations: VacationRequestViewModel[];
+}
+
+/**
+ * Team Calendar View Model
+ * Complete calendar data for displaying team vacations
+ * Based on GetTeamCalendarResponseDTO
+ */
+export interface TeamCalendarViewModel {
+  teamId: string;
+  teamName: string;
+  startDate: string; // ISO date
+  endDate: string; // ISO date
+  members: TeamMemberViewModel[];
+}
+
