@@ -9,7 +9,11 @@
     "astro": "astro",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test:unit": "echo 'Unit tests not configured yet. Add Vitest or Jest.' && exit 0",
+    "test:api": "cd tests/api && bash -c 'for f in *.test.sh; do bash \"$f\" || exit 1; done'",
+    "test:e2e": "echo 'E2E tests not configured yet. Add Playwright.' && exit 0",
+    "test": "npm run test:unit && npm run test:api"
   },
   "dependencies": {
     "@astrojs/node": "^9.4.3",
