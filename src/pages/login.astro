@@ -1,0 +1,27 @@
+---
+/**
+ * Login Page
+ * Public page for user authentication
+ * Accessible at /login
+ */
+
+import Layout from "@/layouts/Layout.astro";
+import { LoginForm } from "@/components/forms/LoginForm";
+
+// Disable prerendering for this page
+export const prerender = false;
+
+// TODO: Add middleware check - if user is already logged in, redirect to home page
+---
+
+<Layout title="Logowanie - VacationPlanner" showNavigation={false}>
+  <div class="min-h-screen flex items-center justify-center bg-muted/50 p-4">
+    <div class="w-full max-w-md">
+      <div class="mb-8 text-center">
+        <h1 class="text-3xl font-bold mb-2">VacationPlanner</h1>
+        <p class="text-muted-foreground">System zarządzania urlopami</p>
+      </div>
+      <LoginForm client:load />
+    </div>
+  </div>
+</Layout>

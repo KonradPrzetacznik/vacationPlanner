@@ -1,0 +1,65 @@
+/**
+ * Authentication form validation schemas
+ * Used for client-side validation of login, forgot password, and set password forms
+ */
+
+import { z } from "zod";
+
+/**
+ * Schema for login form validation
+ */
+export const loginFormSchema = z.object({
+  email: z
+    .string({
+      required_error: "Adres e-mail jest wymagany",
+    })
+    .email("Nieprawidłowy format adresu e-mail"),
+
+  password: z
+    .string({
+      required_error: "Hasło jest wymagane",
+    })
+    .min(1, "Hasło jest wymagane"),
+});
+
+/**
+ * Schema for forgot password form validation
+ */
+export const forgotPasswordFormSchema = z.object({
+  email: z
+    .string({
+      required_error: "Adres e-mail jest wymagany",
+    })
+    .email("Nieprawidłowy format adresu e-mail"),
+});
+
+/**
+ * Schema for set password form validation
+ */
+export const setPasswordFormSchema = z
+  .object({
+    password: z
+      .string({
+        required_error: "Hasło jest wymagane",
+      })
+      .min(8, "Hasło musi mieć co najmniej 8 znaków")
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        "Hasło musi zawierać co najmniej jedną małą literę, jedną wielką literę i jedną cyfrę"
+      ),
+
+    confirmPassword: z.string({
+      required_error: "Potwierdzenie hasła jest wymagane",
+    }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Hasła nie są identyczne",
+    path: ["confirmPassword"],
+  });
+
+/**
+ * Type inferences from schemas
+ */
+export type LoginFormValues = z.infer<typeof loginFormSchema>;
+export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordFormSchema>;
+export type SetPasswordFormValues = z.infer<typeof setPasswordFormSchema>;
