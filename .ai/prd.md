@@ -281,6 +281,21 @@ Poniższe funkcjonalności i cechy NIE wchodzą w zakres wersji MVP (Minimum Via
   - 2. Kalendarz pokazuje urlopy (zaakceptowane i oczekujące) wszystkich członków mojego zespołu.
   - 3. Jeśli należę do wielu zespołów, mogę przełączać widok kalendarza za pomocą listy rozwijanej.
 
+- ID: US-023: Bezpieczny dostęp i uwierzytelnianie
+
+- Tytuł: Bezpieczny dostęp
+- Opis: Jako użytkownik chcę mieć możliwość rejestracji i logowania się do systemu w sposób zapewniający bezpieczeństwo moich danych.
+- Kryteria akceptacji:
+  - Logowanie i rejestracja odbywają się na dedykowanych stronach.
+  - Logowanie wymaga podania adresu email i hasła.
+  - Rejestracja wymaga podania adresu email, hasła i potwierdzenia hasła.
+  - Użytkownik MOŻE korzystać z tworzenia reguł "ad-hoc" bez logowania się do systemu (US-001, US-002).
+  - Użytkownik NIE MOŻE korzystać z żadnych innych funkcji bez logowania się do systemu.
+  - Użytkownik może logować się do systemu poprzez przycisk w prawym górnym rogu.
+  - Użytkownik może się wylogować z systemu poprzez przycisk w prawym górnym rogu w głównym @Layout.astro.
+  - Nie korzystamy z zewnętrznych serwisów logowania (np. Google, GitHub).
+  - Odzyskiwanie hasła powinno być możliwe.
+  - 
 ## 6. Metryki sukcesu
 
 - 100% użytkowników firmy korzysta z VacationPlanner do definiowania urlopów.
