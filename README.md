@@ -1,4 +1,4 @@
-# Vacation Planner11
+# Vacation Planner
 
 ## Table of Contents
 
