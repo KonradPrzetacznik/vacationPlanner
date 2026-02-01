@@ -1,6 +1,6 @@
 # Vacation Planner
 
-## Table of Contents
+## Table of Contents222
 
 - [Project Description](#project-description)
 - [Tech Stack](#tech-stack)
