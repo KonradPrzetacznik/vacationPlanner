@@ -150,7 +150,6 @@ export async function getVacationAllowances(
     .single();
 
   if (userError || !targetUser) {
-    console.error("[VacationAllowancesService] User not found:", userError);
     throw new Error("User not found");
   }
 
@@ -174,7 +173,6 @@ export async function getVacationAllowances(
   const { data: allowances, error: allowancesError } = await allowancesQuery;
 
   if (allowancesError) {
-    console.error("[VacationAllowancesService] Failed to fetch allowances:", allowancesError);
     throw new Error("Failed to fetch vacation allowances");
   }
 
@@ -196,7 +194,6 @@ export async function getVacationAllowances(
     .lte("end_date", `${Math.max(...years)}-12-31`);
 
   if (requestsError) {
-    console.error("[VacationAllowancesService] Failed to fetch vacation requests:", requestsError);
     throw new Error("Failed to calculate used vacation days");
   }
 
@@ -252,7 +249,6 @@ export async function getVacationAllowanceByYear(
     .single();
 
   if (userError || !targetUser) {
-    console.error("[VacationAllowancesService] User not found:", userError);
     throw new Error("User not found");
   }
 
@@ -270,7 +266,6 @@ export async function getVacationAllowanceByYear(
     .single();
 
   if (allowanceError || !allowance) {
-    console.error("[VacationAllowancesService] Allowance not found:", allowanceError);
     throw new Error(`Vacation allowance for year ${year} not found`);
   }
 
@@ -283,7 +278,6 @@ export async function getVacationAllowanceByYear(
     .lte("end_date", `${year}-12-31`);
 
   if (requestsError) {
-    console.error("[VacationAllowancesService] Failed to fetch vacation requests:", requestsError);
     throw new Error("Failed to calculate used vacation days");
   }
 
@@ -329,10 +323,6 @@ export async function createVacationAllowance(
     .single();
 
   if (userError || !targetUser) {
-    console.error("[VacationAllowancesService] User not found:", {
-      error: userError,
-      userId: data.userId,
-    });
     throw new Error("User not found");
   }
 
@@ -349,11 +339,6 @@ export async function createVacationAllowance(
     .maybeSingle();
 
   if (duplicateError) {
-    console.error("[VacationAllowancesService] Failed to check for duplicate:", {
-      error: duplicateError,
-      userId: data.userId,
-      year: data.year,
-    });
     throw new Error("Failed to create vacation allowance");
   }
 
@@ -375,11 +360,6 @@ export async function createVacationAllowance(
     .single();
 
   if (insertError || !createdAllowance) {
-    console.error("[VacationAllowancesService] Failed to create allowance:", {
-      error: insertError,
-      userId: data.userId,
-      year: data.year,
-    });
     throw new Error("Failed to create vacation allowance");
   }
 
@@ -427,10 +407,6 @@ export async function updateVacationAllowance(
     .single();
 
   if (checkError || !existingAllowance) {
-    console.error("[VacationAllowancesService] Allowance not found:", {
-      error: checkError,
-      allowanceId,
-    });
     throw new Error("Vacation allowance not found");
   }
 
@@ -457,10 +433,6 @@ export async function updateVacationAllowance(
     .single();
 
   if (updateError || !updatedAllowance) {
-    console.error("[VacationAllowancesService] Failed to update allowance:", {
-      error: updateError,
-      allowanceId,
-    });
     throw new Error("Failed to update vacation allowance");
   }
 

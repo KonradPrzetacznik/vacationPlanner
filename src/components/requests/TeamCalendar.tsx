@@ -66,7 +66,6 @@ export function TeamCalendar({ userTeams }: TeamCalendarProps) {
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Nieznany błąd";
         setError(errorMessage);
-        console.error("Error fetching team calendar:", err);
       } finally {
         setIsLoading(false);
       }

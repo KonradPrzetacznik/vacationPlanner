@@ -3,7 +3,7 @@
  * Provides realistic test data for team-related unit tests
  */
 
-import type { TeamListItemDTO, GetTeamByIdResponseDTO, CreateTeamDTO, CreateTeamResponseDTO } from "@/types";
+import type { GetTeamByIdResponseDTO, CreateTeamDTO, CreateTeamResponseDTO } from "@/types";
 
 export const mockTeams = {
   engineering: {

@@ -34,7 +34,6 @@ export const GET: APIRoute = async ({ locals }) => {
       .single();
 
     if (profileError || !currentUserProfile) {
-      console.error("[GET /api/settings] Failed to fetch current user profile:", profileError);
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -42,27 +41,14 @@ export const GET: APIRoute = async ({ locals }) => {
     }
 
     // 3. Call service to get all settings
-    const startTime = Date.now();
     const result = await getAllSettings(locals.supabase);
-    const duration = Date.now() - startTime;
-
-    // Log slow operations
-    if (duration > 1000) {
-      console.warn("[GET /api/settings] Slow operation:", { duration });
-    }
 
     // 4. Return successful response (200 OK)
     return new Response(JSON.stringify(result), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
-  } catch (error) {
-    console.error("[GET /api/settings] Error:", {
-      timestamp: new Date().toISOString(),
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-
+  } catch {
     // Generic internal server error (500)
     return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
@@ -87,7 +73,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       .single();
 
     if (profileError || !currentUserProfile) {
-      console.error("[POST /api/settings] Failed to fetch current user profile:", profileError);
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -163,13 +148,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
-  } catch (error) {
-    console.error("[POST /api/settings] Error:", {
-      timestamp: new Date().toISOString(),
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-
+  } catch {
     return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

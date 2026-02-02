@@ -33,7 +33,6 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
       .single();
 
     if (profileError || !currentUserProfile) {
-      console.error("[DELETE /api/teams/:id/members/:userId] Failed to fetch current user profile:", profileError);
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -70,19 +69,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     const { id: teamId, userId } = paramsValidation.data;
 
     // 5. Call service to remove member
-    const startTime = Date.now();
     await removeMember(locals.supabase, teamId, userId);
-    const duration = Date.now() - startTime;
-
-    // Log slow operations
-    if (duration > 1000) {
-      console.warn("[DELETE /api/teams/:id/members/:userId] Slow operation detected:", {
-        duration,
-        teamId,
-        userId,
-        currentUserId,
-      });
-    }
 
     // 6. Return success response
     return new Response(
@@ -95,15 +82,6 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
       }
     );
   } catch (error) {
-    console.error("[DELETE /api/teams/:id/members/:userId] Error:", {
-      timestamp: new Date().toISOString(),
-      teamId: params.id,
-      userId: params.userId,
-      currentUserId: DEFAULT_USER_ID,
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-
     // Handle known error types
     if (error instanceof Error) {
       // Not found errors (404)

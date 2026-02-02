@@ -3,7 +3,7 @@
  * Provides realistic test data for user-related unit tests
  */
 
-import type { UserListItemDTO, UserDetailsDTO, CreateUserDTO, CreateUserResponseDTO } from "@/types";
+import type { UserDetailsDTO, CreateUserDTO, CreateUserResponseDTO } from "@/types";
 
 export const mockUsers = {
   admin: {

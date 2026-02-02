@@ -56,7 +56,6 @@ export function useTeamCalendar(initialTeamId: string): UseTeamCalendarReturn {
           end: formatLocalDate(end),
         };
 
-        console.log("[useTeamCalendar] Initialized from URL:", { monthParam, range });
         return range;
       }
     }
@@ -71,7 +70,6 @@ export function useTeamCalendar(initialTeamId: string): UseTeamCalendarReturn {
       end: formatLocalDate(end),
     };
 
-    console.log("[useTeamCalendar] Initialized to current month:", { now: now.toISOString(), range });
     return range;
   }, []); // Empty deps = run only once
 
@@ -147,7 +145,6 @@ export function useTeamCalendar(initialTeamId: string): UseTeamCalendarReturn {
       setCalendarData(vacations);
     } catch (err) {
       clearTimeout(timeoutId);
-      console.error("[useTeamCalendar] Error fetching calendar data:", err);
 
       if (err instanceof Error && err.name === "AbortError") {
         setError(new Error("Przekroczono limit czasu ładowania kalendarza (30s). Spróbuj ponownie."));
@@ -170,7 +167,6 @@ export function useTeamCalendar(initialTeamId: string): UseTeamCalendarReturn {
       lastFetchedRef.current.end === dateRange.end;
 
     if (isSameAsPrevious) {
-      console.log("[useTeamCalendar] Skipping duplicate fetch for same parameters");
       return;
     }
 
@@ -182,7 +178,7 @@ export function useTeamCalendar(initialTeamId: string): UseTeamCalendarReturn {
     };
 
     fetchCalendarData(selectedTeamId, dateRange);
-  }, [selectedTeamId, dateRange.start, dateRange.end, fetchCalendarData]);
+  }, [selectedTeamId, dateRange, fetchCalendarData]);
 
   // Action handlers
   const setSelectedTeamId = useCallback((teamId: string) => {
@@ -202,7 +198,7 @@ export function useTeamCalendar(initialTeamId: string): UseTeamCalendarReturn {
       selectedTeamId,
       dateRange,
     }),
-    [isLoading, error, calendarData, selectedTeamId, dateRange.start, dateRange.end]
+    [isLoading, error, calendarData, selectedTeamId, dateRange]
   );
 
   const actions = useMemo(

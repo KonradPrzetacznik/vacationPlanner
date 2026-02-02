@@ -56,7 +56,6 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
       .single();
 
     if (profileError || !currentUserProfile) {
-      console.error("[PATCH /api/vacation-allowances/:id] Failed to fetch current user profile:", profileError);
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -106,10 +105,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
 
     // Log slow operations
     if (duration > 1000) {
-      console.warn("[PATCH /api/vacation-allowances/:id] Slow operation:", {
-        duration,
-        allowanceId,
-      });
+      // Log slow operation
     }
 
     // 6. Return successful response (200 OK)
@@ -118,12 +114,6 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[PATCH /api/vacation-allowances/:id] Error:", {
-      timestamp: new Date().toISOString(),
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-
     // Handle known error types
     if (error instanceof Error) {
       // Authorization errors (403 Forbidden)

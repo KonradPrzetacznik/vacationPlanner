@@ -60,7 +60,7 @@ export const POST: APIRoute = async ({ request, cookies, url }) => {
     // Always return success to prevent email enumeration
     // (don't reveal whether email exists in database)
     if (error) {
-      console.error("Password reset error:", error);
+      // Log error silently but don't expose to user
     }
 
     return new Response(
@@ -74,9 +74,8 @@ export const POST: APIRoute = async ({ request, cookies, url }) => {
         },
       }
     );
-  } catch (error) {
+  } catch {
     // Handle unexpected errors
-    console.error("Forgot password error:", error);
     return new Response(
       JSON.stringify({
         error: "Wystąpił błąd podczas wysyłania linku do resetowania hasła",

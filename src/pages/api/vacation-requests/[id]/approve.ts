@@ -62,8 +62,6 @@ export const POST: APIRoute = async (context) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[ApproveVacationRequestEndpoint] Error:", error);
-
     const errorMessage = error instanceof Error ? error.message : "Failed to approve vacation request";
 
     // Determine status code based on error message

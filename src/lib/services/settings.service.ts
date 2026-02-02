@@ -59,7 +59,6 @@ export async function getAllSettings(supabase: SupabaseClient): Promise<GetAllSe
     .order("key", { ascending: true });
 
   if (queryError) {
-    console.error("[SettingsService] Failed to fetch settings:", queryError);
     throw new Error("Failed to fetch settings");
   }
 
@@ -91,7 +90,6 @@ export async function getSettingByKey(supabase: SupabaseClient, key: string): Pr
     if (queryError.code === "PGRST116") {
       throw new Error("Setting not found");
     }
-    console.error("[SettingsService] Failed to fetch setting:", queryError);
     throw new Error("Failed to fetch setting");
   }
 
@@ -137,7 +135,6 @@ export async function updateSetting(
     if (fetchError.code === "PGRST116") {
       throw new Error("Setting not found");
     }
-    console.error("[SettingsService] Failed to fetch setting:", fetchError);
     throw new Error("Failed to fetch setting");
   }
 
@@ -170,7 +167,6 @@ export async function updateSetting(
     .single();
 
   if (updateError) {
-    console.error("[SettingsService] Failed to update setting:", updateError);
     throw new Error("Failed to update setting");
   }
 

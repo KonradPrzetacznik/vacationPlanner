@@ -19,8 +19,8 @@ try {
   // Import DEFAULT_USER_ID for development
   const { DEFAULT_USER_ID } = await import("@/db/supabase.client");
   currentUserId = DEFAULT_USER_ID;
-} catch (error) {
-  console.error("Failed to get current user:", error);
+} catch {
+  // DEFAULT_USER_ID not available in production
 }
 
 if (!currentUserId) {
@@ -35,7 +35,6 @@ const { data: currentUserProfile, error: profileError } = await Astro.locals.sup
   .single();
 
 if (profileError || !currentUserProfile) {
-  console.error("Failed to fetch current user profile:", profileError);
   return Astro.redirect("/login");
 }
 
@@ -79,8 +78,7 @@ try {
   } else {
     errorMessage = "Nie udało się pobrać listy zespołów";
   }
-} catch (error) {
-  console.error("Failed to fetch teams:", error);
+} catch {
   errorMessage = "Wystąpił błąd podczas pobierania zespołów";
 }
 ---

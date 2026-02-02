@@ -35,7 +35,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       .single();
 
     if (profileError || !currentUserProfile) {
-      console.error("[POST /api/vacation-allowances] Failed to fetch current user profile:", profileError);
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -79,11 +78,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Log slow operations
     if (duration > 1000) {
-      console.warn("[POST /api/vacation-allowances] Slow operation:", {
-        duration,
-        userId: validatedData.userId,
-        year: validatedData.year,
-      });
+      // Log slow operation
     }
 
     // 5. Return successful response (201 Created)
@@ -92,12 +87,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[POST /api/vacation-allowances] Error:", {
-      timestamp: new Date().toISOString(),
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-
     // Handle known error types
     if (error instanceof Error) {
       // Authorization errors (403 Forbidden)

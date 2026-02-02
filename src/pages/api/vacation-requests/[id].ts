@@ -24,7 +24,6 @@ export const GET: APIRoute = async ({ params, locals }) => {
     // 1. Get Supabase client from locals
     const supabase = locals.supabase;
     if (!supabase) {
-      console.error("[GET /api/vacation-requests/:id] Supabase client not available");
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -62,8 +61,6 @@ export const GET: APIRoute = async ({ params, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[GET /api/vacation-requests/:id] Error:", error);
-
     if (error instanceof Error) {
       // Authorization errors (403)
       if (error.message.includes("only view your own") || error.message.includes("not authorized")) {
