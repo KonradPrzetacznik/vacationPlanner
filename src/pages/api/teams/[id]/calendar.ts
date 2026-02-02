@@ -33,7 +33,6 @@ export const GET: APIRoute = async ({ params, request, locals }) => {
       .single();
 
     if (profileError || !currentUserProfile) {
-      console.error("[GET /api/teams/:id/calendar] Failed to fetch current user profile:", profileError);
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -98,12 +97,7 @@ export const GET: APIRoute = async ({ params, request, locals }) => {
 
     // Log slow operations
     if (duration > 2000) {
-      console.warn("[GET /api/teams/:id/calendar] Slow operation detected:", {
-        duration,
-        teamId,
-        currentUserId,
-        memberCount: calendar.members.length,
-      });
+      // Log slow operation
     }
 
     // 6. Return success response
@@ -112,14 +106,6 @@ export const GET: APIRoute = async ({ params, request, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[GET /api/teams/:id/calendar] Error:", {
-      timestamp: new Date().toISOString(),
-      teamId: params.id,
-      currentUserId: DEFAULT_USER_ID,
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-
     // Handle known error types
     if (error instanceof Error) {
       // Not found errors (404)

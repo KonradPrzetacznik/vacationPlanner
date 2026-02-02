@@ -40,7 +40,6 @@ try {
     team_occupancy_threshold: data.data.find((s) => s.key === "team_occupancy_threshold")?.value || 75,
   };
 } catch (error) {
-  console.error("Failed to load settings:", error);
   errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
 }
 ---

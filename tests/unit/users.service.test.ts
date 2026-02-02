@@ -9,13 +9,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { getUsers, getUserById, createUser, updateUser, deleteUser } from "@/lib/services/users.service";
 import type { SupabaseClient } from "@/db/supabase.client";
 import { createMockSupabaseClient, setupRpcCall } from "./mocks/supabase.mock";
-import {
-  mockUsers,
-  mockUserDetails,
-  mockCreateUserDTO,
-  mockCreateUserResponse,
-  mockGetUsersRpcResponse,
-} from "./mocks/users.mock";
+import { mockUsers, mockUserDetails, mockCreateUserDTO, mockGetUsersRpcResponse } from "./mocks/users.mock";
 
 // Mock supabaseAdminClient to avoid environment variable errors
 vi.mock("@/db/supabase.client", () => ({
@@ -330,7 +324,7 @@ describe("Users Service", () => {
         }),
       };
 
-      const mockUpdateBuilder = {
+      vi.spyOn(mockSupabase, "from").mockReturnValue({
         update: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
         select: vi.fn().mockReturnThis(),
@@ -344,7 +338,7 @@ describe("Users Service", () => {
           },
           error: null,
         }),
-      };
+      } as any);
 
       const mockAuthAdmin = {
         getUserById: vi.fn().mockResolvedValue({
@@ -427,7 +421,6 @@ describe("Users Service", () => {
   describe("deleteUser", () => {
     it("should soft delete user and cancel future vacations", async () => {
       // Arrange
-      const now = new Date().toISOString();
       const mockSelectBuilder = {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),

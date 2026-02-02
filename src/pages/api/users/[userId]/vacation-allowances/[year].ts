@@ -53,10 +53,6 @@ export const GET: APIRoute = async ({ params, locals }) => {
       .single();
 
     if (profileError || !currentUserProfile) {
-      console.error(
-        "[GET /api/users/:userId/vacation-allowances/:year] Failed to fetch current user profile:",
-        profileError
-      );
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -74,8 +70,6 @@ export const GET: APIRoute = async ({ params, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[GET /api/users/:userId/vacation-allowances/:year] Error:", error);
-
     // Handle specific error types
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
 

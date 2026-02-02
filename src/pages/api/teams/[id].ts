@@ -67,7 +67,6 @@ export const GET: APIRoute = async ({ params, locals }) => {
       .single();
 
     if (profileError || !currentUserProfile) {
-      console.error("[GET /api/teams/:id] Failed to fetch current user profile:", profileError);
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -75,18 +74,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
     }
 
     // 4. Call service to get team details
-    const startTime = Date.now();
     const result = await getTeamById(locals.supabase, teamId, currentUserId, currentUserProfile.role);
-    const duration = Date.now() - startTime;
-
-    // Log slow queries
-    if (duration > 1000) {
-      console.warn("[GET /api/teams/:id] Slow query detected:", {
-        duration,
-        teamId,
-        userId: currentUserId,
-      });
-    }
 
     // 5. Return successful response
     return new Response(JSON.stringify(result), {
@@ -94,14 +82,6 @@ export const GET: APIRoute = async ({ params, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[GET /api/teams/:id] Error:", {
-      timestamp: new Date().toISOString(),
-      teamId: params.id,
-      currentUserId: DEFAULT_USER_ID,
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-
     // Handle known error types
     if (error instanceof Error) {
       // Not found errors (404)
@@ -164,7 +144,6 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
       .single();
 
     if (profileError || !currentUserProfile) {
-      console.error("[PATCH /api/teams/:id] Failed to fetch current user profile:", profileError);
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -208,18 +187,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     const validatedData = validationResult.data;
 
     // 6. Call service to update team
-    const startTime = Date.now();
     const result = await updateTeam(locals.supabase, teamId, validatedData);
-    const duration = Date.now() - startTime;
-
-    // Log slow operations
-    if (duration > 2000) {
-      console.warn("[PATCH /api/teams/:id] Slow operation detected:", {
-        duration,
-        teamId,
-        currentUserId,
-      });
-    }
 
     // 7. Return successful response
     return new Response(JSON.stringify(result), {
@@ -227,14 +195,6 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[PATCH /api/teams/:id] Error:", {
-      timestamp: new Date().toISOString(),
-      teamId: params.id,
-      currentUserId: DEFAULT_USER_ID,
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-
     // Handle known error types
     if (error instanceof Error) {
       // Not found errors (404)
@@ -297,7 +257,6 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
       .single();
 
     if (profileError || !currentUserProfile) {
-      console.error("[DELETE /api/teams/:id] Failed to fetch current user profile:", profileError);
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -313,18 +272,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     }
 
     // 5. Call service to delete team
-    const startTime = Date.now();
     const result = await deleteTeam(locals.supabase, teamId);
-    const duration = Date.now() - startTime;
-
-    // Log slow operations
-    if (duration > 2000) {
-      console.warn("[DELETE /api/teams/:id] Slow operation detected:", {
-        duration,
-        teamId,
-        currentUserId,
-      });
-    }
 
     // 6. Return successful response
     return new Response(JSON.stringify(result), {
@@ -332,14 +280,6 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[DELETE /api/teams/:id] Error:", {
-      timestamp: new Date().toISOString(),
-      teamId: params.id,
-      currentUserId: DEFAULT_USER_ID,
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-
     // Handle known error types
     if (error instanceof Error) {
       // Not found errors (404)

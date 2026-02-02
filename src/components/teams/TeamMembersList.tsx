@@ -72,8 +72,8 @@ export function TeamMembersList({
       await removeTeamMember(teamId, removeDialogState.userId);
       setRemoveDialogState({ isOpen: false, userId: "", userName: "" });
       onMemberRemove();
-    } catch (err) {
-      console.error("Failed to remove member:", err);
+    } catch {
+      // Error is handled by removeTeamMember
     } finally {
       setIsRemoving(false);
     }

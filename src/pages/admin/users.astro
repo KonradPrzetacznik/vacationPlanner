@@ -19,8 +19,8 @@ try {
   // Import DEFAULT_USER_ID for development
   const { DEFAULT_USER_ID } = await import("@/db/supabase.client");
   currentUserId = DEFAULT_USER_ID;
-} catch (error) {
-  console.error("Failed to get current user:", error);
+} catch {
+  // DEFAULT_USER_ID not available in production
 }
 
 if (!currentUserId) {
@@ -59,7 +59,6 @@ try {
     initialData = await response.json();
   }
 } catch (error) {
-  console.error("Failed to load users:", error);
   errorMessage = error instanceof Error ? error.message : "Nieznany błąd podczas ładowania użytkowników";
 }
 ---

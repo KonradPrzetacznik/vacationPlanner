@@ -74,7 +74,6 @@ export const GET: APIRoute = async ({ params, locals }) => {
       .single();
 
     if (profileError || !currentUserProfile) {
-      console.error("[GET /api/users/:id] Failed to fetch current user profile:", profileError);
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -84,19 +83,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
     const currentUserRole = currentUserProfile.role as "ADMINISTRATOR" | "HR" | "EMPLOYEE";
 
     // 4. Call service to get user
-    const startTime = Date.now();
     const userDetails = await getUserById(locals.supabase, currentUserId, currentUserRole, userId);
-    const duration = Date.now() - startTime;
-
-    // Log slow queries
-    if (duration > 500) {
-      console.warn("[GET /api/users/:id] Slow query detected:", {
-        duration,
-        userId,
-        currentUserId,
-        currentUserRole,
-      });
-    }
 
     // 5. Return successful response
     return new Response(JSON.stringify({ data: userDetails }), {
@@ -104,14 +91,6 @@ export const GET: APIRoute = async ({ params, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[GET /api/users/:id] Error:", {
-      timestamp: new Date().toISOString(),
-      userId: params.id,
-      currentUserId: DEFAULT_USER_ID,
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-
     // Handle known error types
     if (error instanceof Error) {
       // Not found errors (404) - includes permission denials
@@ -174,7 +153,6 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
       .single();
 
     if (profileError || !currentUserProfile) {
-      console.error("[PATCH /api/users/:id] Failed to fetch current user profile:", profileError);
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -212,19 +190,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     const validatedData = validationResult.data;
 
     // 5. Call service to update user
-    const startTime = Date.now();
     const result = await updateUser(locals.supabase, userId, validatedData, currentUserId, currentUserRole);
-    const duration = Date.now() - startTime;
-
-    // Log slow operations
-    if (duration > 1000) {
-      console.warn("[PATCH /api/users/:id] Slow operation detected:", {
-        duration,
-        userId,
-        currentUserId,
-        currentUserRole,
-      });
-    }
 
     // 6. Return successful response
     return new Response(JSON.stringify(result), {
@@ -232,14 +198,6 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[PATCH /api/users/:id] Error:", {
-      timestamp: new Date().toISOString(),
-      userId: params.id,
-      currentUserId: DEFAULT_USER_ID,
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-
     // Handle known error types
     if (error instanceof Error) {
       // User not found (404)
@@ -317,7 +275,6 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
       .single();
 
     if (profileError || !currentUserProfile) {
-      console.error("[DELETE /api/users/:id] Failed to fetch current user profile:", profileError);
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -333,19 +290,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     }
 
     // 5. Call service to delete user
-    const startTime = Date.now();
     const result = await deleteUser(locals.supabase, userId);
-    const duration = Date.now() - startTime;
-
-    // Log slow operations
-    if (duration > 2000) {
-      console.warn("[DELETE /api/users/:id] Slow operation detected:", {
-        duration,
-        userId,
-        currentUserId,
-        cancelledVacations: result.cancelledVacations,
-      });
-    }
 
     // 6. Return successful response
     return new Response(JSON.stringify(result), {
@@ -353,14 +298,6 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[DELETE /api/users/:id] Error:", {
-      timestamp: new Date().toISOString(),
-      userId: params.id,
-      currentUserId: DEFAULT_USER_ID,
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-
     // Handle known error types
     if (error instanceof Error) {
       // User not found (404)

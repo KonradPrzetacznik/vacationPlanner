@@ -39,8 +39,6 @@ export const POST: APIRoute = async (context) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[CancelVacationRequestEndpoint] Error:", error);
-
     const errorMessage = error instanceof Error ? error.message : "Failed to cancel vacation request";
 
     // Determine status code based on error message

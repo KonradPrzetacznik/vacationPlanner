@@ -85,7 +85,6 @@ export const Calendar: React.FC<CalendarProps> = ({
     const startDate = view.currentStart.toISOString().split("T")[0];
     const endDate = new Date(view.currentEnd.getTime() - 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
-    console.log("[Calendar] Prev month:", { startDate, endDate });
     onDateRangeChange(startDate, endDate);
   }, [onDateRangeChange, isLoading]);
 
@@ -103,7 +102,6 @@ export const Calendar: React.FC<CalendarProps> = ({
     const startDate = view.currentStart.toISOString().split("T")[0];
     const endDate = new Date(view.currentEnd.getTime() - 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
-    console.log("[Calendar] Next month:", { startDate, endDate });
     onDateRangeChange(startDate, endDate);
   }, [onDateRangeChange, isLoading]);
 
@@ -121,7 +119,6 @@ export const Calendar: React.FC<CalendarProps> = ({
     const startDate = view.currentStart.toISOString().split("T")[0];
     const endDate = new Date(view.currentEnd.getTime() - 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
-    console.log("[Calendar] Today:", { startDate, endDate });
     onDateRangeChange(startDate, endDate);
   }, [onDateRangeChange, isLoading]);
 

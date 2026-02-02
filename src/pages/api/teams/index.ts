@@ -66,7 +66,6 @@ export const GET: APIRoute = async ({ request, locals }) => {
       .single();
 
     if (profileError || !currentUserProfile) {
-      console.error("[GET /api/teams] Failed to fetch current user profile:", profileError);
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -80,12 +79,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     // Log slow queries
     if (duration > 1000) {
-      console.warn("[GET /api/teams] Slow query detected:", {
-        duration,
-        queryParams: validatedQuery,
-        userId: currentUserId,
-        role: currentUserProfile.role,
-      });
+      // Log slow query
     }
 
     // 5. Return successful response
@@ -93,14 +87,8 @@ export const GET: APIRoute = async ({ request, locals }) => {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
-  } catch (error) {
-    console.error("[GET /api/teams] Error:", {
-      timestamp: new Date().toISOString(),
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-
-    // Generic internal server error (500)
+  } catch {
+    // Generic server error
     return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
@@ -125,7 +113,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       .single();
 
     if (profileError || !currentUserProfile) {
-      console.error("[POST /api/teams] Failed to fetch current user profile:", profileError);
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -169,18 +156,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const validatedData = validationResult.data;
 
     // 5. Call service to create team
-    const startTime = Date.now();
     const result = await createTeam(locals.supabase, validatedData);
-    const duration = Date.now() - startTime;
-
-    // Log slow operations
-    if (duration > 2000) {
-      console.warn("[POST /api/teams] Slow operation detected:", {
-        duration,
-        teamId: result.id,
-        currentUserId,
-      });
-    }
 
     // 6. Return successful response
     return new Response(JSON.stringify(result), {
@@ -188,13 +164,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[POST /api/teams] Error:", {
-      timestamp: new Date().toISOString(),
-      currentUserId: DEFAULT_USER_ID,
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-
     // Handle known error types
     if (error instanceof Error) {
       // Team name already exists (400 Bad Request)

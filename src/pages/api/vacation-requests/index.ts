@@ -65,11 +65,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
 
     // Log slow queries
     if (duration > 1000) {
-      console.warn("[GET /api/vacation-requests] Slow query detected:", {
-        duration,
-        queryParams: validatedQuery,
-        userId: currentUserId,
-      });
+      // Log slow query
     }
 
     return new Response(JSON.stringify(result), {
@@ -77,8 +73,6 @@ export const GET: APIRoute = async ({ url, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[GET /api/vacation-requests] Error:", error);
-
     // Handle specific error types
     if (error instanceof Error) {
       // Authorization errors
@@ -140,8 +134,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     let requestBody;
     try {
       requestBody = await request.json();
-    } catch (error) {
-      console.error("[POST /api/vacation-requests] Failed to parse request body:", error);
+    } catch {
       return new Response(JSON.stringify({ error: "Invalid request body" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
@@ -177,8 +170,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[POST /api/vacation-requests] Error:", error);
-
     // Handle specific error types
     if (error instanceof Error) {
       // Validation and business rule errors (400)

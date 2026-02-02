@@ -33,36 +33,28 @@ export function UsersManagement({ initialUsers, initialPagination, currentUserId
 
   // Handlers (wrapped in useCallback to prevent re-creation on every render)
   const handleAddUser = useCallback(() => {
-    console.log("handleAddUser called - opening dialog");
     setUserFormMode("create");
     setEditingUser(undefined);
     setIsUserFormOpen(true);
-    console.log("Dialog state should be set to open");
   }, []);
 
   const handleEditUser = useCallback((user: UserListItemDTO) => {
-    console.log("handleEditUser called for user:", user.id);
     setUserFormMode("edit");
     setEditingUser(user);
     setIsUserFormOpen(true);
-    console.log("Edit dialog state should be set to open");
   }, []);
 
   const handleDeleteUser = useCallback((userId: string, userName: string) => {
-    console.log("handleDeleteUser called for user:", userId);
     setDeleteUserId(userId);
     setDeleteUserName(userName);
     setIsDeleteDialogOpen(true);
-    console.log("Delete dialog state should be set to open");
   }, []);
 
   const handleUserFormOpenChange = useCallback((open: boolean) => {
-    console.log("handleUserFormOpenChange called with:", open);
     setIsUserFormOpen(open);
   }, []);
 
   const handleDeleteDialogOpenChange = useCallback((open: boolean) => {
-    console.log("handleDeleteDialogOpenChange called with:", open);
     setIsDeleteDialogOpen(open);
   }, []);
 

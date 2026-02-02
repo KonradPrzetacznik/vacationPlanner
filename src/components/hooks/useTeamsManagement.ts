@@ -52,8 +52,7 @@ export function useTeamsManagement() {
       const data: GetTeamsResponseDTO = await response.json();
       setTeams(data.data);
       setPaginationTotal(data.pagination.total);
-    } catch (error) {
-      console.error("Failed to fetch teams:", error);
+    } catch {
       toast.error("Nie udało się pobrać listy zespołów");
     } finally {
       setIsLoading(false);
@@ -74,8 +73,7 @@ export function useTeamsManagement() {
 
       const result: GetTeamByIdResponseDTO = await response.json();
       setSelectedTeam(result.data);
-    } catch (error) {
-      console.error("Failed to fetch team details:", error);
+    } catch {
       toast.error("Nie udało się pobrać szczegółów zespołu");
       setSelectedTeam(null);
     } finally {

@@ -33,7 +33,6 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
       .single();
 
     if (profileError || !currentUserProfile) {
-      console.error("[POST /api/teams/:id/members] Failed to fetch current user profile:", profileError);
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -102,12 +101,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
 
     // Log slow operations
     if (duration > 2000) {
-      console.warn("[POST /api/teams/:id/members] Slow operation detected:", {
-        duration,
-        teamId,
-        currentUserId,
-        memberCount: userIds.length,
-      });
+      // Log slow operation
     }
 
     // 7. Return success response
@@ -122,14 +116,6 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
       }
     );
   } catch (error) {
-    console.error("[POST /api/teams/:id/members] Error:", {
-      timestamp: new Date().toISOString(),
-      teamId: params.id,
-      currentUserId: DEFAULT_USER_ID,
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-
     // Handle known error types
     if (error instanceof Error) {
       // Not found errors (404)
