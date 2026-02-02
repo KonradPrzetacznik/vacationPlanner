@@ -45,7 +45,6 @@ export async function getVacationRequests(
     .single();
 
   if (userError || !currentUser) {
-    console.error("[VacationRequestsService] Failed to fetch current user:", userError);
     throw new Error("Failed to verify user permissions");
   }
 
@@ -70,7 +69,6 @@ export async function getVacationRequests(
       .eq("user_id", currentUserId);
 
     if (teamsError) {
-      console.error("[VacationRequestsService] Failed to fetch user teams:", teamsError);
       throw new Error("Failed to fetch user teams");
     }
 
@@ -146,7 +144,6 @@ export async function getVacationRequests(
       .in("team_id", effectiveTeamIds);
 
     if (teamMembersError) {
-      console.error("[VacationRequestsService] Failed to fetch team members:", teamMembersError);
       throw new Error("Failed to fetch team members");
     }
 
@@ -186,7 +183,6 @@ export async function getVacationRequests(
   const { data: vacationRequests, error: queryError, count } = await queryBuilder;
 
   if (queryError) {
-    console.error("[VacationRequestsService] Failed to fetch vacation requests:", queryError);
     throw new Error("Failed to fetch vacation requests");
   }
 
@@ -251,7 +247,6 @@ export async function getVacationRequestById(
     .single();
 
   if (userError || !currentUser) {
-    console.error("[VacationRequestsService] Failed to fetch current user:", userError);
     throw new Error("Failed to verify user permissions");
   }
 
@@ -291,7 +286,6 @@ export async function getVacationRequestById(
     if (queryError?.code === "PGRST116") {
       throw new Error("Vacation request not found");
     }
-    console.error("[VacationRequestsService] Failed to fetch vacation request:", queryError);
     throw new Error("Failed to fetch vacation request");
   }
 
@@ -301,7 +295,7 @@ export async function getVacationRequestById(
   });
 
   if (emailsError) {
-    console.error("[VacationRequestsService] Failed to fetch user email:", emailsError);
+    // Log error but continue - email is optional for viewing
   }
 
   const userEmail = emailsData?.[0]?.email || "";
@@ -321,7 +315,6 @@ export async function getVacationRequestById(
     });
 
     if (teamCheckError) {
-      console.error("[VacationRequestsService] Failed to check team membership:", teamCheckError);
       throw new Error("Failed to verify team membership");
     }
 
@@ -397,7 +390,6 @@ export async function createVacationRequest(
     .single();
 
   if (userError || !currentUser) {
-    console.error("[VacationRequestsService] Failed to fetch current user:", userError);
     throw new Error("Failed to verify user");
   }
 
@@ -408,7 +400,6 @@ export async function createVacationRequest(
   });
 
   if (businessDaysError || businessDaysData === null) {
-    console.error("[VacationRequestsService] Failed to calculate business days:", businessDaysError);
     throw new Error("Failed to calculate business days");
   }
 
@@ -430,7 +421,6 @@ export async function createVacationRequest(
     .single();
 
   if (allowanceError || !allowance) {
-    console.error("[VacationRequestsService] Failed to fetch vacation allowance:", allowanceError);
     throw new Error("Failed to check vacation allowance");
   }
 
@@ -444,7 +434,6 @@ export async function createVacationRequest(
     .lte("start_date", `${currentYear}-12-31`);
 
   if (usedDaysError) {
-    console.error("[VacationRequestsService] Failed to calculate used days:", usedDaysError);
     throw new Error("Failed to calculate used vacation days");
   }
 
@@ -466,7 +455,6 @@ export async function createVacationRequest(
     .or(`and(start_date.lte.${endDate},end_date.gte.${startDate})`);
 
   if (overlapError) {
-    console.error("[VacationRequestsService] Failed to check overlapping requests:", overlapError);
     throw new Error("Failed to check for overlapping vacation requests");
   }
 
@@ -488,7 +476,6 @@ export async function createVacationRequest(
     .single();
 
   if (createError || !newRequest) {
-    console.error("[VacationRequestsService] Failed to create vacation request:", createError);
     throw new Error("Failed to create vacation request");
   }
 
@@ -538,7 +525,6 @@ export async function approveVacationRequest(
     .single();
 
   if (userError || !currentUser) {
-    console.error("[VacationRequestsService] Failed to fetch current user:", userError);
     throw new Error("Failed to verify user permissions");
   }
 
@@ -558,7 +544,6 @@ export async function approveVacationRequest(
     if (requestError?.code === "PGRST116") {
       throw new Error("Vacation request not found");
     }
-    console.error("[VacationRequestsService] Failed to fetch vacation request:", requestError);
     throw new Error("Failed to fetch vacation request");
   }
 
@@ -574,7 +559,6 @@ export async function approveVacationRequest(
   });
 
   if (teamCheckError) {
-    console.error("[VacationRequestsService] Failed to check team membership:", teamCheckError);
     throw new Error("Failed to verify team membership");
   }
 
@@ -594,7 +578,6 @@ export async function approveVacationRequest(
     .eq("user_id", vacationRequest.user_id);
 
   if (teamsError) {
-    console.error("[VacationRequestsService] Failed to fetch user teams:", teamsError);
     throw new Error("Failed to fetch user teams");
   }
 
@@ -608,7 +591,6 @@ export async function approveVacationRequest(
     .single();
 
   if (settingsError || !settings) {
-    console.error("[VacationRequestsService] Failed to fetch system settings:", settingsError);
     throw new Error("Failed to fetch system settings");
   }
 
@@ -632,7 +614,6 @@ export async function approveVacationRequest(
     });
 
     if (occupancyError) {
-      console.error("[VacationRequestsService] Failed to calculate team occupancy:", occupancyError);
       throw new Error("Failed to calculate team occupancy");
     }
 
@@ -677,7 +658,6 @@ export async function approveVacationRequest(
     .single();
 
   if (updateError || !updatedRequest) {
-    console.error("[VacationRequestsService] Failed to approve vacation request:", updateError);
     throw new Error("Failed to approve vacation request");
   }
 
@@ -725,7 +705,6 @@ export async function rejectVacationRequest(
     .single();
 
   if (userError || !currentUser) {
-    console.error("[VacationRequestsService] Failed to fetch current user:", userError);
     throw new Error("Failed to verify user permissions");
   }
 
@@ -745,7 +724,6 @@ export async function rejectVacationRequest(
     if (requestError?.code === "PGRST116") {
       throw new Error("Vacation request not found");
     }
-    console.error("[VacationRequestsService] Failed to fetch vacation request:", requestError);
     throw new Error("Failed to fetch vacation request");
   }
 
@@ -761,7 +739,6 @@ export async function rejectVacationRequest(
   });
 
   if (teamCheckError) {
-    console.error("[VacationRequestsService] Failed to check team membership:", teamCheckError);
     throw new Error("Failed to verify team membership");
   }
 
@@ -789,7 +766,6 @@ export async function rejectVacationRequest(
     .single();
 
   if (updateError || !updatedRequest) {
-    console.error("[VacationRequestsService] Failed to reject vacation request:", updateError);
     throw new Error("Failed to reject vacation request");
   }
 
@@ -835,7 +811,6 @@ export async function cancelVacationRequest(
     if (requestError?.code === "PGRST116") {
       throw new Error("Vacation request not found");
     }
-    console.error("[VacationRequestsService] Failed to fetch vacation request:", requestError);
     throw new Error("Failed to fetch vacation request");
   }
 
@@ -878,7 +853,6 @@ export async function cancelVacationRequest(
     .single();
 
   if (updateError || !updatedRequest) {
-    console.error("[VacationRequestsService] Failed to cancel vacation request:", updateError);
     throw new Error("Failed to cancel vacation request");
   }
 

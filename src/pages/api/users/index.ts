@@ -67,18 +67,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
     const currentUserId = DEFAULT_USER_ID;
 
     // 3. Call service to get users
-    const startTime = Date.now();
     const result = await getUsers(locals.supabase, currentUserId, validatedParams);
-    const duration = Date.now() - startTime;
-
-    // Log slow queries
-    if (duration > 1000) {
-      console.warn("[GET /api/users] Slow query detected:", {
-        duration,
-        queryParams: validatedParams,
-        userId: currentUserId,
-      });
-    }
 
     // 4. Return successful response
     return new Response(JSON.stringify(result), {
@@ -86,12 +75,6 @@ export const GET: APIRoute = async ({ request, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[GET /api/users] Error:", {
-      timestamp: new Date().toISOString(),
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-
     // Handle known error types
     if (error instanceof Error) {
       // Authorization errors (403 Forbidden)
@@ -136,7 +119,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       .single();
 
     if (profileError || !currentUserProfile) {
-      console.error("[POST /api/users] Failed to fetch current user profile:", profileError);
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -180,18 +162,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const validatedData = validationResult.data;
 
     // 5. Call service to create user
-    const startTime = Date.now();
     const result = await createUser(locals.supabase, validatedData);
-    const duration = Date.now() - startTime;
-
-    // Log slow operations
-    if (duration > 2000) {
-      console.warn("[POST /api/users] Slow operation detected:", {
-        duration,
-        userId: result.id,
-        currentUserId,
-      });
-    }
 
     // 6. Return successful response
     return new Response(JSON.stringify(result), {
@@ -199,13 +170,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[POST /api/users] Error:", {
-      timestamp: new Date().toISOString(),
-      currentUserId: DEFAULT_USER_ID,
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-
     // Handle known error types
     if (error instanceof Error) {
       // Email already exists (400 Bad Request)

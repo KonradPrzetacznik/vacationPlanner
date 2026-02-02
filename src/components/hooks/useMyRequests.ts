@@ -81,7 +81,6 @@ export function useMyRequests(
     } catch (err) {
       const error = err instanceof Error ? err : new Error("Unknown error");
       setError(error);
-      console.error("Error fetching vacation requests:", error);
     } finally {
       setIsLoading(false);
     }
@@ -135,7 +134,6 @@ export function useMyRequests(
     } catch (err) {
       const error = err instanceof Error ? err : new Error("Unknown error");
       setError(error);
-      console.error("Error cancelling vacation request:", error);
       throw error; // Re-throw to allow component to handle it
     } finally {
       setIsLoading(false);
@@ -172,7 +170,6 @@ export function useMyRequests(
       } catch (err) {
         const error = err instanceof Error ? err : new Error("Unknown error");
         setError(error);
-        console.error("Error creating vacation request:", error);
         throw error; // Re-throw to allow component to handle it
       } finally {
         setIsLoading(false);

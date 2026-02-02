@@ -51,7 +51,7 @@ const createSuccessResponse = (data: any, count: number | null = null) => ({
 /**
  * Creates an error response builder
  */
-const createErrorResponse = (message: string, code: string = "UNKNOWN") => ({
+const createErrorResponse = (message: string, code = "UNKNOWN") => ({
   data: null,
   error: {
     message,

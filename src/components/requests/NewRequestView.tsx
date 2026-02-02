@@ -51,7 +51,6 @@ export function NewRequestView() {
       toast.error("Błąd tworzenia wniosku", {
         description: errorMessage,
       });
-      console.error("Error creating vacation request:", err);
     } finally {
       setIsSubmitting(false);
     }
