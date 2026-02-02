@@ -30,7 +30,7 @@ export const POST: APIRoute = async (context) => {
 
     const { id } = paramValidation.data;
 
-    // 3. Parse and validate request body
+    // 2. Parse and validate request body
     let requestBody;
     try {
       const text = await context.request.text();

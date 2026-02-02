@@ -19,7 +19,6 @@
 import type { APIRoute } from "astro";
 import { getTeamsQuerySchema, createTeamSchema } from "@/lib/schemas/teams.schema";
 import { getTeams, createTeam } from "@/lib/services/teams.service";
-import { DEFAULT_USER_ID } from "@/db/supabase.client";
 
 // Disable prerendering for this API route
 export const prerender = false;
@@ -55,8 +54,17 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     const validatedQuery = validationResult.data;
 
-    // 2. Use DEFAULT_USER_ID for development (auth will be implemented later)
-    const currentUserId = DEFAULT_USER_ID;
+    // 2. Get current user from middleware
+    const currentUser = locals.user;
+
+    if (!currentUser) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const currentUserId = currentUser.id;
 
     // 3. Get current user's role
     const { data: currentUserProfile, error: profileError } = await locals.supabase
@@ -102,8 +110,17 @@ export const GET: APIRoute = async ({ request, locals }) => {
  */
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    // 1. Use DEFAULT_USER_ID for development (auth will be implemented later)
-    const currentUserId = DEFAULT_USER_ID;
+    // 1. Get current user from middleware
+    const currentUser = locals.user;
+
+    if (!currentUser) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const currentUserId = currentUser.id;
 
     // 2. Get current user's role for authorization
     const { data: currentUserProfile, error: profileError } = await locals.supabase

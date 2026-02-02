@@ -13,6 +13,15 @@ export default defineConfig({
   server: { port: 3000 },
   vite: {
     plugins: [tailwindcss()],
+    optimizeDeps: {
+      include: [
+        "@fullcalendar/react",
+        "@fullcalendar/daygrid",
+        "@fullcalendar/interaction",
+        "@fullcalendar/core",
+        "@fullcalendar/core/locales/pl",
+      ],
+    },
   },
   adapter: node({
     mode: "standalone",

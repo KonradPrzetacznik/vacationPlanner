@@ -113,13 +113,7 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel>Imię</FormLabel>
                   <FormControl>
-                    <Input
-                      type="text"
-                      placeholder="Jan"
-                      autoComplete="given-name"
-                      disabled={isSubmitting}
-                      {...field}
-                    />
+                    <Input type="text" placeholder="Jan" autoComplete="given-name" disabled={isSubmitting} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

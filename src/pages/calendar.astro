@@ -2,7 +2,8 @@
 /**
  * Team Calendar Page
  * Accessible at /calendar
- * Available for MANAGER and ADMINISTRATOR roles
+ * Available for HR role only (as per PRD)
+ * EMPLOYEE users see team calendar on /requests page instead
  */
 
 import Layout from "@/layouts/Layout.astro";
@@ -13,35 +14,26 @@ import type { GetTeamsResponseDTO } from "@/types";
 // Disable prerendering for this page
 export const prerender = false;
 
-// Get current user from database
-let currentUserId: string | null = null;
-try {
-  // Import DEFAULT_USER_ID for development
-  const { DEFAULT_USER_ID } = await import("@/db/supabase.client");
-  currentUserId = DEFAULT_USER_ID;
-} catch {
-  // DEFAULT_USER_ID not available in production
-}
+// Get current user from middleware (authentication is already handled)
+const user = Astro.locals.user;
 
-if (!currentUserId) {
+if (!user) {
   return Astro.redirect("/login");
 }
 
-// Fetch current user profile to check role
+// Fetch current user profile with details
 const { data: currentUserProfile, error: profileError } = await Astro.locals.supabase
   .from("profiles")
   .select("id, first_name, last_name, role")
-  .eq("id", currentUserId)
+  .eq("id", user.id)
   .single();
 
 if (profileError || !currentUserProfile) {
   return Astro.redirect("/login");
 }
 
-// Check if user has required role
-if (currentUserProfile.role !== "HR" && currentUserProfile.role !== "ADMINISTRATOR") {
-  return Astro.redirect("/");
-}
+// Access control is handled by middleware based on permissions.ts
+// This page is accessible for HR role only
 
 // Fetch teams available for current user
 let teams: GetTeamsResponseDTO | null = null;

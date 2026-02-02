@@ -1,15 +1,11 @@
 ---
+import { getNavItemsForRole, type Role } from "../lib/permissions.ts";
+
 const currentPath = Astro.url.pathname;
 const user = Astro.locals.user;
 
-const navItems = [
-  { href: "/", label: "Strona główna" },
-  { href: "/requests", label: "Moje Wnioski" },
-  { href: "/admin/users", label: "Użytkownicy" },
-  { href: "/teams", label: "Zespoły" },
-  { href: "/calendar", label: "Kalendarz" },
-  { href: "/admin/settings", label: "Ustawienia" },
-];
+// Filter navigation items based on user role
+const navItems = user ? getNavItemsForRole(user.role as Role) : [];
 ---
 
 <nav class="bg-slate-900 border-b border-slate-800">

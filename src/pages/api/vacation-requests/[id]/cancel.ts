@@ -30,7 +30,7 @@ export const POST: APIRoute = async (context) => {
 
     const { id } = paramValidation.data;
 
-    // 3. Call cancelVacationRequest service (no body needed)
+    // 2. Cancel vacation request via service
     const response = await cancelVacationRequest(supabase, currentUserId, id);
 
     // 4. Return success response

@@ -1,6 +1,7 @@
 import { defineMiddleware } from "astro:middleware";
 
 import { createSupabaseServerInstance, supabaseClient } from "../db/supabase.client.ts";
+import { hasAccessToPath, type Role } from "../lib/permissions.ts";
 
 // Public paths that don't require authentication
 const PUBLIC_PATHS = [
@@ -80,26 +81,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return context.redirect("/");
   }
 
-  // Check role-based access for admin routes
-  if (context.url.pathname.startsWith("/admin")) {
-    if (!context.locals.user) {
-      return new Response("Forbidden: Authentication required", {
-        status: 403,
-      });
-    }
+  // Check role-based access for protected routes
+  if (user && context.locals.user) {
+    const userRole = context.locals.user.role as Role;
+    const pathname = context.url.pathname;
 
-    const isUsersRoute = context.url.pathname.startsWith("/admin/users");
-
-    if (isUsersRoute) {
-      // /admin/users requires ADMINISTRATOR role only
-      if (context.locals.user.role !== "ADMINISTRATOR") {
-        return new Response("Forbidden: Administrator role required", {
-          status: 403,
-        });
-      }
-    } else {
-      // Other /admin routes require ADMINISTRATOR or HR
-      if (context.locals.user.role !== "ADMINISTRATOR" && context.locals.user.role !== "HR") {
+    // Skip access check for public paths and API routes
+    if (!isPublicPath && !pathname.startsWith("/api/")) {
+      if (!hasAccessToPath(pathname, userRole)) {
         return new Response("Forbidden: You don't have access to this page", {
           status: 403,
         });

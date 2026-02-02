@@ -3,7 +3,6 @@
  * Approve a vacation request (HR only)
  */
 import type { APIRoute } from "astro";
-import { DEFAULT_USER_ID } from "@/db/supabase.client";
 import { VacationRequestIdParamSchema, ApproveVacationRequestSchema } from "@/lib/schemas/vacation-requests.schema";
 import { approveVacationRequest } from "@/lib/services/vacation-requests.service";
 
@@ -11,12 +10,19 @@ export const prerender = false;
 
 export const POST: APIRoute = async (context) => {
   try {
+    const currentUser = context.locals.user;
     const supabase = context.locals.supabase;
 
-    // 1. Extract currentUserId (DEFAULT_USER_ID for development)
-    const currentUserId = DEFAULT_USER_ID;
+    if (!currentUser) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
-    // 2. Validate request ID parameter
+    const currentUserId = currentUser.id;
+
+    // 1. Validate request ID parameter
     const paramValidation = VacationRequestIdParamSchema.safeParse({
       id: context.params.id,
     });
@@ -30,7 +36,7 @@ export const POST: APIRoute = async (context) => {
 
     const { id } = paramValidation.data;
 
-    // 3. Parse and validate request body
+    // 2. Parse and validate request body
     let requestBody;
     try {
       const text = await context.request.text();
