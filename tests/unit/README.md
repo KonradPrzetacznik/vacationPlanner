@@ -36,10 +36,10 @@ Current coverage: ~70% (statements), ~64% (branches), 100% (functions)
 
 Coverage thresholds configured in `vitest.config.ts`:
 
-- Statements: 70%
-- Branches: 60%
-- Functions: 70%
-- Lines: 70%
+- Statements: 50%
+- Branches: 50%
+- Functions: 50%
+- Lines: 50%
 
 ## Documentation
 

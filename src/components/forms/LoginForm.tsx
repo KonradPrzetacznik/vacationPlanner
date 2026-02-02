@@ -124,9 +124,12 @@ export function LoginForm() {
           </form>
         </Form>
       </CardContent>
-      <CardFooter className="flex justify-center">
+      <CardFooter className="flex flex-col space-y-2">
         <a href="/forgot-password" className="text-sm text-muted-foreground hover:text-primary underline">
           Zapomniałeś hasła?
+        </a>
+        <a href="/register" className="text-sm text-muted-foreground hover:text-primary underline">
+          Nie masz konta? Zarejestruj się
         </a>
       </CardFooter>
     </Card>
