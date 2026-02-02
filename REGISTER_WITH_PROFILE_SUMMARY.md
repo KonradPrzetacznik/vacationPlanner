@@ -7,34 +7,42 @@ Rozszerzono funkcjonalność rejestracji o automatyczne tworzenie profilu użytk
 ## Zmodyfikowane pliki
 
 ### 1. `src/lib/schemas/auth-form.schema.ts`
+
 **Zmiany:**
+
 - Dodano pola `firstName` i `lastName` do `registerFormSchema`
 - Walidacja: min. 2, max. 50 znaków dla każdego pola
 
 ### 2. `src/components/forms/RegisterForm.tsx`
+
 **Zmiany:**
+
 - Dodano pola formularza dla `firstName` i `lastName`
 - Zaktualizowano domyślne wartości formularza
 - **Zaktualizowano wywołanie API, aby przesyłało wszystkie 4 pola: firstName, lastName, email, password**
 
 **Kod wywołania API:**
+
 ```typescript
 body: JSON.stringify({
   firstName: data.firstName,
   lastName: data.lastName,
   email: data.email,
   password: data.password,
-})
+});
 ```
 
 ### 3. `src/pages/api/auth/register.ts`
+
 **Zmiany:**
+
 - Rozszerzono `registerSchema` o pola `firstName` i `lastName`
 - **Dodano logikę tworzenia profilu w tabeli `profiles`** po utworzeniu użytkownika w `auth.users`
 - Ustawienie domyślnej roli `EMPLOYEE` dla nowych użytkowników
 - Dodano obsługę błędów tworzenia profilu
 
 **Kod tworzenia profilu:**
+
 ```typescript
 // Create profile in profiles table
 const { error: profileError } = await supabase.from("profiles").insert({
@@ -47,7 +55,9 @@ const { error: profileError } = await supabase.from("profiles").insert({
 ```
 
 ### 4. `src/components/forms/LoginForm.tsx`
+
 **Zmiany:**
+
 - Dodano link "Nie masz konta? Zarejestruj się" prowadzący do `/register`
 
 ## Nowe pliki
@@ -72,16 +82,16 @@ const { error: profileError } = await supabase.from("profiles").insert({
 
 Po rejestracji tworzony jest rekord w tabeli `profiles`:
 
-| Pole | Wartość | Źródło |
-|------|---------|--------|
-| `id` | UUID | `auth.users.id` |
-| `first_name` | Imię użytkownika | Formularz |
-| `last_name` | Nazwisko użytkownika | Formularz |
-| `email` | Email (lowercase) | Formularz |
-| `role` | `EMPLOYEE` | Domyślna wartość |
-| `created_at` | Timestamp | Automatyczny |
-| `updated_at` | Timestamp | Automatyczny |
-| `deleted_at` | `NULL` | Soft-delete (nieaktywny) |
+| Pole         | Wartość              | Źródło                   |
+| ------------ | -------------------- | ------------------------ |
+| `id`         | UUID                 | `auth.users.id`          |
+| `first_name` | Imię użytkownika     | Formularz                |
+| `last_name`  | Nazwisko użytkownika | Formularz                |
+| `email`      | Email (lowercase)    | Formularz                |
+| `role`       | `EMPLOYEE`           | Domyślna wartość         |
+| `created_at` | Timestamp            | Automatyczny             |
+| `updated_at` | Timestamp            | Automatyczny             |
+| `deleted_at` | `NULL`               | Soft-delete (nieaktywny) |
 
 ## Bezpieczeństwo
 
@@ -95,13 +105,16 @@ Po rejestracji tworzony jest rekord w tabeli `profiles`:
 ## Obsługa błędów
 
 ### Błąd tworzenia profilu
+
 Jeśli tworzenie profilu się nie powiedzie:
+
 - Użytkownik zostaje w `auth.users`, ale nie może się zalogować (brak profilu)
 - Błąd jest logowany do konsoli
 - Użytkownik otrzymuje komunikat: "Nie udało się utworzyć profilu użytkownika. Skontaktuj się z administratorem."
 - Administrator może ręcznie utworzyć profil lub usunąć użytkownika z `auth.users`
 
 ### Inne błędy
+
 - 409 Conflict - Email już istnieje w systemie
 - 400 Bad Request - Błędy walidacji (hasło, email, imię, nazwisko)
 - 500 Internal Server Error - Nieoczekiwane błędy
@@ -109,6 +122,7 @@ Jeśli tworzenie profilu się nie powiedzie:
 ## Testowanie
 
 ### Test manualny
+
 1. Uruchom aplikację: `npm run dev`
 2. Przejdź do: `http://localhost:4321/register`
 3. Wypełnij formularz testowy:
@@ -122,15 +136,16 @@ Jeśli tworzenie profilu się nie powiedzie:
    - Tabela `profiles` - nowy profil z rolą `EMPLOYEE`
 
 ### Weryfikacja w bazie danych
+
 ```sql
 -- Sprawdź użytkownika w auth.users
-SELECT id, email, created_at 
-FROM auth.users 
+SELECT id, email, created_at
+FROM auth.users
 WHERE email = 'test@example.com';
 
 -- Sprawdź profil
-SELECT id, first_name, last_name, email, role, created_at 
-FROM profiles 
+SELECT id, first_name, last_name, email, role, created_at
+FROM profiles
 WHERE email = 'test@example.com';
 ```
 

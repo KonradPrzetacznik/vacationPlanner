@@ -7,6 +7,7 @@ Zaimplementowano pełną funkcjonalność rejestracji użytkowników, wzorowaną
 ## Utworzone pliki
 
 ### 1. Schema walidacji
+
 **Plik:** `src/lib/schemas/auth-form.schema.ts`
 
 Dodano nowy schemat walidacji formularza rejestracji:
@@ -57,17 +58,20 @@ export type RegisterFormValues = z.infer<typeof registerFormSchema>;
 ```
 
 **Cechy:**
+
 - Walidacja imienia i nazwiska (min. 2, max. 50 znaków)
 - Walidacja formatu e-mail
 - Silna walidacja hasła (min. 8 znaków, mała/wielka litera, cyfra)
 - Weryfikacja zgodności haseł
 
 ### 2. Komponent React - Formularz rejestracji
+
 **Plik:** `src/components/forms/RegisterForm.tsx`
 
 Komponent React obsługujący formularz rejestracji:
 
 **Funkcjonalność:**
+
 - Pola formularza: firstName, lastName, email, password, confirmPassword
 - Walidacja po stronie klienta (react-hook-form + Zod)
 - Dwustanowy interfejs:
@@ -78,28 +82,33 @@ Komponent React obsługujący formularz rejestracji:
 - Link powrotny do strony logowania
 
 **Przepływ użytkownika:**
+
 1. Użytkownik wprowadza imię, nazwisko, email i hasło (2x)
 2. Po walidacji następuje wywołanie API
 3. W przypadku sukcesu wyświetlany jest komunikat o wysłaniu e-maila potwierdzającego
 4. Użytkownik może wrócić do strony logowania
 
 ### 3. Strona Astro - Rejestracja
+
 **Plik:** `src/pages/register.astro`
 
 Publiczna strona dostępna pod `/register`:
 
 **Cechy:**
+
 - Layout bez nawigacji (podobnie jak `/login`)
 - Automatyczne przekierowanie zalogowanych użytkowników na stronę główną
 - Wyśrodkowany formularz z logo aplikacji
 - Wyłączone prerenderowanie (`export const prerender = false`)
 
 ### 4. Endpoint API - Rejestracja
+
 **Plik:** `src/pages/api/auth/register.ts`
 
 Endpoint API obsługujący rejestrację użytkowników:
 
 **Funkcjonalność:**
+
 - Walidacja danych wejściowych (Zod) - firstName, lastName, email, password
 - Tworzenie konta w Supabase Auth (`supabase.auth.signUp`)
 - **Automatyczne tworzenie profilu w tabeli `profiles`** z rolą `EMPLOYEE`
@@ -111,6 +120,7 @@ Endpoint API obsługujący rejestrację użytkowników:
   - Błąd tworzenia profilu (500)
 
 **Request:**
+
 ```json
 POST /api/auth/register
 {
@@ -122,6 +132,7 @@ POST /api/auth/register
 ```
 
 **Response (sukces):**
+
 ```json
 {
   "message": "Konto zostało utworzone. Sprawdź swoją skrzynkę e-mail, aby potwierdzić adres.",
@@ -135,6 +146,7 @@ POST /api/auth/register
 ```
 
 **Response (błąd - użytkownik istnieje):**
+
 ```json
 {
   "error": "Użytkownik z tym adresem e-mail już istnieje"
@@ -142,6 +154,7 @@ POST /api/auth/register
 ```
 
 **Response (błąd - tworzenie profilu):**
+
 ```json
 {
   "error": "Nie udało się utworzyć profilu użytkownika. Skontaktuj się z administratorem."
@@ -151,6 +164,7 @@ POST /api/auth/register
 ## Zmiany w istniejących plikach
 
 ### LoginForm.tsx
+
 Dodano link do strony rejestracji:
 
 ```tsx
@@ -205,15 +219,16 @@ Po utworzeniu użytkownika w `auth.users`, endpoint automatycznie tworzy odpowia
 ```typescript
 // Create profile in profiles table
 const { error: profileError } = await supabase.from("profiles").insert({
-  id: data.user.id,              // UUID z auth.users
+  id: data.user.id, // UUID z auth.users
   first_name: firstName.trim(),
   last_name: lastName.trim(),
   email: email.toLowerCase(),
-  role: "EMPLOYEE",               // Domyślna rola dla samorejestrajcych się użytkowników
+  role: "EMPLOYEE", // Domyślna rola dla samorejestrajcych się użytkowników
 });
 ```
 
 **Struktura rekordu w `profiles`:**
+
 - `id` - UUID użytkownika (identyczny z `auth.users.id`)
 - `first_name` - Imię użytkownika
 - `last_name` - Nazwisko użytkownika
@@ -224,6 +239,7 @@ const { error: profileError } = await supabase.from("profiles").insert({
 - `deleted_at` - NULL (soft-delete)
 
 **Obsługa błędów:**
+
 - Jeśli tworzenie profilu się nie powiedzie, użytkownik zostanie utworzony w `auth.users`, ale nie będzie mógł korzystać z systemu
 - Błąd jest logowany do konsoli dla celów monitoringu
 - Zwracany jest komunikat błędu informujący o konieczności kontaktu z administratorem
@@ -249,16 +265,19 @@ Funkcjonalność rejestracji wykorzystuje Supabase Auth z następującymi ustawi
 ## Bezpieczeństwo
 
 ### Walidacja hasła
+
 - Minimum 8 znaków
 - Co najmniej jedna mała litera
 - Co najmniej jedna wielka litera
 - Co najmniej jedna cyfra
 
 ### Walidacja e-mail
+
 - Format e-mail zgodny ze standardem RFC
 - Weryfikacja unikalności w bazie danych
 
 ### Ochrona przed atakami
+
 - Walidacja danych po stronie klienta i serwera
 - Obsługa błędów bez ujawniania szczegółów implementacji
 - Użycie Supabase Auth dla bezpiecznego zarządzania użytkownikami
@@ -268,75 +287,83 @@ Funkcjonalność rejestracji wykorzystuje Supabase Auth z następującymi ustawi
 ### Ręczne testy funkcjonalności
 
 1. **Poprawna rejestracja:**
+
    ```
    Imię: Jan
    Nazwisko: Kowalski
    Email: testuser@example.com
    Password: TestPass123
    Confirm: TestPass123
-   
+
    Oczekiwany rezultat: Komunikat o wysłaniu e-maila + utworzenie profilu w tabeli profiles
    ```
 
 2. **Brak imienia lub nazwiska:**
+
    ```
    Imię: (puste)
    Nazwisko: Kowalski
    Email: testuser@example.com
    Password: TestPass123
-   
+
    Oczekiwany rezultat: Błąd walidacji "Imię jest wymagane"
    ```
 
 3. **Niezgodne hasła:**
+
    ```
    Imię: Jan
    Nazwisko: Kowalski
    Email: testuser@example.com
    Password: TestPass123
    Confirm: TestPass456
-   
+
    Oczekiwany rezultat: Błąd walidacji "Hasła nie są identyczne"
    ```
 
 4. **Słabe hasło:**
+
    ```
    Imię: Jan
    Nazwisko: Kowalski
    Email: testuser@example.com
    Password: test123
-   
+
    Oczekiwany rezultat: Błąd walidacji dotyczący wymagań hasła
    ```
 
 5. **Istniejący użytkownik:**
+
    ```
    Imię: Jan
    Nazwisko: Kowalski
    Email: existing@example.com
    Password: TestPass123
-   
+
    Oczekiwany rezultat: Błąd "Użytkownik z tym adresem e-mail już istnieje"
    ```
 
 6. **Nieprawidłowy format e-mail:**
+
    ```
    Imię: Jan
    Nazwisko: Kowalski
    Email: invalid-email
    Password: TestPass123
-   
+
    Oczekiwany rezultat: Błąd walidacji formatu e-mail
    ```
 
 ## Powiązane pliki
 
 ### Istniejące pliki używane przez rejestrację:
+
 - `src/db/supabase.client.ts` - Klient Supabase
 - `src/components/ui/*` - Komponenty Shadcn/ui
 - `src/layouts/Layout.astro` - Layout strony
 
 ### Powiązane endpointy:
+
 - `POST /api/auth/login` - Logowanie
 - `POST /api/auth/forgot-password` - Przypominanie hasła
 - `POST /api/auth/set-password` - Ustawianie/resetowanie hasła
@@ -386,4 +413,3 @@ Funkcjonalność rejestracji została w pełni zaimplementowana zgodnie z wzorce
 2. **Automatyczne tworzenie profilu** w tabeli `profiles` po utworzeniu użytkownika w `auth.users`
 3. **Domyślna rola EMPLOYEE** dla użytkowników rejestrujących się samodzielnie
 4. **Pełna integracja** z istniejącym systemem uwierzytelniania
-

@@ -10,6 +10,7 @@
 ## Proces rejestracji
 
 ### Krok 1: Wypełnij formularz
+
 ```
 Imię: Jan
 Nazwisko: Kowalski
@@ -19,20 +20,25 @@ Potwierdź hasło: YourPassword123
 ```
 
 **Wymagania dotyczące hasła:**
+
 - Minimum 8 znaków
 - Co najmniej jedna mała litera (a-z)
 - Co najmniej jedna wielka litera (A-Z)
 - Co najmniej jedna cyfra (0-9)
 
 ### Krok 2: Sprawdź e-mail
+
 Po pomyślnej rejestracji otrzymasz e-mail z linkiem potwierdzającym.
 
 ### Krok 3: Kliknij link w e-mailu
+
 Link przekieruje Cię na stronę `/set-password` gdzie możesz:
+
 - Potwierdzić swoje konto
 - (Opcjonalnie) Ustawić nowe hasło
 
 ### Krok 4: Zaloguj się
+
 Po potwierdzeniu adresu e-mail możesz zalogować się do systemu.
 
 ## API Endpoint
@@ -40,6 +46,7 @@ Po potwierdzeniu adresu e-mail możesz zalogować się do systemu.
 ### POST /api/auth/register
 
 **Request:**
+
 ```json
 {
   "firstName": "Jan",
@@ -50,6 +57,7 @@ Po potwierdzeniu adresu e-mail możesz zalogować się do systemu.
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "message": "Konto zostało utworzone. Sprawdź swoją skrzynkę e-mail, aby potwierdzić adres.",
@@ -63,6 +71,7 @@ Po potwierdzeniu adresu e-mail możesz zalogować się do systemu.
 ```
 
 **Response (409 Conflict - użytkownik istnieje):**
+
 ```json
 {
   "error": "Użytkownik z tym adresem e-mail już istnieje"
@@ -70,6 +79,7 @@ Po potwierdzeniu adresu e-mail możesz zalogować się do systemu.
 ```
 
 **Response (400 Bad Request - walidacja):**
+
 ```json
 {
   "error": "Hasło musi mieć co najmniej 8 znaków"
@@ -96,16 +106,19 @@ src/
 ## Testowanie lokalne
 
 ### 1. Uruchom aplikację
+
 ```bash
 npm run dev
 ```
 
 ### 2. Przejdź do strony rejestracji
+
 ```
 http://localhost:4321/register
 ```
 
 ### 3. Wypełnij formularz testowy
+
 ```
 Imię: Jan
 Nazwisko: Kowalski
@@ -115,7 +128,9 @@ Confirm: TestPass123
 ```
 
 ### 4. Sprawdź konsol Supabase
+
 W konsoli Supabase możesz zobaczyć:
+
 - Nowego użytkownika w tabeli `auth.users`
 - Status potwierdzenia e-mail
 - Wysłane e-maile (w zakładce Auth > Users)
@@ -123,21 +138,27 @@ W konsoli Supabase możesz zobaczyć:
 ## Rozwiązywanie problemów
 
 ### Problem: "Użytkownik już istnieje"
+
 **Rozwiązanie:** E-mail jest już zarejestrowany. Spróbuj innego adresu lub użyj funkcji "Zapomniałeś hasła?"
 
 ### Problem: Nie otrzymuję e-maila potwierdzającego
+
 **Możliwe przyczyny:**
+
 1. E-mail trafił do spamu
 2. Konfiguracja SMTP w Supabase
 3. Email confirmation wyłączone w ustawieniach Supabase Auth
 
 **Rozwiązanie:**
+
 1. Sprawdź folder spam
 2. Sprawdź konfigurację Supabase Auth (Dashboard > Authentication > Settings)
 3. Sprawdź Email Templates w Supabase
 
 ### Problem: Błąd walidacji hasła
+
 **Rozwiązanie:** Upewnij się, że hasło spełnia wszystkie wymagania:
+
 - ✅ Min. 8 znaków
 - ✅ Mała litera (a-z)
 - ✅ Wielka litera (A-Z)
@@ -154,17 +175,19 @@ W konsoli Supabase możesz zobaczyć:
 ### Dodanie nowych pól do formularza
 
 1. Zaktualizuj schema w `auth-form.schema.ts`:
+
 ```typescript
 export const registerFormSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
   confirmPassword: z.string(),
-  firstName: z.string().min(2),  // Nowe pole
-  lastName: z.string().min(2),   // Nowe pole
-})
+  firstName: z.string().min(2), // Nowe pole
+  lastName: z.string().min(2), // Nowe pole
+});
 ```
 
 2. Dodaj pola w `RegisterForm.tsx`:
+
 ```tsx
 <FormField
   control={form.control}
@@ -181,6 +204,7 @@ export const registerFormSchema = z.object({
 ```
 
 3. Zaktualizuj API endpoint w `register.ts`:
+
 ```typescript
 const registerSchema = z.object({
   email: z.string().email(),
@@ -193,6 +217,7 @@ const registerSchema = z.object({
 ### Customizacja e-maila potwierdzającego
 
 E-maile są konfigurowane w Supabase Dashboard:
+
 1. Przejdź do Authentication > Email Templates
 2. Edytuj szablon "Confirm signup"
 3. Dostosuj treść i styl do swoich potrzeb
@@ -200,6 +225,7 @@ E-maile są konfigurowane w Supabase Dashboard:
 ## Bezpieczeństwo
 
 ### Najlepsze praktyki
+
 - ✅ Hasła nie są wysyłane w plain text
 - ✅ Walidacja po stronie klienta i serwera
 - ✅ Użycie Supabase Auth (bezpieczne haszowanie haseł)
@@ -207,6 +233,7 @@ E-maile są konfigurowane w Supabase Dashboard:
 - ✅ Ochrona przed duplikatami e-mail
 
 ### Zalecenia produkcyjne
+
 - [ ] Dodaj rate limiting (np. max 5 rejestracji na IP na godzinę)
 - [ ] Dodaj CAPTCHA dla ochrony przed botami
 - [ ] Ogranicz domeny e-mail (tylko firmowe adresy)
@@ -225,6 +252,7 @@ E-maile są konfigurowane w Supabase Dashboard:
 ## Pomoc
 
 W razie problemów sprawdź:
+
 - Dokumentację Supabase Auth: https://supabase.com/docs/guides/auth
 - Logi w konsoli przeglądarki (DevTools)
 - Logi w terminalu serwera deweloperskiego

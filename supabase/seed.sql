@@ -7,7 +7,7 @@
 --   - 10 Regular employees
 --   - 2 Teams
 --   - Team assignments (1 employee in both teams)
---   - Vacation requests (overlapping vacations at end of December)
+--   - Vacation requests (sample approvals spanning late 2025 into early 2026)
 -- =====================================================
 
 -- =====================================================
@@ -132,10 +132,10 @@ from profiles;
 -- 6. CREATE VACATION REQUESTS
 -- =====================================================
 
--- Kazimierz Pawlak (employee in both teams) - 10 business days at end of December 2025
--- Start: Monday, December 15, 2025
--- End: Friday, December 26, 2025
--- This gives us 10 business days (excluding weekends: 20-21 Dec, 27-28 Dec are excluded)
+-- Kazimierz Pawlak (employee in both teams) - five business days in early February 2026
+-- Start: Monday, February 9, 2026
+-- End: Friday, February 13, 2026
+-- Business days cover the entire week without hitting a weekend or holiday
 insert into vacation_requests (
   id,
   user_id,
@@ -148,18 +148,18 @@ insert into vacation_requests (
 ) values (
   '20000000-0000-0000-0000-000000000001',
   '00000000-0000-0000-0000-000000000010', -- Kazimierz Pawlak
-  '2025-12-15', -- Monday
-  '2025-12-26', -- Friday
-  calculate_business_days('2025-12-15', '2025-12-26'),
+  '2026-02-09', -- Monday
+  '2026-02-13', -- Friday
+  calculate_business_days('2026-02-09', '2026-02-13'),
   'APPROVED',
   '00000000-0000-0000-0000-000000000002', -- Approved by HR1 (Ferdynand Kiepski)
   now()
 );
 
--- Jacek Kwiatkowski (employee2) - 50% overlap with Kazimierz Pawlak's vacation
+-- Jacek Kwiatkowski (employee2) - late December 2025 vacation spanning two calendar weeks
 -- Start: Friday, December 19, 2025
 -- End: Tuesday, December 30, 2025
--- This overlaps with Kazimierz's vacation from Dec 19-26 (about 50% of his vacation period)
+-- Business days include the Christmas week plus the final working day before the new year
 insert into vacation_requests (
   id,
   user_id,
@@ -210,9 +210,9 @@ insert into vacation_requests (
 ) values (
   '20000000-0000-0000-0000-000000000004',
   '00000000-0000-0000-0000-000000000013', -- Marian Paździoch
-  '2025-08-04', -- Monday
-  '2025-08-15', -- Friday
-  calculate_business_days('2025-08-04', '2025-08-15'),
+  '2026-02-16', -- Monday
+  '2026-02-27', -- Friday
+  calculate_business_days('2026-02-16', '2026-02-27'),
   'REJECTED',
   '00000000-0000-0000-0000-000000000003', -- Rejected by HR2 (Halina Kiepska)
   now()

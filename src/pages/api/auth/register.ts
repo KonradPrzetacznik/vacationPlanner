@@ -132,8 +132,6 @@ export const POST: APIRoute = async ({ request, cookies, url }) => {
       // However, we cannot delete the user from auth.users without admin privileges
       // The user will exist in auth.users but won't be able to use the system without a profile
       // Log the error for monitoring
-      console.error("Failed to create profile for user:", data.user.id, profileError);
-
       return new Response(
         JSON.stringify({
           error: "Nie udało się utworzyć profilu użytkownika. Skontaktuj się z administratorem.",
@@ -165,7 +163,7 @@ export const POST: APIRoute = async ({ request, cookies, url }) => {
         },
       }
     );
-  } catch (error) {
+  } catch {
     // Handle unexpected errors
     return new Response(
       JSON.stringify({

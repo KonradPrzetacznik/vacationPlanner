@@ -360,10 +360,10 @@ describe("Vacation Requests Service", () => {
       const mockAllowanceBuilder = {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({
+        maybeSingle: vi.fn().mockResolvedValue({
           data: {
             total_days: 26,
-            carryover_days: 2,
+            carryover_days: 5,
           },
           error: null,
         }),
@@ -438,7 +438,7 @@ describe("Vacation Requests Service", () => {
       const mockAllowanceBuilder = {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({
+        maybeSingle: vi.fn().mockResolvedValue({
           data: {
             total_days: 26,
             carryover_days: 0,
@@ -484,7 +484,7 @@ describe("Vacation Requests Service", () => {
       const mockAllowanceBuilder = {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({
+        maybeSingle: vi.fn().mockResolvedValue({
           data: { total_days: 26, carryover_days: 2 },
           error: null,
         }),

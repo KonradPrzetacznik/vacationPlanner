@@ -7,7 +7,6 @@
 import type { APIRoute } from "astro";
 import { getVacationRequestByIdParamsSchema } from "@/lib/schemas/vacation-request-detail.schema";
 import { getVacationRequestById } from "@/lib/services/vacation-requests.service";
-import { DEFAULT_USER_ID } from "@/db/supabase.client";
 import type { GetVacationRequestByIdResponseDTO } from "@/types";
 
 export const prerender = false;
@@ -21,8 +20,17 @@ export const prerender = false;
  */
 export const GET: APIRoute = async ({ params, locals }) => {
   try {
-    // 1. Get Supabase client from locals
+    // 1. Get authenticated user and Supabase client from locals
+    const currentUser = locals.user;
     const supabase = locals.supabase;
+
+    if (!currentUser) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     if (!supabase) {
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
@@ -30,10 +38,9 @@ export const GET: APIRoute = async ({ params, locals }) => {
       });
     }
 
-    // 2. Use DEFAULT_USER_ID for development (auth will be implemented later)
-    const currentUserId = DEFAULT_USER_ID;
+    const currentUserId = currentUser.id;
 
-    // 3. Validate request ID parameter
+    // 2. Validate request ID parameter
     const validationResult = getVacationRequestByIdParamsSchema.safeParse({
       id: params.id,
     });
@@ -48,10 +55,10 @@ export const GET: APIRoute = async ({ params, locals }) => {
 
     const { id } = validationResult.data;
 
-    // 4. Fetch vacation request from service
+    // 3. Fetch vacation request from service
     const vacationRequest = await getVacationRequestById(supabase, currentUserId, id);
 
-    // 5. Return success response
+    // 4. Return success response
     const response: GetVacationRequestByIdResponseDTO = {
       data: vacationRequest,
     };

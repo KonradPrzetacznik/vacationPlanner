@@ -11,7 +11,6 @@
 import type { APIRoute } from "astro";
 import { removeTeamMemberParamsSchema } from "@/lib/schemas/teams.schema";
 import { removeMember } from "@/lib/services/teams.service";
-import { DEFAULT_USER_ID } from "@/db/supabase.client";
 
 // Disable prerendering for this API route
 export const prerender = false;
@@ -22,8 +21,17 @@ export const prerender = false;
  */
 export const DELETE: APIRoute = async ({ params, locals }) => {
   try {
-    // 1. Use DEFAULT_USER_ID for development (auth will be implemented later)
-    const currentUserId = DEFAULT_USER_ID;
+    // Get current user from middleware
+    const currentUser = locals.user;
+
+    if (!currentUser) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const currentUserId = currentUser.id;
 
     // 2. Get current user's role for authorization
     const { data: currentUserProfile, error: profileError } = await locals.supabase

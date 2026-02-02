@@ -6,15 +6,18 @@
 import Layout from "@/layouts/Layout.astro";
 import MyRequestsView from "@/components/requests/MyRequestsView.tsx";
 import type { GetVacationRequestsResponseDTO } from "@/types";
-import { DEFAULT_USER_ID } from "@/db/supabase.client";
 
 export const prerender = false;
 
-// Fetch initial data from API
+// Get authenticated user from middleware
+const user = Astro.locals.user;
 const supabase = Astro.locals.supabase;
 
-// Use DEFAULT_USER_ID for development (points to ADMINISTRATOR user)
-const currentUserId = DEFAULT_USER_ID;
+if (!user) {
+  return Astro.redirect("/login");
+}
+
+const currentUserId = user.id;
 
 // Fetch user's vacation requests
 const requestsResponse = await fetch(`${Astro.url.origin}/api/vacation-requests?userId=${currentUserId}`, {

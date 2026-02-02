@@ -7,16 +7,18 @@ Podczas rejestracji użytkownik otrzymywał błąd 400 (Bad Request) z komunikat
 ## Przyczyna
 
 W pliku `src/components/forms/RegisterForm.tsx` w funkcji `onSubmit` wysyłaliśmy tylko `email` i `password`, pomimo że:
+
 - Formularz zawierał pola `firstName` i `lastName`
 - API endpoint wymagał wszystkich 4 pól
 - Schema walidacji wymagała `firstName` i `lastName`
 
 **Błędny kod:**
+
 ```typescript
 body: JSON.stringify({
   email: data.email,
   password: data.password,
-})
+});
 ```
 
 ## Rozwiązanie
@@ -29,7 +31,7 @@ body: JSON.stringify({
   lastName: data.lastName,
   email: data.email,
   password: data.password,
-})
+});
 ```
 
 ## Zmodyfikowany plik

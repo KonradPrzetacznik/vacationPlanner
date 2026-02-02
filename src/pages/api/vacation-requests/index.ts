@@ -2,18 +2,15 @@
  * GET /api/vacation-requests
  * List vacation requests with filtering and pagination
  *
- * Authorization: Using DEFAULT_USER_ID for development
+ * Authorization: Requires authentication
  * - ADMINISTRATOR: Can view all vacation requests
  * - HR: Can view requests from team members
  * - EMPLOYEE: Can view only their own requests
- *
- * NOTE: Full authentication will be implemented later
  */
 import type { APIRoute } from "astro";
 import { GetVacationRequestsQuerySchema } from "@/lib/schemas/vacation-requests.schema";
 import { createVacationRequestSchema } from "@/lib/schemas/vacation-request-detail.schema";
 import { getVacationRequests, createVacationRequest } from "@/lib/services/vacation-requests.service";
-import { DEFAULT_USER_ID } from "@/db/supabase.client";
 import type { CreateVacationRequestResponseDTO } from "@/types";
 
 export const prerender = false;
@@ -21,6 +18,14 @@ export const prerender = false;
 export const GET: APIRoute = async ({ url, locals }) => {
   try {
     const supabase = locals.supabase;
+    const currentUser = locals.user;
+
+    if (!currentUser) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
     if (!supabase) {
       return new Response(JSON.stringify({ error: "Database not available" }), {
@@ -55,8 +60,8 @@ export const GET: APIRoute = async ({ url, locals }) => {
 
     const validatedQuery = validationResult.data;
 
-    // Use DEFAULT_USER_ID for development (auth will be implemented later)
-    const currentUserId = DEFAULT_USER_ID;
+    // Use authenticated user ID
+    const currentUserId = currentUser.id;
 
     // Call service to get vacation requests
     const startTime = Date.now();
@@ -104,14 +109,20 @@ export const GET: APIRoute = async ({ url, locals }) => {
  * POST /api/vacation-requests
  * Create a new vacation request
  *
- * Authorization: Using DEFAULT_USER_ID for development
+ * Authorization: Requires authentication
  * - All authenticated users can create vacation requests for themselves
- *
- * NOTE: Full authentication will be implemented later
  */
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const supabase = locals.supabase;
+    const currentUser = locals.user;
+
+    if (!currentUser) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
     if (!supabase) {
       return new Response(JSON.stringify({ error: "Database not available" }), {
@@ -120,15 +131,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     }
 
-    // Use DEFAULT_USER_ID for development (auth will be implemented later)
-    const currentUserId = DEFAULT_USER_ID;
-
-    if (!currentUserId) {
-      return new Response(JSON.stringify({ error: "Not authenticated" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
+    const currentUserId = currentUser.id;
 
     // Parse request body
     let requestBody;

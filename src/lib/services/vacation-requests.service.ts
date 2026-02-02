@@ -16,6 +16,7 @@ import type {
   CancelVacationRequestResponseDTO,
   ThresholdWarningDTO,
 } from "@/types";
+import { getSettingByKey } from "./settings.service";
 
 /**
  * Get vacation requests list with pagination and filtering
@@ -367,6 +368,7 @@ export async function getVacationRequestById(
  * Validates business rules and creates a vacation request with SUBMITTED status
  * - Calculates business days count (excluding weekends)
  * - Validates available vacation days in user's allowance
+ * - Automatically creates vacation allowance if it doesn't exist for current year (using default_vacation_days setting)
  * - Checks for overlapping vacation requests
  *
  * @param supabase - Supabase client from context.locals
@@ -418,10 +420,42 @@ export async function createVacationRequest(
     .select("total_days, carryover_days")
     .eq("user_id", currentUserId)
     .eq("year", currentYear)
-    .single();
+    .maybeSingle();
 
-  if (allowanceError || !allowance) {
+  if (allowanceError) {
     throw new Error("Failed to check vacation allowance");
+  }
+
+  // If no allowance exists for current year, create one automatically
+  let finalAllowance = allowance;
+  if (!finalAllowance) {
+    try {
+      // Get default vacation days from settings
+      const defaultVacationDaysSetting = await getSettingByKey(supabase, "default_vacation_days");
+      const defaultVacationDays = defaultVacationDaysSetting.value;
+
+      // Create new vacation allowance for current year
+      const { data: newAllowance, error: createError } = await supabase
+        .from("vacation_allowances")
+        .insert({
+          user_id: currentUserId,
+          year: currentYear,
+          total_days: defaultVacationDays,
+          carryover_days: 0, // No carryover for new allowance
+        })
+        .select("total_days, carryover_days")
+        .single();
+
+      if (createError || !newAllowance) {
+        throw new Error("Failed to create vacation allowance automatically");
+      }
+
+      finalAllowance = newAllowance;
+    } catch {
+      throw new Error(
+        `No vacation allowance found for year ${currentYear} and failed to create one automatically. Please contact HR.`
+      );
+    }
   }
 
   // Calculate used days in current year (SUBMITTED + APPROVED only)
@@ -438,7 +472,7 @@ export async function createVacationRequest(
   }
 
   const usedDays = (usedDaysData || []).reduce((sum, req) => sum + req.business_days_count, 0);
-  const availableDays = allowance.total_days + allowance.carryover_days - usedDays;
+  const availableDays = finalAllowance.total_days + finalAllowance.carryover_days - usedDays;
 
   if (availableDays < businessDaysCount) {
     throw new Error(

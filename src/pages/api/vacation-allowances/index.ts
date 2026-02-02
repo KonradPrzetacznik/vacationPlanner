@@ -2,17 +2,14 @@
  * POST /api/vacation-allowances
  * Endpoint for creating new vacation allowances
  *
- * Authorization: Using DEFAULT_USER_ID for development
+ * Authorization: Requires authentication
  * - HR: Can create vacation allowances for any active user
  * - ADMINISTRATOR: Cannot create vacation allowances
  * - EMPLOYEE: Cannot create vacation allowances
- *
- * NOTE: Full authentication will be implemented later
  */
 
 import type { APIRoute } from "astro";
 import { createVacationAllowance } from "@/lib/services/vacation-allowances.service";
-import { DEFAULT_USER_ID } from "@/db/supabase.client";
 import { createVacationAllowanceSchema } from "@/lib/schemas/vacation-allowances.schema";
 
 // Disable prerendering for this API route
@@ -24,10 +21,18 @@ export const prerender = false;
  */
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    // 1. Use DEFAULT_USER_ID for development (auth will be implemented later)
-    const currentUserId = DEFAULT_USER_ID;
+    const currentUser = locals.user;
 
-    // 2. Get current user's role for authorization
+    if (!currentUser) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const currentUserId = currentUser.id;
+
+    // 1. Get current user's role for authorization
     const { data: currentUserProfile, error: profileError } = await locals.supabase
       .from("profiles")
       .select("role")
@@ -43,7 +48,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const currentUserRole = currentUserProfile.role;
 
-    // 3. Parse and validate request body
+    // 2. Parse and validate request body
     let body;
     try {
       body = await request.json();
