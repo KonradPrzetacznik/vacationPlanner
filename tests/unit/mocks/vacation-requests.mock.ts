@@ -3,12 +3,7 @@
  * Provides realistic test data for vacation request-related unit tests
  */
 
-import type {
-  VacationRequestListItemDTO,
-  VacationRequestDetailsDTO,
-  CreateVacationRequestDTO,
-  CreateVacationRequestResponseDTO,
-} from "@/types";
+import type { VacationRequestDetailsDTO, CreateVacationRequestDTO, CreateVacationRequestResponseDTO } from "@/types";
 
 export const mockVacationRequests = {
   submitted: {

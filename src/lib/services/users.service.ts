@@ -56,7 +56,6 @@ export async function getUsers(
   });
 
   if (queryError) {
-    console.error("[UsersService] Failed to fetch users:", queryError);
     throw new Error("Failed to fetch users");
   }
 
@@ -110,7 +109,6 @@ export async function getUserById(
   });
 
   if (error) {
-    console.error("[UsersService] Failed to fetch user:", error);
     throw new Error("Failed to fetch user");
   }
 
@@ -165,8 +163,6 @@ export async function createUser(supabase: SupabaseClient, data: CreateUserDTO):
     .single();
 
   if (profileError) {
-    console.error("[UsersService] Failed to create profile:", profileError);
-
     // Check if error is due to duplicate email
     if (profileError.code === "23505" || profileError.message.includes("duplicate")) {
       throw new Error("User with this email already exists");
@@ -185,12 +181,6 @@ export async function createUser(supabase: SupabaseClient, data: CreateUserDTO):
   );
 
   if (authError || !authUser.user) {
-    console.error("[UsersService] Failed to invite user:", {
-      message: authError?.message,
-      code: authError?.code,
-      status: authError?.status,
-    });
-
     // Clean up profile if auth invite failed
     await supabase.from("profiles").delete().eq("id", tempUserId);
 
@@ -216,7 +206,6 @@ export async function createUser(supabase: SupabaseClient, data: CreateUserDTO):
   const { error: updateError } = await supabase.from("profiles").update({ id: authUser.user.id }).eq("id", tempUserId);
 
   if (updateError) {
-    console.error("[UsersService] Failed to update profile with auth ID:", updateError);
     // Try to clean up
     await supabaseAdminClient.auth.admin.deleteUser(authUser.user.id);
     await supabase.from("profiles").delete().eq("id", tempUserId);
@@ -303,7 +292,6 @@ export async function updateUser(
     .single();
 
   if (updateError || !updatedProfile) {
-    console.error("[UsersService] Failed to update user:", updateError);
     throw new Error("Failed to update user");
   }
 
@@ -355,7 +343,6 @@ export async function deleteUser(supabase: SupabaseClient, userId: string): Prom
   const { error: deleteError } = await supabase.from("profiles").update({ deleted_at: now }).eq("id", userId);
 
   if (deleteError) {
-    console.error("[UsersService] Failed to delete user:", deleteError);
     throw new Error("Failed to delete user");
   }
 
@@ -368,7 +355,6 @@ export async function deleteUser(supabase: SupabaseClient, userId: string): Prom
     .neq("status", "CANCELLED");
 
   if (selectError) {
-    console.error("[UsersService] Failed to fetch vacation requests:", selectError);
     // Don't rollback user deletion, just log the error
   }
 
@@ -382,7 +368,6 @@ export async function deleteUser(supabase: SupabaseClient, userId: string): Prom
       .in("id", requestIds);
 
     if (cancelError) {
-      console.error("[UsersService] Failed to cancel vacation requests:", cancelError);
       // Don't rollback, just log
     } else {
       cancelledCount = requestIds.length;

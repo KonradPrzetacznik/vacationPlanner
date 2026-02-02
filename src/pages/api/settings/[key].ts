@@ -50,7 +50,6 @@ export const GET: APIRoute = async ({ params, locals }) => {
       .single();
 
     if (profileError || !currentUserProfile) {
-      console.error("[GET /api/settings/:key] Failed to fetch current user profile:", profileError);
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -58,14 +57,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
     }
 
     // 4. Call service to get setting by key
-    const startTime = Date.now();
     const result = await getSettingByKey(locals.supabase, key);
-    const duration = Date.now() - startTime;
-
-    // Log slow operations
-    if (duration > 1000) {
-      console.warn("[GET /api/settings/:key] Slow operation:", { duration, key });
-    }
 
     // 5. Return successful response (200 OK)
     return new Response(JSON.stringify(result), {
@@ -73,12 +65,6 @@ export const GET: APIRoute = async ({ params, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[GET /api/settings/:key] Error:", {
-      timestamp: new Date().toISOString(),
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-
     // Handle known error types
     if (error instanceof Error) {
       // Not found errors (404)
@@ -131,7 +117,6 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
       .single();
 
     if (profileError || !currentUserProfile) {
-      console.error("[PUT /api/settings/:key] Failed to fetch current user profile:", profileError);
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -169,17 +154,7 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
     const validatedData = validationResult.data;
 
     // 5. Call service to update setting
-    const startTime = Date.now();
     const result = await updateSetting(locals.supabase, currentUserRole, key, validatedData);
-    const duration = Date.now() - startTime;
-
-    // Log slow operations
-    if (duration > 1000) {
-      console.warn("[PUT /api/settings/:key] Slow operation:", {
-        duration,
-        key,
-      });
-    }
 
     // 6. Return successful response (200 OK)
     return new Response(JSON.stringify(result), {
@@ -187,12 +162,6 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[PUT /api/settings/:key] Error:", {
-      timestamp: new Date().toISOString(),
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-
     // Handle known error types
     if (error instanceof Error) {
       // Authorization errors (403 Forbidden)

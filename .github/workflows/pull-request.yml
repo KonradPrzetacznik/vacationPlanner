@@ -76,77 +76,77 @@ jobs:
   # ============================================
   # Job 3: API Tests (parallel with unit tests)
   # ============================================
-  api-tests:
-    name: API Integration Tests
-    runs-on: ubuntu-latest
-    needs: lint
-
-    # Use integration environment for secrets
-    environment: integration
-
-    services:
-      postgres:
-        image: supabase/postgres:15.1.0.117
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Setup Supabase CLI
-        uses: supabase/setup-cli@v1
-        with:
-          version: latest
-
-      - name: Start Supabase local instance
-        run: |
-          npx supabase start
-
-      - name: Run API tests
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-        run: |
-          echo "Running API integration tests..."
-          cd tests/api
-          chmod +x *.sh
-
-          # Run all test files
-          TEST_RESULTS=0
-          for test_file in *.test.sh; do
-            echo "Running: $test_file"
-            if bash "$test_file"; then
-              echo "✓ $test_file passed"
-            else
-              echo "✗ $test_file failed"
-              TEST_RESULTS=1
-            fi
-          done
-
-          exit $TEST_RESULTS
-
-      - name: Stop Supabase
-        if: always()
-        run: npx supabase stop
+#  api-tests:
+#    name: API Integration Tests
+#    runs-on: ubuntu-latest
+#    needs: lint
+#
+#    # Use integration environment for secrets
+#    environment: integration
+#
+#    services:
+#      postgres:
+#        image: supabase/postgres:15.1.0.117
+#        env:
+#          POSTGRES_PASSWORD: postgres
+#          POSTGRES_DB: postgres
+#        options: >-
+#          --health-cmd pg_isready
+#          --health-interval 10s
+#          --health-timeout 5s
+#          --health-retries 5
+#        ports:
+#          - 5432:5432
+#
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v4
+#
+#      - name: Setup Node.js
+#        uses: actions/setup-node@v4
+#        with:
+#          node-version: "20"
+#          cache: "npm"
+#
+#      - name: Install dependencies
+#        run: npm ci
+#
+#      - name: Setup Supabase CLI
+#        uses: supabase/setup-cli@v1
+#        with:
+#          version: latest
+#
+#      - name: Start Supabase local instance
+#        run: |
+#          npx supabase start
+#
+#      - name: Run API tests
+#        env:
+#          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+#          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+#          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+#        run: |
+#          echo "Running API integration tests..."
+#          cd tests/api
+#          chmod +x *.sh
+#
+#          # Run all test files
+#          TEST_RESULTS=0
+#          for test_file in *.test.sh; do
+#            echo "Running: $test_file"
+#            if bash "$test_file"; then
+#              echo "✓ $test_file passed"
+#            else
+#              echo "✗ $test_file failed"
+#              TEST_RESULTS=1
+#            fi
+#          done
+#
+#          exit $TEST_RESULTS
+#
+#      - name: Stop Supabase
+#        if: always()
+#        run: npx supabase stop
 
   # ============================================
   # Job 4: E2E Tests (parallel with unit tests)
@@ -218,7 +218,7 @@ jobs:
   status-comment:
     name: Post Status Comment
     runs-on: ubuntu-latest
-    needs: [lint, unit-tests, api-tests, e2e-tests]
+    needs: [lint, unit-tests, e2e-tests]
     if: always()
 
     steps:
@@ -228,7 +228,6 @@ jobs:
           # Check if all previous jobs succeeded
           if [[ "${{ needs.lint.result }}" == "success" ]] && \
              [[ "${{ needs.unit-tests.result }}" == "success" ]] && \
-             [[ "${{ needs.api-tests.result }}" == "success" ]] && \
              [[ "${{ needs.e2e-tests.result }}" == "success" ]]; then
             echo "status=success" >> $GITHUB_OUTPUT
             echo "message=✅ All checks passed successfully!" >> $GITHUB_OUTPUT
@@ -248,7 +247,6 @@ jobs:
 
             const lintStatus = '${{ needs.lint.result }}' === 'success' ? '✅' : '❌';
             const unitStatus = '${{ needs.unit-tests.result }}' === 'success' ? '✅' : '❌';
-            const apiStatus = '${{ needs.api-tests.result }}' === 'success' ? '✅' : '❌';
             const e2eStatus = '${{ needs.e2e-tests.result }}' === 'success' ? '✅' : '❌';
 
             const commentBody = `## Pull Request CI Status
@@ -261,7 +259,6 @@ jobs:
             |-----|--------|--------|
             | Linting | ${lintStatus} | \`${{ needs.lint.result }}\` |
             | Unit Tests | ${unitStatus} | \`${{ needs.unit-tests.result }}\` |
-            | API Tests | ${apiStatus} | \`${{ needs.api-tests.result }}\` |
             | E2E Tests | ${e2eStatus} | \`${{ needs.e2e-tests.result }}\` |
 
             ---

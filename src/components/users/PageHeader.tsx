@@ -11,7 +11,6 @@ interface PageHeaderProps {
  */
 export function PageHeader({ onAddUserClick }: PageHeaderProps) {
   const handleClick = useCallback(() => {
-    console.log("PageHeader: Add user button clicked");
     onAddUserClick();
   }, [onAddUserClick]);
 

@@ -49,7 +49,6 @@ export async function getTeams(
       .eq("user_id", userId);
 
     if (membershipError) {
-      console.error("[TeamsService] Failed to fetch user team memberships:", membershipError);
       throw new Error("Failed to fetch teams");
     }
 
@@ -82,7 +81,6 @@ export async function getTeams(
   const { data: teams, error: teamsError, count } = await teamsQuery;
 
   if (teamsError) {
-    console.error("[TeamsService] Failed to fetch teams:", teamsError);
     throw new Error("Failed to fetch teams");
   }
 
@@ -109,7 +107,6 @@ export async function getTeams(
       .in("team_id", teamIdsToCount);
 
     if (countError) {
-      console.error("[TeamsService] Failed to fetch member counts:", countError);
       throw new Error("Failed to fetch member counts");
     }
 
@@ -189,7 +186,6 @@ export async function getTeamById(
       .maybeSingle();
 
     if (membershipError) {
-      console.error("[TeamsService] Failed to check team membership:", membershipError);
       throw new Error("Failed to verify team access");
     }
 
@@ -218,7 +214,6 @@ export async function getTeamById(
     .is("profiles.deleted_at", null); // Exclude soft-deleted users
 
   if (membersError) {
-    console.error("[TeamsService] Failed to fetch team members:", membersError);
     throw new Error("Failed to fetch team members");
   }
 
@@ -233,7 +228,6 @@ export async function getTeamById(
     });
 
     if (emailsError) {
-      console.error("[TeamsService] Failed to fetch member emails:", emailsError);
       // Don't throw, just log - emails are non-critical
     } else if (emailsData && Array.isArray(emailsData)) {
       (emailsData as { id: string; email: string }[]).forEach((item) => {
@@ -292,7 +286,6 @@ export async function createTeam(supabase: SupabaseClient, data: CreateTeamDTO):
     .maybeSingle();
 
   if (checkError) {
-    console.error("[TeamsService] Failed to check team name uniqueness:", checkError);
     throw new Error("Failed to validate team name");
   }
 
@@ -310,7 +303,6 @@ export async function createTeam(supabase: SupabaseClient, data: CreateTeamDTO):
     .single();
 
   if (insertError || !newTeam) {
-    console.error("[TeamsService] Failed to create team:", insertError);
     throw new Error("Failed to create team");
   }
 
@@ -359,7 +351,6 @@ export async function updateTeam(
     .maybeSingle();
 
   if (checkError) {
-    console.error("[TeamsService] Failed to check team name uniqueness:", checkError);
     throw new Error("Failed to validate team name");
   }
 
@@ -379,7 +370,6 @@ export async function updateTeam(
     .single();
 
   if (updateError || !updatedTeam) {
-    console.error("[TeamsService] Failed to update team:", updateError);
     throw new Error("Failed to update team");
   }
 
@@ -417,7 +407,6 @@ export async function deleteTeam(supabase: SupabaseClient, teamId: string): Prom
   const { error: deleteError } = await supabase.from("teams").delete().eq("id", teamId);
 
   if (deleteError) {
-    console.error("[TeamsService] Failed to delete team:", deleteError);
     throw new Error("Failed to delete team");
   }
 
@@ -455,7 +444,6 @@ export async function addMembers(
   const { data: users, error: usersError } = await supabase.from("profiles").select("id, deleted_at").in("id", userIds);
 
   if (usersError) {
-    console.error("[TeamsService] Failed to fetch users:", usersError);
     throw new Error("Failed to validate users");
   }
 
@@ -480,7 +468,6 @@ export async function addMembers(
     .in("user_id", userIds);
 
   if (membersError) {
-    console.error("[TeamsService] Failed to check existing members:", membersError);
     throw new Error("Failed to validate memberships");
   }
 
@@ -500,7 +487,6 @@ export async function addMembers(
     .select("id, user_id, team_id, created_at");
 
   if (insertError || !newMembers) {
-    console.error("[TeamsService] Failed to add members:", insertError);
     throw new Error("Failed to add members to team");
   }
 
@@ -547,7 +533,6 @@ export async function removeMember(supabase: SupabaseClient, teamId: string, use
     .maybeSingle();
 
   if (membershipError) {
-    console.error("[TeamsService] Failed to check membership:", membershipError);
     throw new Error("Failed to verify membership");
   }
 
@@ -563,7 +548,6 @@ export async function removeMember(supabase: SupabaseClient, teamId: string, use
     .eq("user_id", userId);
 
   if (deleteError) {
-    console.error("[TeamsService] Failed to remove member:", deleteError);
     throw new Error("Failed to remove member from team");
   }
 }
@@ -637,7 +621,6 @@ export async function getCalendar(
       .maybeSingle();
 
     if (membershipError) {
-      console.error("[TeamsService] Failed to check team membership:", membershipError);
       throw new Error("Failed to verify team access");
     }
 
@@ -680,7 +663,6 @@ export async function getCalendar(
     .is("profiles.deleted_at", null);
 
   if (membersError) {
-    console.error("[TeamsService] Failed to fetch team members:", membersError);
     throw new Error("Failed to fetch team members");
   }
 
@@ -713,7 +695,6 @@ export async function getCalendar(
   const { data: vacationsData, error: vacationsError } = await vacationsQuery.order("start_date", { ascending: true });
 
   if (vacationsError) {
-    console.error("[TeamsService] Failed to fetch vacation requests:", vacationsError);
     throw new Error("Failed to fetch vacation requests");
   }
 

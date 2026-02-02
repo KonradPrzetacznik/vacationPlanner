@@ -16,12 +16,7 @@ import {
 } from "@/lib/services/vacation-requests.service";
 import type { SupabaseClient } from "@/db/supabase.client";
 import { createMockSupabaseClient, setupRpcCall } from "./mocks/supabase.mock";
-import {
-  mockVacationRequests,
-  mockVacationRequestDetails,
-  mockCreateVacationRequestDTO,
-  mockVacationRequestRpcResponse,
-} from "./mocks/vacation-requests.mock";
+import { mockVacationRequests, mockCreateVacationRequestDTO } from "./mocks/vacation-requests.mock";
 import { mockUsers } from "./mocks/users.mock";
 import { mockTeams } from "./mocks/teams.mock";
 

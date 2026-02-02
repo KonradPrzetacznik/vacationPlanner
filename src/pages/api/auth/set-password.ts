@@ -82,7 +82,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     });
 
     if (updateError) {
-      console.error("Password update error:", updateError);
       return new Response(
         JSON.stringify({
           error: "Nie udało się ustawić hasła",
@@ -108,9 +107,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         },
       }
     );
-  } catch (error) {
+  } catch {
     // Handle unexpected errors
-    console.error("Set password error:", error);
     return new Response(
       JSON.stringify({
         error: "Wystąpił błąd podczas ustawiania hasła",

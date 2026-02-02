@@ -3,7 +3,7 @@
  * Provides realistic test data for vacation allowance-related unit tests
  */
 
-import type { VacationAllowanceDTO, CreateVacationAllowanceDTO, UpdateVacationAllowanceDTO } from "@/types";
+import type { CreateVacationAllowanceDTO, UpdateVacationAllowanceDTO } from "@/types";
 
 export const mockVacationAllowances = {
   employee1: {

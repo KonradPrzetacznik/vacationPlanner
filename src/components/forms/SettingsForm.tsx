@@ -83,7 +83,6 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
       }
     } catch (error) {
       // Handle errors
-      console.error("Failed to save settings:", error);
       toast.error(error instanceof Error ? error.message : "Wystąpił błąd podczas zapisywania ustawień");
     } finally {
       setIsSubmitting(false);

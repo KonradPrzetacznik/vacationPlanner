@@ -17,8 +17,8 @@ import {
   getCalendar,
 } from "@/lib/services/teams.service";
 import type { SupabaseClient } from "@/db/supabase.client";
-import { createMockSupabaseClient, setupRpcCall, setupSelectQuery, setupFailedQuery } from "./mocks/supabase.mock";
-import { mockTeams, mockTeamDetailsWithMembers, mockCreateTeamDTO, mockTeamMemberships } from "./mocks/teams.mock";
+import { createMockSupabaseClient, setupRpcCall } from "./mocks/supabase.mock";
+import { mockTeams, mockCreateTeamDTO } from "./mocks/teams.mock";
 import { mockUsers } from "./mocks/users.mock";
 
 describe("Teams Service", () => {
